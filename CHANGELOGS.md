@@ -6,6 +6,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added backend API documentation with current EXTL/INTL endpoints, response envelope, schemas, examples, and planned API areas.
+- Added the initial FastAPI backend scaffold with EXTL/INTL v1 routers, health checks, standard API response helpers, seed-backed public services and FAQ endpoints, environment settings, and backend tests.
 - Added a root `.gitignore` for frontend dependencies, Next.js build output, local environment files, logs, and editor artifacts.
 - Added the initial Next.js frontend scaffold in `frontend/`.
 - Added an HGS-inspired public landing page with split hero slides, service sections, career CTA, contact footer, and local visual assets.
@@ -30,6 +32,7 @@ All notable changes and release notes for this project should be documented in t
 - Initialized Git repository metadata and configured the GitHub SSH remote.
 - Added this changelog file for future changes and releases.
 - Added agent memory rules to keep topic-specific docs and `CHANGELOGS.md` updated with future changes.
+- Expanded the root `.gitignore` with Python virtual environment, cache, coverage, packaging, local database, upload, media, and static runtime artifacts for backend development.
 
 ## Release Template
 

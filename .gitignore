@@ -13,6 +13,39 @@ dist/
 build/
 coverage/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+.venv/
+venv/
+env/
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.mypy_cache/
+
+# Backend runtime artifacts
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/uploads/
+backend/media/
+backend/staticfiles/
+
 # Environment files
 .env
 .env.*

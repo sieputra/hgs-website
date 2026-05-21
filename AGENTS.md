@@ -18,3 +18,4 @@
 
 - Project initialized with agent memory files.
 - Git remote should be configured as `origin` using the SSH URL above.
+- Backend scaffold exists in `backend/` using FastAPI with EXTL/INTL v1 routers and seed-backed public content endpoints.

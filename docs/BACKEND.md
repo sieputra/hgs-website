@@ -1,5 +1,36 @@
 # Backend Architecture
 
+## Current Implementation
+
+The backend is scaffolded in `backend/` as a FastAPI service.
+
+Implemented routes:
+
+```text
+GET /api/extl/v1/health
+GET /api/extl/v1/services
+GET /api/extl/v1/faqs
+GET /api/intl/v1/health
+```
+
+Endpoint contracts and examples are documented in `docs/API.md`.
+
+The current EXTL content endpoints use a seed-backed repository while the
+database layer is still pending. Route handlers call a service layer, and the
+service layer calls a repository layer so PostgreSQL persistence can be added
+without changing the public API contract.
+
+Local commands:
+
+```bash
+cd backend
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+uvicorn app.main:app --reload
+pytest
+```
+
 ## Backend Recommendation
 
 FastAPI is recommended for the backend.
