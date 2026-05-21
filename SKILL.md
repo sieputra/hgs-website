@@ -14,12 +14,15 @@ This repository contains the HGS website project. Treat the codebase as the sour
 - Add tests or checks when the change affects behavior, build output, or user-facing flows.
 - Do not overwrite unrelated local changes.
 - Update `AGENTS.md` when durable project knowledge changes.
+- Update the matching file in `docs/` when a change affects documented project areas.
+- Update `CHANGELOGS.md` under `Unreleased` for meaningful project changes.
 
 ## Git Workflow
 
 - Default remote: `git@github.com:sieputra/hgs-website.git`
 - Check status before making commits.
 - Keep commits focused and descriptive.
+- Prefix all AI-authored commit messages with `[AI]`.
 - Push only when explicitly requested.
 
 ## Frontend Expectations

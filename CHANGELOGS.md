@@ -9,6 +9,7 @@ All notable changes and release notes for this project should be documented in t
 - Added project agent memory files: `AGENTS.md` and `SKILL.md`.
 - Initialized Git repository metadata and configured the GitHub SSH remote.
 - Added this changelog file for future changes and releases.
+- Added agent memory rules to keep topic-specific docs and `CHANGELOGS.md` updated with future changes.
 
 ## Release Template
 
