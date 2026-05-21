@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">HGS logo</title>
+  <desc id="desc">Black truck shaped HGS logo with Simply to serve slogan.</desc>
+  <rect width="960" height="520" fill="#fff"/>
+  <path fill="#000" d="M52 52h642l31 44h80c29 0 53 16 65 42l52 119v69l-13 28h-84c-9 41-45 72-89 72s-81-31-89-72H371c-9 41-45 72-89 72-33 0-62-18-78-45-16 27-45 45-78 45-44 0-81-31-89-72H52V52Z"/>
+  <path fill="#fff" d="M96 112h67v105h78V112h67v276h-67V274h-78v114H96V112Zm270-2c69 0 112 38 112 99h-69c0-25-15-41-43-41-34 0-52 24-52 78v13c0 55 18 80 55 80 26 0 42-13 47-35h-58v-58h124v142h-49l-8-28c-18 23-42 34-75 34-67 0-106-48-106-134v-15c0-85 46-135 122-135Zm181 199h69c2 25 18 38 49 38 29 0 45-10 45-29 0-20-13-29-58-39-70-15-98-41-98-91 0-52 44-80 107-80 67 0 109 30 112 88h-68c-2-23-16-35-43-35-25 0-40 10-40 27 0 18 15 27 57 36 67 14 101 38 101 90 0 56-45 84-116 84-73 0-115-33-117-89Z"/>
+  <rect x="28" y="420" width="876" height="20" fill="#e11"/>
+  <path fill="#e11" d="M904 420h20l18 20h-38z"/>
+  <text x="260" y="496" font-family="Arial, Helvetica, sans-serif" font-size="56" letter-spacing="10">Simply to</text>
+  <text x="612" y="496" fill="#e11" font-family="Brush Script MT, Segoe Script, cursive" font-size="74">serve!</text>
+</svg>
