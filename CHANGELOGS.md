@@ -12,6 +12,15 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Constrained the footer logo in a dedicated responsive container to prevent bottom image stretching and cropping.
+- Converted public hero and logo references to correctly named WebP assets with SEO-friendly alt text, dimensions, loading hints, and video poster metadata.
+- Refined mobile typography, line-height, touch target sizing, and focus states for better readability and accessibility.
+- Moved the HGS logo from the hero media into the mobile menu bar on smaller screens.
+- Improved mobile navigation with a hamburger menu and refined responsive hero, section, and footer spacing.
+- Moved the hero social buttons closer to the bottom-left corner and replaced text labels with SVG icons.
+- Moved the hero brand logo closer to the top-left corner and added a shadow.
+- Enabled hero slides to render video assets such as `herovid.mp4` as autoplaying hero media.
+- Added per-slide hero image alignment using the `media_align` slide data key.
 - Reworked hero copy alignment so the company name sits at the top, the message stays centered, the CTA aligns toward the bottom, and slide controls use chevron icons.
 - Improved landing page UX with working hero navigation, complete menu target sections, richer service cards, social links, FAQ content, hover/focus states, and more balanced responsive spacing.
 - Set the hero area to fill the available viewport height and tuned hero typography/spacing to fit within that height.

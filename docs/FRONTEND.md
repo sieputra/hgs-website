@@ -7,6 +7,7 @@
 - ISR/SSG for SEO
 - Tailwind CSS and shadcn/ui remain the intended UI stack as the app grows.
 - The first frontend implementation uses plain global CSS in the Next.js app so the visual direction can be established before adding component libraries.
+- Public photographic assets should be referenced with correctly named WebP files, explicit dimensions, and descriptive alt text. Video hero media should use a lightweight poster and metadata preload.
 
 ## Current Implementation
 
@@ -14,6 +15,7 @@
 - The initial public page is implemented with Next.js App Router at `frontend/app/page.tsx`.
 - The first viewport follows the HGS reference direction: black navigation, split hero layout, logistics/staff imagery, dark copy panel, large serif headline, script accent word, rounded CTA, social buttons, and HGS logo placement.
 - Local brand and hero visuals live in `frontend/public/images/`.
+- The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 
 ## Suggested Landing Page Structure
 
