@@ -584,24 +584,67 @@ h2 {
   margin-top: 42px;
 }
 
-.faq-list article {
+.faq-item {
   border-bottom: 1px solid var(--line);
-  display: grid;
-  gap: 24px;
-  grid-template-columns: minmax(260px, 0.8fr) 1.2fr;
-  padding: 26px 0;
+  padding: 0;
 }
 
-.faq-list h3 {
-  font-size: clamp(20px, 1.5vw, 28px);
+.faq-item h2 {
+  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
 }
 
-.faq-list p {
+.faq-trigger {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 28px 0;
+  text-align: left;
+  width: 100%;
+}
+
+.faq-trigger span {
+  flex: 1;
+  font-size: clamp(20px, 1.5vw, 28px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.faq-trigger svg {
+  flex: 0 0 auto;
+  height: 32px;
+  width: 32px;
+}
+
+.faq-trigger path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
+.faq-answer {
+  max-width: 860px;
+  padding: 0 64px 28px 0;
+}
+
+.faq-answer p,
+.faq-status {
   color: #5d565b;
   font-size: clamp(16px, 1.2vw, 19px);
   line-height: 1.6;
   margin: 0;
+}
+
+.faq-status {
+  border-bottom: 1px solid var(--line);
+  padding: 28px 0;
 }
 
 .footer {
@@ -1340,10 +1383,6 @@ h2 {
     margin-top: 30px;
   }
 
-  .faq-list article {
-    grid-template-columns: 1fr;
-  }
-
   .footer {
     align-items: flex-start;
     flex-direction: column;
@@ -1483,13 +1522,14 @@ h2 {
   }
 
   .service-grid h3,
-  .faq-list h3 {
+  .faq-trigger span {
     font-size: 1.25rem;
     line-height: 1.25;
   }
 
   .service-grid p,
-  .faq-list p {
+  .faq-answer p,
+  .faq-status {
     font-size: 1rem;
     line-height: 1.6;
   }
@@ -1512,9 +1552,18 @@ h2 {
     margin-top: 30px;
   }
 
-  .faq-list article {
-    gap: 12px;
+  .faq-trigger {
+    gap: 16px;
     padding: 22px 0;
+  }
+
+  .faq-trigger svg {
+    height: 28px;
+    width: 28px;
+  }
+
+  .faq-answer {
+    padding: 0 0 24px;
   }
 
   .footer-logo {

@@ -27,6 +27,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed `/faq-kandidat` to retain the public footer below the FAQ accordion.
+- Changed `/faq-kandidat` to load FAQ content from the EXTL FAQ API and display it as an accordion with the first item open by default.
 - Changed the Contact landing section to use a two-column details and map layout.
 - Changed the `/faq-kandidat` page to retain the public landing page menu.
 - Changed the Contact landing section to fill the available viewport height and removed its title block.

@@ -14,7 +14,7 @@
 - The frontend lives in `frontend/`.
 - The initial public page is implemented with Next.js App Router at `frontend/app/page.tsx`.
 - Candidate applications are implemented at `frontend/app/career/page.tsx`.
-- Candidate FAQs are implemented as a standalone page at `frontend/app/faq-kandidat/page.tsx`.
+- Candidate FAQs are implemented as a standalone page at `frontend/app/faq-kandidat/page.tsx`, loaded from `GET /api/extl/v1/faqs`, displayed as an accordion with the first FAQ open by default, and retain the public menu and footer.
 - The first viewport follows the HGS reference direction: black navigation, split hero layout, logistics/staff imagery, dark copy panel, large serif headline, script accent word, rounded CTA, social buttons, and HGS logo placement.
 - The About HGS landing section fills the available viewport height beneath the sticky header.
 - The Social Media landing section fills the available viewport height beneath the sticky header.
