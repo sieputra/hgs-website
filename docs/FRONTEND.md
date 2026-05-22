@@ -18,6 +18,8 @@
 - The public gallery is implemented as a homepage section in `frontend/app/page.tsx`, loads `GET /api/extl/v1/gallery/images`, and falls back to optimized local WebP gallery images when the API is unavailable.
 - Candidate FAQs are implemented as a standalone page at `frontend/app/faq-kandidat/page.tsx`, loaded from `GET /api/extl/v1/faqs`, displayed as an accordion with the first FAQ open by default, and retain the public menu and footer.
 - The first viewport follows the HGS reference direction: black navigation, split hero layout, logistics/staff imagery, dark copy panel, large serif headline, script accent word, rounded CTA, social buttons, and HGS logo placement.
+- The hero auto-advances through stacked slides every 6.5 seconds by hiding the current slide and fading in the next, pauses while hovered or focused, and respects reduced-motion preferences.
+- The hero includes a fixed right-side vertical slide indicator with clickable current-slide dots, and wheel scrolling over the hero moves up or down through slides.
 - The About HGS landing section fills the available viewport height beneath the sticky header.
 - The Gallery homepage section fills the available viewport height beneath the sticky header, vertically centers the horizontal image mosaic, uses arrow controls, and hides the horizontal scrollbar.
 - The Social Media landing section fills the available viewport height beneath the sticky header.

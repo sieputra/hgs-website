@@ -192,47 +192,29 @@ const fallbackGalleryImages: GalleryImage[] = [
 
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [apiServices, setApiServices] = useState<PublicService[]>(fallbackServices);
   const [isServicesLoading, setIsServicesLoading] = useState(true);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(fallbackGalleryImages);
   const [isGalleryLoading, setIsGalleryLoading] = useState(true);
   const galleryTrackRef = useRef<HTMLDivElement | null>(null);
-  const slideRefs = useRef<(HTMLElement | null)[]>([]);
+  const heroSliderRef = useRef<HTMLElement | null>(null);
+  const heroWheelLockRef = useRef(false);
 
   useEffect(() => {
-    const heroSlider = document.querySelector(".hero-slider");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const activeEntry = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isHeroPaused || prefersReducedMotion) {
+      return;
+    }
 
-        if (!activeEntry) {
-          return;
-        }
-
-        const slideIndex = Number((activeEntry.target as HTMLElement).dataset.slideIndex);
-
-        if (!Number.isNaN(slideIndex)) {
-          setActiveSlide(slideIndex);
-        }
-      },
-      {
-        root: heroSlider,
-        threshold: [0.45, 0.6, 0.75],
-      },
-    );
-
-    slideRefs.current.forEach((slide) => {
-      if (slide) {
-        observer.observe(slide);
-      }
-    });
+    const timeoutId = window.setTimeout(() => {
+      setActiveSlide((currentSlide) => (currentSlide + 1) % slides.length);
+    }, 6500);
 
     return () => {
-      observer.disconnect();
+      window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [activeSlide, isHeroPaused]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -319,6 +301,30 @@ export default function Home() {
     });
   }
 
+  function showHeroSlide(slideIndex: number) {
+    setActiveSlide((slideIndex + slides.length) % slides.length);
+  }
+
+  function handleHeroWheel(event: React.WheelEvent<HTMLElement>) {
+    const scrollThreshold = 24;
+    if (Math.abs(event.deltaY) < scrollThreshold || heroWheelLockRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    setIsHeroPaused(true);
+    heroWheelLockRef.current = true;
+    setActiveSlide((currentSlide) => {
+      const direction = event.deltaY > 0 ? 1 : -1;
+      return (currentSlide + direction + slides.length) % slides.length;
+    });
+
+    window.setTimeout(() => {
+      heroWheelLockRef.current = false;
+      setIsHeroPaused(false);
+    }, 720);
+  }
+
   return (
     <main>
       <header className="site-header" aria-label="Primary navigation">
@@ -348,19 +354,41 @@ export default function Home() {
         </details>
       </header>
 
-      <section className="hero-slider" id="home" aria-label="HGS company highlights">
+      <section
+        className="hero-slider"
+        id="home"
+        aria-label="HGS company highlights"
+        onBlurCapture={() => setIsHeroPaused(false)}
+        onFocusCapture={() => setIsHeroPaused(true)}
+        onMouseEnter={() => setIsHeroPaused(true)}
+        onMouseLeave={() => setIsHeroPaused(false)}
+        onWheel={handleHeroWheel}
+        ref={heroSliderRef}
+      >
+        <div className="hero-indicators" aria-label="Hero slide indicators">
+          {slides.map((slide, index) => (
+            <button
+              aria-current={activeSlide === index ? "true" : undefined}
+              aria-label={`Show hero slide ${index + 1}: ${slide.title.filter(Boolean).join(" ")}`}
+              key={`${slide.image}-indicator`}
+              onClick={() => showHeroSlide(index)}
+              type="button"
+            >
+              <span aria-hidden="true"></span>
+            </button>
+          ))}
+        </div>
+
         {slides.map((slide, index) => {
           const isVideo = videoExtensions.some((extension) => slide.image.endsWith(extension));
 
           return (
             <article
               className={`hero hero-${index + 1} ${activeSlide === index ? "is-active" : ""}`}
+              aria-hidden={activeSlide !== index}
               data-slide-index={index}
               id={`hero-slide-${index + 1}`}
               key={`${slide.image}-${index}`}
-              ref={(node) => {
-                slideRefs.current[index] = node;
-              }}
             >
               <div className="hero-media">
                 <img className="brand-logo" src="/images/logo.webp" alt="HGS Simply to serve logo" width="1600" height="872" />
@@ -433,16 +461,16 @@ export default function Home() {
                   {slide.cta}
                 </a>
                 <div className="slide-controls" aria-label="Hero slide navigation">
-                  <a href={`#hero-slide-${index === 0 ? slides.length : index}`} aria-label="Previous hero slide">
+                  <button onClick={() => showHeroSlide(index === 0 ? slides.length - 1 : index - 1)} type="button" aria-label="Previous hero slide">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="m6 15 6-6 6 6" />
                     </svg>
-                  </a>
-                  <a href={`#${index === slides.length - 1 ? "about" : `hero-slide-${index + 2}`}`} aria-label="Next hero slide">
+                  </button>
+                  <button onClick={() => showHeroSlide(index === slides.length - 1 ? 0 : index + 1)} type="button" aria-label="Next hero slide">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="m6 9 6 6 6-6" />
                     </svg>
-                  </a>
+                  </button>
                 </div>
               </div>
             </article>

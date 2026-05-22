@@ -6,6 +6,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added automatic homepage hero slide rotation with hover/focus pause and reduced-motion support.
+- Added right-side current slide indicators and wheel up/down slide navigation for the homepage hero.
 - Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
 - Added gallery image APIs with public EXTL listing and INTL admin upload/list endpoints.
 - Added a `gallery_images` database table, seed gallery records, and backend upload serving from `/uploads/gallery/`.
@@ -32,6 +34,7 @@ All notable changes and release notes for this project should be documented in t
 ### Changed
 
 - Changed the homepage Services section to load content from the EXTL services API with local fallback content.
+- Changed the homepage hero from horizontal scroll-snap movement to stacked fade slide changes.
 - Changed public Gallery navigation to scroll to the homepage gallery section.
 - Changed the gallery mosaic to hide its horizontal scrollbar while retaining arrow controls.
 - Changed bundled gallery images to optimized WebP assets.
