@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.extl.v1.router import router as extl_v1_router
 from app.api.intl.v1.router import router as intl_v1_router
@@ -23,6 +24,8 @@ def create_app() -> FastAPI:
 
     app.include_router(extl_v1_router, prefix=f"{settings.api_prefix}/extl/v1")
     app.include_router(intl_v1_router, prefix=f"{settings.api_prefix}/intl/v1")
+    settings.upload_path.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=settings.upload_path), name="uploads")
 
     return app
 

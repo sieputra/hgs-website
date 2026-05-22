@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 const navItems = [
   { href: "#home", label: "Home" },
-  { href: "#careers", label: "Careers" },
+  { href: "#about", label: "About" },
   { href: "#gallery", label: "Gallery" },
   { href: "#social-media", label: "Social Media" },
-  { href: "#about", label: "About" },
   { href: "#contact", label: "Contact" },
+  { href: "#careers", label: "Careers" },
   { href: "/faq-kandidat", label: "FAQ-Kandidat" },
 ];
 
@@ -101,8 +101,76 @@ const services = [
   },
 ];
 
+type GalleryImage = {
+  id: string;
+  title: string;
+  caption: string;
+  image_url: string;
+  image_alt: string;
+  sort_order: number;
+};
+
+type GalleryResponse = {
+  success: boolean;
+  data?: GalleryImage[];
+};
+
+const fallbackGalleryImages: GalleryImage[] = [
+  {
+    id: "8a93a98c-f3bb-4928-87ee-59dc5f5d7401",
+    title: "Operations",
+    caption: "Daily logistics activity around HGS fleet and distribution teams.",
+    image_url: "/images/gallery/rio7985-2.webp",
+    image_alt: "HGS team member checking a truck during operations",
+    sort_order: 1,
+  },
+  {
+    id: "3506545f-4a17-4c31-8010-887f83c1d6c2",
+    title: "Colleagues",
+    caption: "Most of our time, perhaps is spent with you.",
+    image_url: "/images/gallery/dsc0632-1-1.webp",
+    image_alt: "HGS colleagues gathered outdoors",
+    sort_order: 2,
+  },
+  {
+    id: "cf4de750-9d34-44c5-81e3-ff86c1b46fe7",
+    title: "Office",
+    caption: "Coordination and administration keep each delivery route moving.",
+    image_url: "/images/gallery/img-20171111-wa0007.webp",
+    image_alt: "HGS office team working at computers",
+    sort_order: 3,
+  },
+  {
+    id: "e5b891b7-8a32-4b13-9b46-dad9b5f11a04",
+    title: "Fleet Yard",
+    caption: "Preparation starts before the first mile leaves the yard.",
+    image_url: "/images/gallery/dsc0651-1-1.webp",
+    image_alt: "HGS staff observing parked trucks in a yard",
+    sort_order: 4,
+  },
+  {
+    id: "cb802d0b-8bb6-4fd9-b72b-ad025b1f9254",
+    title: "Distribution",
+    caption: "Goods move through HGS routes with practical field support.",
+    image_url: "/images/gallery/truck23.webp",
+    image_alt: "HGS green distribution truck on the road",
+    sort_order: 5,
+  },
+  {
+    id: "996b877c-481c-46a7-a508-e3bd711a1431",
+    title: "Warehouse",
+    caption: "Fleet and warehouse teams work together from loading to dispatch.",
+    image_url: "/images/gallery/truck.webp",
+    image_alt: "HGS truck parked near a warehouse loading area",
+    sort_order: 6,
+  },
+];
+
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(fallbackGalleryImages);
+  const [isGalleryLoading, setIsGalleryLoading] = useState(true);
+  const galleryTrackRef = useRef<HTMLDivElement | null>(null);
   const slideRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
@@ -139,6 +207,52 @@ export default function Home() {
       observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadGalleryImages() {
+      try {
+        setIsGalleryLoading(true);
+        const response = await fetch("/api/extl/v1/gallery/images", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load gallery images.");
+        }
+
+        const payload = (await response.json()) as GalleryResponse;
+        if (!payload.success || !Array.isArray(payload.data)) {
+          throw new Error("Invalid gallery response.");
+        }
+
+        const orderedImages = payload.data.slice().sort((a, b) => a.sort_order - b.sort_order);
+        setGalleryImages(orderedImages.length > 0 ? orderedImages : fallbackGalleryImages);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setGalleryImages(fallbackGalleryImages);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsGalleryLoading(false);
+        }
+      }
+    }
+
+    loadGalleryImages();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  function scrollGallery(direction: "previous" | "next") {
+    galleryTrackRef.current?.scrollBy({
+      behavior: "smooth",
+      left: direction === "next" ? 520 : -520,
+    });
+  }
 
   return (
     <main>
@@ -284,7 +398,37 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="services" id="gallery">
+      <section className="gallery-section" id="gallery" aria-label="HGS photo gallery">
+        <div className="gallery-shell" aria-busy={isGalleryLoading}>
+          <button className="gallery-arrow gallery-arrow-left" onClick={() => scrollGallery("previous")} type="button" aria-label="Previous gallery images">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 5-7 7 7 7" />
+            </svg>
+          </button>
+
+          <div className="gallery-track" ref={galleryTrackRef} tabIndex={0}>
+            <div className="gallery-mosaic">
+              {galleryImages.map((image, index) => (
+                <article className={`gallery-card gallery-card-${(index % 6) + 1}`} key={image.id} tabIndex={0}>
+                  <img src={image.image_url} alt={image.image_alt} loading={index < 4 ? "eager" : "lazy"} decoding="async" />
+                  <div className="gallery-caption">
+                    <h2>{image.title}</h2>
+                    <p>{image.caption}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <button className="gallery-arrow gallery-arrow-right" onClick={() => scrollGallery("next")} type="button" aria-label="Next gallery images">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 5 7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section className="services" id="services">
         <div className="section-heading">
           <p className="eyebrow">Services</p>
           <h2>Built for transport, warehouse, and delivery teams.</h2>

@@ -10,12 +10,15 @@ Implemented routes:
 GET /api/extl/v1/health
 GET /api/extl/v1/services
 GET /api/extl/v1/faqs
+GET /api/extl/v1/gallery/images
 GET /api/extl/v1/divisions
 GET /api/extl/v1/jobs
 GET /api/extl/v1/jobs/{slug}
 POST /api/extl/v1/contact
 POST /api/extl/v1/career-applications
 GET /api/intl/v1/health
+GET /api/intl/v1/admin/gallery/images
+POST /api/intl/v1/admin/gallery/images
 ```
 
 Endpoint contracts and examples are documented in `docs/API.md`.
@@ -43,9 +46,14 @@ python -m app.db.seed
 
 - `services`
 - `faqs`
+- `gallery_images`
 - `divisions`
 - `positions`
 - `career_jobs`
+
+Gallery uploads are optimized to WebP, resized to fit 1920x1280, stored under
+`uploads/gallery/`, and served from `/uploads`. The Next.js frontend rewrites
+`/uploads/:path*` to the backend for local development.
 
 Direct Alembic commands are also available:
 

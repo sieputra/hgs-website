@@ -6,6 +6,10 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
+- Added gallery image APIs with public EXTL listing and INTL admin upload/list endpoints.
+- Added a `gallery_images` database table, seed gallery records, and backend upload serving from `/uploads/gallery/`.
+- Added upload-time gallery image optimization to WebP with metadata stripping and resizing.
 - Added a standalone `/faq-kandidat` page for candidate FAQs.
 - Added a dedicated landing page contact section with head office details.
 - Added backend validation and persistence for the expanded `/career` submission form fields, including family, social media, organization/training, and education details.
@@ -27,6 +31,10 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed public Gallery navigation to scroll to the homepage gallery section.
+- Changed the gallery mosaic to hide its horizontal scrollbar while retaining arrow controls.
+- Changed bundled gallery images to optimized WebP assets.
+- Changed the gallery section to fill the available viewport height and vertically center its image mosaic.
 - Changed `/faq-kandidat` to retain the public footer below the FAQ accordion.
 - Changed `/faq-kandidat` to load FAQ content from the EXTL FAQ API and display it as an accordion with the first item open by default.
 - Changed the Contact landing section to use a two-column details and map layout.

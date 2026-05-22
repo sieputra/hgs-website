@@ -177,6 +177,25 @@ Current FAQ codes:
 | `BPJS_BENEFIT` | 16 |
 | `THR_BENEFIT` | 17 |
 
+### List Gallery Images
+
+```http
+GET /api/extl/v1/gallery/images
+```
+
+Returns active public gallery images for the homepage gallery section.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Gallery image identifier. |
+| `title` | string | Image title shown in the hover overlay. |
+| `caption` | string | Image caption shown in the hover overlay. |
+| `image_url` | string | Public optimized WebP image URL. Seed images use `/images/gallery/...`; uploaded images use `/uploads/gallery/...`. |
+| `image_alt` | string | Accessible image alt text. |
+| `sort_order` | integer | Display order. |
+
 ### List Divisions
 
 ```http
@@ -470,6 +489,40 @@ Response:
   "meta": {}
 }
 ```
+
+### List Admin Gallery Images
+
+```http
+GET /api/intl/v1/admin/gallery/images
+```
+
+Returns gallery images for admin management, including inactive images and file
+metadata.
+
+### Upload Admin Gallery Image
+
+```http
+POST /api/intl/v1/admin/gallery/images
+Content-Type: multipart/form-data
+```
+
+Uploads a gallery image, optimizes it to WebP, and creates its gallery record.
+Authentication is still pending for the INTL surface, so deployments should
+protect this route before public exposure.
+
+Multipart fields:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `image` | file | Yes | JPEG, PNG, WebP, or GIF image, up to 8 MB by default. The backend strips metadata, resizes to fit 1920x1280, and stores WebP output. |
+| `title` | string | Yes | Image title. |
+| `caption` | string | Yes | Image caption. |
+| `image_alt` | string | No | Accessible alt text. Defaults to title. |
+| `sort_order` | integer | No | Display order. Defaults to the next available order. |
+| `is_active` | boolean | No | Public visibility. Defaults to `true`. |
+
+Admin response data includes public gallery fields plus `original_filename`,
+`content_type`, `file_size`, `is_active`, `created_at`, and `updated_at`.
 
 ## Error Handling
 

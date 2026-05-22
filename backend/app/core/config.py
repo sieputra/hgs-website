@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated
 from typing import Any
 
@@ -18,6 +19,12 @@ class Settings(BaseSettings):
     )
     database_url: str | None = None
     database_echo: bool = False
+    upload_dir: str = "uploads"
+    max_gallery_image_bytes: int = 8 * 1024 * 1024
+
+    @property
+    def upload_path(self) -> Path:
+        return Path(self.upload_dir)
 
     @field_validator("cors_origins", mode="before")
     @classmethod

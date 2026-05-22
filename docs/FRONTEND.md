@@ -14,14 +14,17 @@
 - The frontend lives in `frontend/`.
 - The initial public page is implemented with Next.js App Router at `frontend/app/page.tsx`.
 - Candidate applications are implemented at `frontend/app/career/page.tsx`.
+- The public gallery is implemented as a homepage section in `frontend/app/page.tsx`, loads `GET /api/extl/v1/gallery/images`, and falls back to optimized local WebP gallery images when the API is unavailable.
 - Candidate FAQs are implemented as a standalone page at `frontend/app/faq-kandidat/page.tsx`, loaded from `GET /api/extl/v1/faqs`, displayed as an accordion with the first FAQ open by default, and retain the public menu and footer.
 - The first viewport follows the HGS reference direction: black navigation, split hero layout, logistics/staff imagery, dark copy panel, large serif headline, script accent word, rounded CTA, social buttons, and HGS logo placement.
 - The About HGS landing section fills the available viewport height beneath the sticky header.
+- The Gallery homepage section fills the available viewport height beneath the sticky header, vertically centers the horizontal image mosaic, uses arrow controls, and hides the horizontal scrollbar.
 - The Social Media landing section fills the available viewport height beneath the sticky header.
 - The Contact landing section fills the available viewport height beneath the sticky header with office contact details and an embedded map in a two-column desktop layout.
 - Local brand and hero visuals live in `frontend/public/images/`.
 - The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.
+- Uploaded backend media is available to the frontend through the Next.js `/uploads/:path*` rewrite.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.
 - `NEXT_PUBLIC_API_BASE_URL` can still be set when the browser should call a public API host directly instead of the same-origin rewrite.
 

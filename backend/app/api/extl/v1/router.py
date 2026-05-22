@@ -6,6 +6,7 @@ from fastapi import HTTPException
 
 from app.core.api_response import api_response
 from app.schemas.common import ApiResponse
+from app.schemas.gallery import GalleryImage
 from app.schemas.public_content import FAQ, PublicService
 from app.schemas.recruitment import CareerApplicationCreate
 from app.schemas.recruitment import CareerJob
@@ -18,6 +19,8 @@ from app.services.public_content import (
     PublicContentService,
     get_public_content_service,
 )
+from app.services.gallery import GalleryService
+from app.services.gallery import get_gallery_service
 
 router = APIRouter(tags=["EXTL v1"])
 
@@ -47,6 +50,17 @@ async def list_faqs(
 ) -> dict[str, object]:
     faqs = public_content_service.list_faqs()
     return api_response(data=faqs, meta={"total": len(faqs)})
+
+
+@router.get("/gallery/images", response_model=ApiResponse[list[GalleryImage]])
+async def list_gallery_images(
+    gallery_service: Annotated[
+        GalleryService,
+        Depends(get_gallery_service),
+    ],
+) -> dict[str, object]:
+    images = gallery_service.list_public_images()
+    return api_response(data=images, meta={"total": len(images)})
 
 
 @router.get("/divisions", response_model=ApiResponse[list[Division]])

@@ -58,3 +58,33 @@ async def test_extl_faqs_returns_public_recruitment_faqs() -> None:
     assert payload["meta"]["total"] == 17
     assert payload["data"][0]["code"] == "BUSINESS_FIELD"
     assert payload["data"][-1]["code"] == "THR_BENEFIT"
+
+
+async def test_extl_gallery_returns_ordered_public_images() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/extl/v1/gallery/images")
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["meta"]["total"] == 6
+    assert payload["data"][0]["title"] == "Operations"
+    assert payload["data"][1]["title"] == "Colleagues"
+    assert payload["data"][0]["image_url"].startswith("/images/gallery/")
+
+
+async def test_intl_admin_gallery_lists_seed_images_for_management() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/intl/v1/admin/gallery/images")
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert payload["meta"]["total"] == 6
+    assert payload["data"][0]["is_active"] is True

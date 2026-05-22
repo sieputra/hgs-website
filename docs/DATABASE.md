@@ -13,8 +13,9 @@ python -m app.db.seed
 
 `python -m app.db.seed` delegates to `alembic upgrade head`. The current
 revision chain creates the initial schema and seeds `services`, `faqs`,
-`divisions`, `positions`, and `career_jobs`. Contact and career application
-submissions are inserted through the EXTL API once PostgreSQL is enabled.
+`gallery_images`, `divisions`, `positions`, and `career_jobs`. Contact and
+career application submissions are inserted through the EXTL API once
+PostgreSQL is enabled.
 
 ## Recommended Tables
 
@@ -25,6 +26,7 @@ submissions are inserted through the EXTL API once PostgreSQL is enabled.
 - `clients`
 - `contacts`
 - `faqs`
+- `gallery_images`
 - `career_jobs`
 - `career_applications`
 - `career_application_work_experiences`
@@ -43,6 +45,28 @@ submissions are inserted through the EXTL API once PostgreSQL is enabled.
 - `internal_job_transfer_applications`
 
 ## Public Content Tables
+
+### `gallery_images`
+
+Use `gallery_images` to store public gallery photos and their hover captions.
+Seed records point to bundled optimized WebP frontend images. Admin uploads are
+converted to optimized WebP files under `uploads/gallery/` and save their public
+URL on `image_url`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `title` | VARCHAR(150) | Yes | Gallery title shown in the overlay. |
+| `caption` | TEXT | Yes | Gallery caption shown in the overlay. |
+| `image_url` | VARCHAR(500) | Yes | Public image URL. |
+| `image_alt` | VARCHAR(250) | Yes | Accessible image alt text. |
+| `original_filename` | VARCHAR(255) | No | Source filename for uploaded images. |
+| `content_type` | VARCHAR(100) | No | Uploaded image MIME type. |
+| `file_size` | INTEGER | No | Uploaded image size in bytes. |
+| `sort_order` | SMALLINT | Yes | Display order. |
+| `is_active` | BOOLEAN | Yes | Enables or disables the image in public pages. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
 
 ### `faqs`
 

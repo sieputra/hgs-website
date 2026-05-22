@@ -71,6 +71,25 @@ class FAQModel(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
+class GalleryImageModel(TimestampMixin, Base):
+    __tablename__ = "gallery_images"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    caption: Mapped[str] = mapped_column(Text, nullable=False)
+    image_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    image_alt: Mapped[str] = mapped_column(String(250), nullable=False)
+    original_filename: Mapped[str | None] = mapped_column(String(255))
+    content_type: Mapped[str | None] = mapped_column(String(100))
+    file_size: Mapped[int | None] = mapped_column(Integer)
+    sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
 class DivisionModel(TimestampMixin, Base):
     __tablename__ = "divisions"
 
