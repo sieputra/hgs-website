@@ -31,6 +31,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed the homepage Services section to load content from the EXTL services API with local fallback content.
 - Changed public Gallery navigation to scroll to the homepage gallery section.
 - Changed the gallery mosaic to hide its horizontal scrollbar while retaining arrow controls.
 - Changed bundled gallery images to optimized WebP assets.

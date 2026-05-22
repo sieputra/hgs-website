@@ -13,6 +13,7 @@
 
 - The frontend lives in `frontend/`.
 - The initial public page is implemented with Next.js App Router at `frontend/app/page.tsx`.
+- The Services homepage section loads card content from `GET /api/extl/v1/services` and falls back to local service content when the API is unavailable.
 - Candidate applications are implemented at `frontend/app/career/page.tsx`.
 - The public gallery is implemented as a homepage section in `frontend/app/page.tsx`, loads `GET /api/extl/v1/gallery/images`, and falls back to optimized local WebP gallery images when the API is unavailable.
 - Candidate FAQs are implemented as a standalone page at `frontend/app/faq-kandidat/page.tsx`, loaded from `GET /api/extl/v1/faqs`, displayed as an accordion with the first FAQ open by default, and retain the public menu and footer.

@@ -74,30 +74,54 @@ const slides = [
   },
 ];
 
-const services = [
+type PublicService = {
+  code: string;
+  title: string;
+  summary: string;
+  sort_order: number;
+};
+
+type ServicesResponse = {
+  success: boolean;
+  data?: PublicService[];
+};
+
+const fallbackServices: PublicService[] = [
   {
+    code: "TRUCKING",
     title: "Trucking",
-    text: "Daily fleet movement for dependable product distribution.",
+    summary: "Daily fleet movement for dependable product distribution.",
+    sort_order: 1,
   },
   {
+    code: "WAREHOUSING",
     title: "Warehousing",
-    text: "Storage operations built for organized inbound and outbound flow.",
+    summary: "Storage operations built for organized inbound and outbound flow.",
+    sort_order: 2,
   },
   {
+    code: "FIRST_MILE_DELIVERY",
     title: "First Mile Delivery",
-    text: "Pickup support from source locations into the logistics network.",
+    summary: "Pickup support from source locations into the logistics network.",
+    sort_order: 3,
   },
   {
+    code: "LAST_MILE_DELIVERY",
     title: "Last Mile Delivery",
-    text: "Final delivery coordination for stores, channels, and customers.",
+    summary: "Final delivery coordination for stores, channels, and customers.",
+    sort_order: 4,
   },
   {
+    code: "DISTRIBUTION_CENTER",
     title: "Distribution Center",
-    text: "Practical handling for FMCG distribution and route readiness.",
+    summary: "Practical handling for FMCG distribution and route readiness.",
+    sort_order: 5,
   },
   {
+    code: "E_FULFILLMENT",
     title: "E-Fulfillment",
-    text: "Order fulfillment support for modern commerce operations.",
+    summary: "Order fulfillment support for modern commerce operations.",
+    sort_order: 6,
   },
 ];
 
@@ -168,6 +192,8 @@ const fallbackGalleryImages: GalleryImage[] = [
 
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [apiServices, setApiServices] = useState<PublicService[]>(fallbackServices);
+  const [isServicesLoading, setIsServicesLoading] = useState(true);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(fallbackGalleryImages);
   const [isGalleryLoading, setIsGalleryLoading] = useState(true);
   const galleryTrackRef = useRef<HTMLDivElement | null>(null);
@@ -205,6 +231,45 @@ export default function Home() {
 
     return () => {
       observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadServices() {
+      try {
+        setIsServicesLoading(true);
+        const response = await fetch("/api/extl/v1/services", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load services.");
+        }
+
+        const payload = (await response.json()) as ServicesResponse;
+        if (!payload.success || !Array.isArray(payload.data)) {
+          throw new Error("Invalid services response.");
+        }
+
+        const orderedServices = payload.data.slice().sort((a, b) => a.sort_order - b.sort_order);
+        setApiServices(orderedServices.length > 0 ? orderedServices : fallbackServices);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setApiServices(fallbackServices);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsServicesLoading(false);
+        }
+      }
+    }
+
+    loadServices();
+
+    return () => {
+      controller.abort();
     };
   }, []);
 
@@ -433,12 +498,12 @@ export default function Home() {
           <p className="eyebrow">Services</p>
           <h2>Built for transport, warehouse, and delivery teams.</h2>
         </div>
-        <div className="service-grid">
-          {services.map((service) => (
-            <article key={service.title}>
+        <div className="service-grid" aria-busy={isServicesLoading}>
+          {apiServices.map((service) => (
+            <article key={service.code}>
               <span aria-hidden="true">▰</span>
               <h3>{service.title}</h3>
-              <p>{service.text}</p>
+              <p>{service.summary}</p>
             </article>
           ))}
         </div>
