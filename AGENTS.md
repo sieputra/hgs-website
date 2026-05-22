@@ -13,6 +13,7 @@
 - Use `SKILL.md` for repeatable working instructions and project-specific agent behavior.
 - Documentation is separated by topic in the `docs/` folder. When changing project behavior, architecture, database design, deployment, SEO, frontend, or backend decisions, update the matching docs file.
 - Every meaningful project change should also update `CHANGELOGS.md` under `Unreleased`.
+- For frontend checking, if port 3000 is already running, use the existing server instead of starting another dev server on a different port.
 
 ## Current State
 

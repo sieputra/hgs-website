@@ -25,3 +25,19 @@ The maintained Markdown API contract is in `../docs/API.md`.
 ```bash
 pytest
 ```
+
+## Migrations And Seed
+
+The backend loads local database settings from `.env.dev`. Apply schema
+migrations and seed data with Alembic through:
+
+```bash
+python -m app.db.seed
+```
+
+Direct Alembic commands are also available:
+
+```bash
+alembic upgrade head
+alembic current
+```

@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.models import FAQModel
+from app.models import PublicServiceModel
+
 
 @dataclass(frozen=True)
 class PublicServiceRecord:
@@ -220,4 +226,27 @@ class PublicContentRepository:
         return sorted(
             (faq for faq in self._faqs if faq.is_active),
             key=lambda faq: faq.sort_order,
+        )
+
+
+class DatabasePublicContentRepository:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def list_services(self) -> list[PublicServiceModel]:
+        return list(
+            self._session.scalars(
+                select(PublicServiceModel)
+                .where(PublicServiceModel.is_active.is_(True))
+                .order_by(PublicServiceModel.sort_order)
+            )
+        )
+
+    def list_faqs(self) -> list[FAQModel]:
+        return list(
+            self._session.scalars(
+                select(FAQModel)
+                .where(FAQModel.is_active.is_(True))
+                .order_by(FAQModel.sort_order)
+            )
         )

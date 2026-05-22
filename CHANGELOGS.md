@@ -6,6 +6,10 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added PostgreSQL integration with SQLAlchemy models, database-backed repositories, `.env.dev` database loading, and Alembic migrations for schema and seed data.
+- Added the `/career` candidate application page with EXTL API submission, job/position loading, work experience fields, and a simple math captcha.
+- Added a frontend `/api/:path*` rewrite so browser forms can call the backend same-origin by default.
+- Added seed-backed EXTL recruitment APIs for divisions, jobs, job detail, contact submissions, and career applications with tests.
 - Added backend API documentation with current EXTL/INTL endpoints, response envelope, schemas, examples, and planned API areas.
 - Added the initial FastAPI backend scaffold with EXTL/INTL v1 routers, health checks, standard API response helpers, seed-backed public services and FAQ endpoints, environment settings, and backend tests.
 - Added a root `.gitignore` for frontend dependencies, Next.js build output, local environment files, logs, and editor artifacts.
@@ -14,6 +18,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Routed public Apply CTAs to the candidate application page and expanded the landing career section to full viewport height.
+- Switched backend tests to async ASGI clients and made lightweight route dependencies async to avoid local TestClient thread-bridge hangs.
 - Constrained the footer logo in a dedicated responsive container to prevent bottom image stretching and cropping.
 - Converted public hero and logo references to correctly named WebP assets with SEO-friendly alt text, dimensions, loading hints, and video poster metadata.
 - Refined mobile typography, line-height, touch target sizing, and focus states for better readability and accessibility.

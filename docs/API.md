@@ -177,6 +177,120 @@ Current FAQ codes:
 | `BPJS_BENEFIT` | 16 |
 | `THR_BENEFIT` | 17 |
 
+### List Divisions
+
+```http
+GET /api/extl/v1/divisions
+```
+
+Returns active division master data with active positions for recruitment forms.
+The seed data follows `docs/DATABASE.md`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `code` | string | Stable division code. |
+| `name` | string | Division display name. |
+| `sort_order` | integer | Display order. |
+| `positions` | array | Active positions for the division. |
+
+Position item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `code` | string | Stable position code. |
+| `name` | string | Position display name. |
+| `sort_order` | integer | Display order inside the division. |
+
+### List Jobs
+
+```http
+GET /api/extl/v1/jobs
+```
+
+Returns active public recruitment jobs.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `code` | string | Stable job code. |
+| `slug` | string | Public URL slug. |
+| `title` | string | Public job title. |
+| `division_code` | string | Linked division code. |
+| `division_name` | string | Division display name snapshot. |
+| `position_code` | string | Linked position code. |
+| `position_name` | string | Position display name snapshot. |
+| `location` | string | Public placement location. |
+| `employment_type` | string | Public employment type. |
+| `summary` | string | Short job summary. |
+| `responsibilities` | array | Public responsibilities. |
+| `requirements` | array | Public requirements. |
+| `sort_order` | integer | Display order. |
+
+Current job slugs:
+
+| Slug | Title |
+| --- | --- |
+| `driver-operasional` | Driver Operasional |
+| `helper-gudang` | Helper Gudang |
+| `staff-hrd` | Staff HRD |
+
+### Get Job Detail
+
+```http
+GET /api/extl/v1/jobs/{slug}
+```
+
+Returns one active public recruitment job by slug. Unknown slugs currently use
+FastAPI's default `404` response with `detail: "Career job not found"`.
+
+### Submit Contact Form
+
+```http
+POST /api/extl/v1/contact
+```
+
+Accepts public contact form submissions.
+
+Request body:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `full_name` | string | Yes | Sender name. |
+| `email` | string | Yes | Sender email address. |
+| `phone_number` | string | No | Sender phone number. |
+| `company_name` | string | No | Sender company name. |
+| `message` | string | Yes | Contact message. |
+
+Success response data:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Submission identifier. |
+| `status` | string | Current status, initially `submitted`. |
+| `submitted_at` | datetime | Submission timestamp. |
+
+### Submit Career Application
+
+```http
+POST /api/extl/v1/career-applications
+```
+
+Accepts external candidate submissions using the candidate fields defined in
+`docs/DATABASE.md`. `career_job_slug` is optional; when provided, it must match
+an active public job slug. Work experiences are submitted through the
+`work_experiences` array and are capped at five entries in the current schema.
+
+Success response data:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Submission identifier. |
+| `status` | string | Current status, initially `submitted`. |
+| `submitted_at` | datetime | Submission timestamp. |
+
 ## INTL API
 
 ### Health Check
@@ -209,14 +323,9 @@ validation, authentication, and persistence endpoints are introduced.
 
 ## Planned API Areas
 
-Planned EXTL endpoints:
+Planned EXTL work:
 
-```text
-GET /api/extl/v1/jobs
-GET /api/extl/v1/jobs/{slug}
-POST /api/extl/v1/contact
-POST /api/extl/v1/career-applications
-```
+- Database-backed persistence for the current seed-backed EXTL endpoints.
 
 Planned INTL endpoints:
 

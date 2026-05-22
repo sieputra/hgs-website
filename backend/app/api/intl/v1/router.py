@@ -7,5 +7,5 @@ router = APIRouter(tags=["INTL v1"])
 
 
 @router.get("/health", response_model=ApiResponse[dict[str, str]])
-def health_check() -> dict[str, object]:
+async def health_check() -> dict[str, object]:
     return api_response(data={"status": "ok"}, message="INTL API is healthy")

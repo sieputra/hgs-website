@@ -10,15 +10,45 @@ Implemented routes:
 GET /api/extl/v1/health
 GET /api/extl/v1/services
 GET /api/extl/v1/faqs
+GET /api/extl/v1/divisions
+GET /api/extl/v1/jobs
+GET /api/extl/v1/jobs/{slug}
+POST /api/extl/v1/contact
+POST /api/extl/v1/career-applications
 GET /api/intl/v1/health
 ```
 
 Endpoint contracts and examples are documented in `docs/API.md`.
 
-The current EXTL content endpoints use a seed-backed repository while the
-database layer is still pending. Route handlers call a service layer, and the
-service layer calls a repository layer so PostgreSQL persistence can be added
-without changing the public API contract.
+The EXTL content, recruitment, contact, and candidate submission endpoints use
+PostgreSQL repositories when `DATABASE_URL` is configured through `.env.dev` or
+the shell environment. Without `DATABASE_URL`, they fall back to seed-backed
+in-memory repositories so local API tests and frontend development can run
+without a database. Route handlers call a service layer, and the service layer
+calls a repository layer so the public API contract stays stable.
+
+Database setup:
+
+```bash
+cd backend
+python -m app.db.seed
+```
+
+`python -m app.db.seed` reads `.env.dev` and delegates to
+`alembic upgrade head`. Alembic revisions create the schema and upsert:
+
+- `services`
+- `faqs`
+- `divisions`
+- `positions`
+- `career_jobs`
+
+Direct Alembic commands are also available:
+
+```bash
+alembic upgrade head
+alembic current
+```
 
 Local commands:
 
@@ -27,6 +57,7 @@ cd backend
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
+python -m app.db.seed
 uvicorn app.main:app --reload
 pytest
 ```

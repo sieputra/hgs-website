@@ -1,5 +1,21 @@
 # Database Design
 
+## Current Backend Integration
+
+The backend uses SQLAlchemy with PostgreSQL through the `psycopg` driver.
+Alembic owns schema migrations and seed data migrations. `DATABASE_URL` is read
+from `backend/.env.dev` or the shell environment.
+
+```bash
+cd backend
+python -m app.db.seed
+```
+
+`python -m app.db.seed` delegates to `alembic upgrade head`. The current
+revision chain creates the initial schema and seeds `services`, `faqs`,
+`divisions`, `positions`, and `career_jobs`. Contact and career application
+submissions are inserted through the EXTL API once PostgreSQL is enabled.
+
 ## Recommended Tables
 
 ### Public

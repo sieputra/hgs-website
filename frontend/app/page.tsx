@@ -257,7 +257,7 @@ export default function Home() {
                   </h1>
                   <p className="hero-body">{slide.body}</p>
                 </div>
-                <a className={`cta ${slide.accent}`} href={slide.cta === "Apply" ? "#careers" : "#about"}>
+                <a className={`cta ${slide.accent}`} href={slide.cta === "Apply" ? "/career" : "#about"}>
                   {slide.cta}
                 </a>
                 <div className="slide-controls" aria-label="Hero slide navigation">
@@ -325,7 +325,7 @@ export default function Home() {
           <h2>Drive your career with HGS.</h2>
           <p>Driver, helper, warehouse, fleet, HR, finance, IT, and sales opportunities are prepared to grow into dedicated recruitment routes.</p>
         </div>
-        <a className="cta red" href="#contact">Apply</a>
+        <a className="cta red" href="/career">Apply</a>
       </section>
 
       <section className="faq-section" id="faq-kandidat">

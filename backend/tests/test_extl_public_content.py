@@ -1,13 +1,19 @@
-from fastapi.testclient import TestClient
+import pytest
+from httpx import ASGITransport
+from httpx import AsyncClient
 
 from app.main import create_app
 
 
-client = TestClient(create_app())
+pytestmark = pytest.mark.anyio
 
 
-def test_extl_health_check_uses_standard_response_shape() -> None:
-    response = client.get("/api/extl/v1/health")
+async def test_extl_health_check_uses_standard_response_shape() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/extl/v1/health")
 
     assert response.status_code == 200
     assert response.json() == {
@@ -18,8 +24,12 @@ def test_extl_health_check_uses_standard_response_shape() -> None:
     }
 
 
-def test_extl_services_returns_ordered_public_services() -> None:
-    response = client.get("/api/extl/v1/services")
+async def test_extl_services_returns_ordered_public_services() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/extl/v1/services")
     payload = response.json()
 
     assert response.status_code == 200
@@ -35,8 +45,12 @@ def test_extl_services_returns_ordered_public_services() -> None:
     ]
 
 
-def test_extl_faqs_returns_public_recruitment_faqs() -> None:
-    response = client.get("/api/extl/v1/faqs")
+async def test_extl_faqs_returns_public_recruitment_faqs() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/extl/v1/faqs")
     payload = response.json()
 
     assert response.status_code == 200
