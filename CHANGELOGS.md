@@ -6,6 +6,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added an optional alternative applied-position picker to the career application form.
 - Added a repeatable required family history section to the career application form.
 - Added a repeatable required social media account section to the career application form.
 - Added a repeatable candidate organization/training experience section to the career application form.
@@ -21,6 +22,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed `Sumber informasi lowongan` to a searchable source list with `Website HGS` as the default.
+- Changed select-style career application fields to searchable picker UI and restricted preferred placement areas to Jakarta, Bandung, Bogor, Subang, and Sukabumi.
 - Moved candidate SIM and medical history fields into the Data Diri section and expanded Pendidikan with entry year, graduation year, school address, and grade/IPK fields.
 - Changed the candidate `Posisi dilamar` field to a searchable picker grouped by division.
 - Routed public Apply CTAs to the candidate application page and expanded the landing career section to full viewport height.

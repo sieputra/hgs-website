@@ -57,6 +57,9 @@ Current `/career` behavior:
 - Submits candidate payloads to `POST /api/extl/v1/career-applications`.
 - Uses a simple client-side math captcha before allowing submission.
 - Shows `Posisi dilamar` as a searchable picker grouped by division.
+- Supports an optional `Alternatif Posisi dilamar` picker and limits preferred placement area choices to Jakarta, Bandung, Bogor, Subang, and Sukabumi.
+- Shows `Sumber informasi lowongan` as a searchable source list with `Website HGS` selected by default.
+- Uses searchable picker UI for select-style candidate form fields.
 - Keeps SIM and medical history fields inside the candidate identity section and captures additional education details for entry year, graduation year, school address, and grade/IPK.
 - Requires at least one family history row and supports adding multiple family members with relationship, name, education, occupation, and workplace fields.
 - Requires at least one social media account and supports adding multiple social media rows.

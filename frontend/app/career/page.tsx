@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 
 type ApiEnvelope<T> = {
   success: boolean;
@@ -31,6 +31,11 @@ type CaptchaChallenge = {
   right: number;
 };
 
+type SelectOption = {
+  value: string;
+  label: string;
+};
+
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
 const maxWorkExperiences = 5;
 const maxOrganizationExperiences = 5;
@@ -41,6 +46,59 @@ const identityValidOptions = [
   { value: "9999-12-31", label: "Seumur hidup" },
   { value: "", label: "Pilih tanggal berlaku" },
 ];
+
+const placementAreaOptions = ["Jakarta", "Bandung", "Bogor", "Subang", "Sukabumi"].map((area) => ({
+  value: area,
+  label: area,
+}));
+
+const vacancySourceOptions = [
+  "Website HGS",
+  "Instagram",
+  "Facebook",
+  "TikTok",
+  "LinkedIn",
+  "JobStreet",
+  "Glints",
+  "Kalibrr",
+  "WhatsApp",
+  "Referensi karyawan",
+  "Walk-in interview",
+  "Lainnya",
+].map((source) => ({
+  value: source,
+  label: source,
+}));
+
+const genderOptions = [
+  { value: "Laki-laki", label: "Laki-laki" },
+  { value: "Perempuan", label: "Perempuan" },
+];
+
+const maritalStatusOptions = [
+  { value: "Belum menikah", label: "Belum menikah" },
+  { value: "Menikah", label: "Menikah" },
+  { value: "Cerai", label: "Cerai" },
+];
+
+const drivingLicenseClassOptions = ["A", "B1", "B2", "C"].map((licenseClass) => ({
+  value: licenseClass,
+  label: licenseClass,
+}));
+
+const familyRelationshipOptions = ["Ayah", "Ibu", "Suami", "Istri", "Anak", "Saudara", "Wali", "Lainnya"].map(
+  (relationship) => ({
+    value: relationship,
+    label: relationship,
+  }),
+);
+
+const socialMediaOptions = ["Instagram", "Facebook", "TikTok", "X / Twitter", "LinkedIn", "YouTube", "Lainnya"].map(
+  (platform) => ({
+    value: platform,
+    label: platform,
+  }),
+);
 
 const initialCaptcha = {
   left: 1,
@@ -63,13 +121,195 @@ function readOptionalString(formData: FormData, name: string) {
   return value.length > 0 ? value : null;
 }
 
+function SearchableSelect({
+  name,
+  value,
+  onChange,
+  options,
+  placeholder,
+  required = false,
+  resetKey,
+}: {
+  name?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  options: SelectOption[];
+  placeholder: string;
+  required?: boolean;
+  resetKey?: number;
+}) {
+  const listboxId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [internalValue, setInternalValue] = useState("");
+  const selectedValue = value ?? internalValue;
+  const selectedLabel = options.find((option) => option.value === selectedValue)?.label ?? "";
+  const filteredOptions = options.filter((option) => option.label.toLowerCase().includes(query.trim().toLowerCase()));
+
+  useEffect(() => {
+    if (value === undefined) {
+      setInternalValue("");
+    }
+  }, [resetKey, value]);
+
+  return (
+    <div
+      className="position-combobox"
+      onBlur={(event) => {
+        const nextFocus = event.relatedTarget;
+
+        if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) {
+          setIsOpen(false);
+          setQuery("");
+        }
+      }}
+    >
+      {name && <input name={name} type="hidden" value={selectedValue} />}
+      <input
+        aria-autocomplete="list"
+        aria-controls={listboxId}
+        aria-expanded={isOpen}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => {
+          setIsOpen(true);
+          setQuery("");
+        }}
+        placeholder={placeholder}
+        required={required && selectedValue.length === 0}
+        value={isOpen ? query : selectedLabel}
+      />
+      {isOpen && (
+        <div className="position-options" id={listboxId} role="listbox">
+          {filteredOptions.length > 0 ? (
+            <div className="position-option-group">
+              {filteredOptions.map((option) => (
+                <button
+                  aria-selected={selectedValue === option.value}
+                  key={option.value || option.label}
+                  onClick={() => {
+                    if (onChange) {
+                      onChange(option.value);
+                    } else {
+                      setInternalValue(option.value);
+                    }
+                    setIsOpen(false);
+                    setQuery("");
+                  }}
+                  role="option"
+                  type="button"
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="position-empty">Tidak ada pilihan yang cocok.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PositionPicker({
+  label,
+  name,
+  value,
+  onChange,
+  divisions,
+  required = false,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (value: string) => void;
+  divisions: Division[];
+  required?: boolean;
+}) {
+  const listboxId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const groupedOptions = useMemo(() => {
+    const query = value.trim().toLowerCase();
+
+    return divisions
+      .map((division) => ({
+        ...division,
+        positions: division.positions.filter((position) => position.name.toLowerCase().includes(query)),
+      }))
+      .filter((division) => division.positions.length > 0);
+  }, [divisions, value]);
+
+  return (
+    <div
+      className="field position-field"
+      onBlur={(event) => {
+        const nextFocus = event.relatedTarget;
+
+        if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) {
+          setIsOpen(false);
+        }
+      }}
+    >
+      <span className="field-label">{label}</span>
+      <div className="position-combobox">
+        <input
+          aria-autocomplete="list"
+          aria-controls={listboxId}
+          aria-expanded={isOpen}
+          name={name}
+          onChange={(event) => {
+            onChange(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="Cari posisi..."
+          required={required}
+          value={value}
+        />
+        {isOpen && (
+          <div className="position-options" id={listboxId} role="listbox">
+            {groupedOptions.length > 0 ? (
+              groupedOptions.map((division) => (
+                <div className="position-option-group" key={division.code}>
+                  <p>{division.name}</p>
+                  {division.positions.map((position) => (
+                    <button
+                      aria-selected={value === position.name}
+                      key={`${division.code}-${position.code}`}
+                      onClick={() => {
+                        onChange(position.name);
+                        setIsOpen(false);
+                      }}
+                      role="option"
+                      type="button"
+                    >
+                      {position.name}
+                    </button>
+                  ))}
+                </div>
+              ))
+            ) : (
+              <p className="position-empty">Tidak ada posisi yang cocok.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function CareerApplicationPage() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [jobs, setJobs] = useState<CareerJob[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [selectedJobSlug, setSelectedJobSlug] = useState("");
   const [appliedPosition, setAppliedPosition] = useState("");
-  const [isPositionPickerOpen, setIsPositionPickerOpen] = useState(false);
+  const [alternativeAppliedPosition, setAlternativeAppliedPosition] = useState("");
+  const [preferredArea, setPreferredArea] = useState("");
+  const [vacancySource, setVacancySource] = useState("Website HGS");
   const [identityValidUntil, setIdentityValidUntil] = useState("9999-12-31");
   const [workExperienceCount, setWorkExperienceCount] = useState(1);
   const [organizationExperienceCount, setOrganizationExperienceCount] = useState(1);
@@ -78,18 +318,8 @@ export default function CareerApplicationPage() {
   const [captcha, setCaptcha] = useState<CaptchaChallenge>(initialCaptcha);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formResetKey, setFormResetKey] = useState(0);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
-
-  const groupedPositionOptions = useMemo(() => {
-    const query = appliedPosition.trim().toLowerCase();
-
-    return divisions
-      .map((division) => ({
-        ...division,
-        positions: division.positions.filter((position) => position.name.toLowerCase().includes(query)),
-      }))
-      .filter((division) => division.positions.length > 0);
-  }, [appliedPosition, divisions]);
 
   useEffect(() => {
     setCaptcha(createCaptcha());
@@ -158,7 +388,6 @@ export default function CareerApplicationPage() {
 
     if (selectedJob) {
       setAppliedPosition(selectedJob.position_name);
-      setIsPositionPickerOpen(false);
     }
   }
 
@@ -289,8 +518,9 @@ export default function CareerApplicationPage() {
       school_address: readOptionalString(formData, "school_address"),
       grade_point_average: readOptionalString(formData, "grade_point_average"),
       applied_position: appliedPosition,
-      vacancy_source: readString(formData, "vacancy_source"),
-      preferred_area: readOptionalString(formData, "preferred_area"),
+      alternative_applied_position: readOptionalString(formData, "alternative_applied_position"),
+      vacancy_source: vacancySource,
+      preferred_area: preferredArea || null,
       willing_to_be_placed_anywhere: formData.get("willing_to_be_placed_anywhere") === "on",
       available_interview_date: readOptionalString(formData, "available_interview_date"),
       interview_invitation_reason: readString(formData, "interview_invitation_reason"),
@@ -325,11 +555,15 @@ export default function CareerApplicationPage() {
       formRef.current?.reset();
       setSelectedJobSlug("");
       setAppliedPosition("");
+      setAlternativeAppliedPosition("");
+      setPreferredArea("");
+      setVacancySource("Website HGS");
       setIdentityValidUntil("9999-12-31");
       setWorkExperienceCount(1);
       setOrganizationExperienceCount(1);
       setSocialMediaAccountCount(1);
       setFamilyMemberCount(1);
+      setFormResetKey((key) => key + 1);
       setCaptcha(createCaptcha());
       setCaptchaAnswer("");
     } catch (error) {
@@ -376,77 +610,54 @@ export default function CareerApplicationPage() {
           <div className="form-grid two-columns">
             <label>
               Lowongan tersedia
-              <select value={selectedJobSlug} onChange={(event) => handleJobChange(event.target.value)}>
-                <option value="">Lamaran umum</option>
-                {jobs.map((job) => (
-                  <option value={job.slug} key={job.slug}>
-                    {job.title} - {job.location}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                onChange={handleJobChange}
+                options={[
+                  { value: "", label: "Lamaran umum" },
+                  ...jobs.map((job) => ({
+                    value: job.slug,
+                    label: `${job.title} - ${job.location}`,
+                  })),
+                ]}
+                placeholder="Cari lowongan..."
+                value={selectedJobSlug}
+              />
             </label>
-            <div
-              className="field position-field"
-              onBlur={(event) => {
-                const nextFocus = event.relatedTarget;
-
-                if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) {
-                  setIsPositionPickerOpen(false);
-                }
-              }}
-            >
-              <span className="field-label">Posisi dilamar</span>
-              <div className="position-combobox">
-                <input
-                  aria-autocomplete="list"
-                  aria-expanded={isPositionPickerOpen}
-                  aria-controls="position-options"
-                  name="applied_position"
-                  value={appliedPosition}
-                  onChange={(event) => {
-                    setAppliedPosition(event.target.value);
-                    setIsPositionPickerOpen(true);
-                  }}
-                  onFocus={() => setIsPositionPickerOpen(true)}
-                  placeholder="Cari posisi..."
-                  required
-                />
-                {isPositionPickerOpen && (
-                  <div className="position-options" id="position-options" role="listbox">
-                    {groupedPositionOptions.length > 0 ? (
-                      groupedPositionOptions.map((division) => (
-                        <div className="position-option-group" key={division.code}>
-                          <p>{division.name}</p>
-                          {division.positions.map((position) => (
-                            <button
-                              type="button"
-                              role="option"
-                              aria-selected={appliedPosition === position.name}
-                              key={`${division.code}-${position.code}`}
-                              onClick={() => {
-                                setAppliedPosition(position.name);
-                                setIsPositionPickerOpen(false);
-                              }}
-                            >
-                              {position.name}
-                            </button>
-                          ))}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="position-empty">Tidak ada posisi yang cocok.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <PositionPicker
+              divisions={divisions}
+              label="Posisi dilamar"
+              name="applied_position"
+              onChange={setAppliedPosition}
+              required
+              value={appliedPosition}
+            />
+            <PositionPicker
+              divisions={divisions}
+              label="Alternatif Posisi dilamar"
+              name="alternative_applied_position"
+              onChange={setAlternativeAppliedPosition}
+              value={alternativeAppliedPosition}
+            />
             <label>
               Sumber informasi lowongan
-              <input name="vacancy_source" defaultValue="Website HGS" required />
+              <SearchableSelect
+                name="vacancy_source"
+                onChange={setVacancySource}
+                options={vacancySourceOptions}
+                placeholder="Cari sumber informasi..."
+                required
+                value={vacancySource}
+              />
             </label>
             <label>
               Area penempatan yang diinginkan
-              <input name="preferred_area" placeholder="Jakarta, Bandung, Subang, dll." />
+              <SearchableSelect
+                name="preferred_area"
+                onChange={setPreferredArea}
+                options={placementAreaOptions}
+                placeholder="Cari area..."
+                value={preferredArea}
+              />
             </label>
           </div>
           <label className="checkbox-field">
@@ -475,13 +686,12 @@ export default function CareerApplicationPage() {
             </label>
             <label>
               Masa berlaku KTP
-              <select value={identityValidUntil} onChange={(event) => setIdentityValidUntil(event.target.value)}>
-                {identityValidOptions.map((option) => (
-                  <option value={option.value} key={option.label}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                onChange={setIdentityValidUntil}
+                options={identityValidOptions}
+                placeholder="Pilih masa berlaku KTP..."
+                value={identityValidUntil}
+              />
               {identityValidUntil !== "9999-12-31" && (
                 <input
                   className="stacked-input"
@@ -514,20 +724,21 @@ export default function CareerApplicationPage() {
             </label>
             <label>
               Jenis kelamin
-              <select name="gender">
-                <option value="">Pilih</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
+              <SearchableSelect
+                name="gender"
+                options={genderOptions}
+                placeholder="Pilih jenis kelamin..."
+                resetKey={formResetKey}
+              />
             </label>
             <label>
               Status pernikahan
-              <select name="marital_status">
-                <option value="">Pilih</option>
-                <option value="Belum menikah">Belum menikah</option>
-                <option value="Menikah">Menikah</option>
-                <option value="Cerai">Cerai</option>
-              </select>
+              <SearchableSelect
+                name="marital_status"
+                options={maritalStatusOptions}
+                placeholder="Pilih status pernikahan..."
+                resetKey={formResetKey}
+              />
             </label>
             <label>
               Nama ibu kandung
@@ -543,13 +754,12 @@ export default function CareerApplicationPage() {
             </label>
             <label>
               Jenis SIM
-              <select name="driving_license_class">
-                <option value="">Pilih</option>
-                <option value="A">A</option>
-                <option value="B1">B1</option>
-                <option value="B2">B2</option>
-                <option value="C">C</option>
-              </select>
+              <SearchableSelect
+                name="driving_license_class"
+                options={drivingLicenseClassOptions}
+                placeholder="Pilih jenis SIM..."
+                resetKey={formResetKey}
+              />
             </label>
             <label>
               Masa berlaku SIM
@@ -580,19 +790,14 @@ export default function CareerApplicationPage() {
               <legend>Keluarga {index + 1}</legend>
               <div className="form-grid two-columns">
                 <label>
-                  Hubungan {index === 0 && <em className="required-note">Isi Minimal Satu</em>}
-                  <select name={`family_members.${index}.relationship`} defaultValue="">
-                    <option value="">-- pilih hubungan --</option>
-                    <option value="Ayah">Ayah</option>
-                    <option value="Ibu">Ibu</option>
-                    <option value="Suami">Suami</option>
-                    <option value="Istri">Istri</option>
-                    <option value="Anak">Anak</option>
-                    <option value="Saudara">Saudara</option>
-                    <option value="Wali">Wali</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
-                  <span className="field-hint">pilih hubungan / ikatan keluarga</span>
+                  Hubungan
+                  <SearchableSelect
+                    name={`family_members.${index}.relationship`}
+                    options={familyRelationshipOptions}
+                    placeholder="-- pilih hubungan --"
+                    resetKey={formResetKey}
+                  />
+                  <span className="field-hint"> {index === 0 && <em className="required-note">Isi Minimal Satu</em>}</span>
                 </label>
                 <label>
                   Nama
@@ -648,16 +853,12 @@ export default function CareerApplicationPage() {
               <div className="form-grid two-columns">
                 <label>
                   Social Media {index === 0 && <em className="required-note">* Isi Minimal Satu Akun</em>}
-                  <select name={`social_media_accounts.${index}.platform`} defaultValue="">
-                    <option value="">-- pilih sosial media--</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="Facebook">Facebook</option>
-                    <option value="TikTok">TikTok</option>
-                    <option value="X / Twitter">X / Twitter</option>
-                    <option value="LinkedIn">LinkedIn</option>
-                    <option value="YouTube">YouTube</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
+                  <SearchableSelect
+                    name={`social_media_accounts.${index}.platform`}
+                    options={socialMediaOptions}
+                    placeholder="-- pilih sosial media--"
+                    resetKey={formResetKey}
+                  />
                   <span className="field-hint">pilih sosial media anda</span>
                 </label>
                 <label>
@@ -691,7 +892,7 @@ export default function CareerApplicationPage() {
         <section className="form-section">
           <div className="form-section-heading">
             <p className="eyebrow">Pendidikan</p>
-            <h2>Pendidikan terahkir kandidat</h2>
+            <h2>Pendidikan terakhir kandidat</h2>
           </div>
           <div className="form-grid two-columns">
             <label>
@@ -737,17 +938,14 @@ export default function CareerApplicationPage() {
                 <label>
                   Nama Organisasi / Pelatihan
                   <input name={`organization_experiences.${index}.organization_name`} />
-                  <span className="field-hint">isi jika ada, atau isi tidak ada atau kasih tanda (-)</span>
                 </label>
                 <label>
                   Jabatan
                   <input name={`organization_experiences.${index}.position`} />
-                  <span className="field-hint">isi jika ada, atau isi tidak ada atau kasih tanda (-)</span>
                 </label>
                 <label>
                   Periode
                   <input name={`organization_experiences.${index}.period`} />
-                  <span className="field-hint">isi jika ada, atau isi tidak ada atau kasih tanda (-)</span>
                 </label>
               </div>
             </fieldset>
