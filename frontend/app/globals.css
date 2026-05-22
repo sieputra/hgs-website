@@ -695,13 +695,18 @@ h2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.application-form label {
+.application-form label,
+.field {
   color: #342931;
   display: grid;
   font-size: 0.92rem;
   font-weight: 800;
   gap: 8px;
   line-height: 1.35;
+}
+
+.field-label {
+  display: block;
 }
 
 .application-form input,
@@ -728,6 +733,69 @@ h2 {
 .application-form textarea:focus {
   border-color: #ff6b3e;
   box-shadow: 0 0 0 3px rgba(255, 107, 62, 0.18);
+  outline: none;
+}
+
+.position-combobox {
+  position: relative;
+}
+
+.position-options {
+  background: white;
+  border: 1px solid rgba(29, 19, 26, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 20px 44px rgba(29, 19, 26, 0.14);
+  left: 0;
+  max-height: 320px;
+  overflow: auto;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 10;
+}
+
+.position-option-group {
+  display: grid;
+  gap: 4px;
+  padding: 4px 0 10px;
+}
+
+.position-option-group:not(:last-child) {
+  border-bottom: 1px solid rgba(29, 19, 26, 0.1);
+  margin-bottom: 6px;
+}
+
+.position-option-group p,
+.position-empty {
+  color: #8b7d86;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin: 0;
+  padding: 8px 10px 4px;
+  text-transform: uppercase;
+}
+
+.position-option-group button {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 9px 10px;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.position-option-group button:hover,
+.position-option-group button:focus-visible,
+.position-option-group button[aria-selected="true"] {
+  background: rgba(255, 107, 62, 0.12);
+  color: #b43a17;
   outline: none;
 }
 

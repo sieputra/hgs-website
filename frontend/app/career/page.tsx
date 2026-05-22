@@ -39,6 +39,11 @@ const identityValidOptions = [
   { value: "", label: "Pilih tanggal berlaku" },
 ];
 
+const initialCaptcha = {
+  left: 1,
+  right: 1,
+};
+
 function createCaptcha(): CaptchaChallenge {
   return {
     left: Math.floor(Math.random() * 8) + 2,
@@ -61,17 +66,28 @@ export default function CareerApplicationPage() {
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [selectedJobSlug, setSelectedJobSlug] = useState("");
   const [appliedPosition, setAppliedPosition] = useState("");
+  const [isPositionPickerOpen, setIsPositionPickerOpen] = useState(false);
   const [identityValidUntil, setIdentityValidUntil] = useState("9999-12-31");
   const [workExperienceCount, setWorkExperienceCount] = useState(1);
-  const [captcha, setCaptcha] = useState<CaptchaChallenge>(() => createCaptcha());
+  const [captcha, setCaptcha] = useState<CaptchaChallenge>(initialCaptcha);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const positionOptions = useMemo(() => {
-    const names = divisions.flatMap((division) => division.positions.map((position) => position.name));
-    return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
-  }, [divisions]);
+  const groupedPositionOptions = useMemo(() => {
+    const query = appliedPosition.trim().toLowerCase();
+
+    return divisions
+      .map((division) => ({
+        ...division,
+        positions: division.positions.filter((position) => position.name.toLowerCase().includes(query)),
+      }))
+      .filter((division) => division.positions.length > 0);
+  }, [appliedPosition, divisions]);
+
+  useEffect(() => {
+    setCaptcha(createCaptcha());
+  }, []);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -136,6 +152,7 @@ export default function CareerApplicationPage() {
 
     if (selectedJob) {
       setAppliedPosition(selectedJob.position_name);
+      setIsPositionPickerOpen(false);
     }
   }
 
@@ -291,21 +308,61 @@ export default function CareerApplicationPage() {
                 ))}
               </select>
             </label>
-            <label>
-              Posisi dilamar
-              <input
-                name="applied_position"
-                value={appliedPosition}
-                onChange={(event) => setAppliedPosition(event.target.value)}
-                list="position-options"
-                required
-              />
-              <datalist id="position-options">
-                {positionOptions.map((position) => (
-                  <option value={position} key={position} />
-                ))}
-              </datalist>
-            </label>
+            <div
+              className="field position-field"
+              onBlur={(event) => {
+                const nextFocus = event.relatedTarget;
+
+                if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) {
+                  setIsPositionPickerOpen(false);
+                }
+              }}
+            >
+              <span className="field-label">Posisi dilamar</span>
+              <div className="position-combobox">
+                <input
+                  aria-autocomplete="list"
+                  aria-expanded={isPositionPickerOpen}
+                  aria-controls="position-options"
+                  name="applied_position"
+                  value={appliedPosition}
+                  onChange={(event) => {
+                    setAppliedPosition(event.target.value);
+                    setIsPositionPickerOpen(true);
+                  }}
+                  onFocus={() => setIsPositionPickerOpen(true)}
+                  placeholder="Cari posisi..."
+                  required
+                />
+                {isPositionPickerOpen && (
+                  <div className="position-options" id="position-options" role="listbox">
+                    {groupedPositionOptions.length > 0 ? (
+                      groupedPositionOptions.map((division) => (
+                        <div className="position-option-group" key={division.code}>
+                          <p>{division.name}</p>
+                          {division.positions.map((position) => (
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={appliedPosition === position.name}
+                              key={`${division.code}-${position.code}`}
+                              onClick={() => {
+                                setAppliedPosition(position.name);
+                                setIsPositionPickerOpen(false);
+                              }}
+                            >
+                              {position.name}
+                            </button>
+                          ))}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="position-empty">Tidak ada posisi yang cocok.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
             <label>
               Sumber informasi lowongan
               <input name="vacancy_source" defaultValue="Website HGS" required />

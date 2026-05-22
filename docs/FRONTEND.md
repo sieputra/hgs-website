@@ -56,6 +56,7 @@ Current `/career` behavior:
 - Loads public jobs and divisions from the EXTL API when available.
 - Submits candidate payloads to `POST /api/extl/v1/career-applications`.
 - Uses a simple client-side math captcha before allowing submission.
+- Shows `Posisi dilamar` as a searchable picker grouped by division.
 - Supports up to five work experience entries, matching the current backend schema.
 
 Expected future recruitment capabilities:

@@ -18,6 +18,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed the candidate `Posisi dilamar` field to a searchable picker grouped by division.
 - Routed public Apply CTAs to the candidate application page and expanded the landing career section to full viewport height.
 - Switched backend tests to async ASGI clients and made lightweight route dependencies async to avoid local TestClient thread-bridge hangs.
 - Constrained the footer logo in a dedicated responsive container to prevent bottom image stretching and cropping.
@@ -39,6 +40,10 @@ All notable changes and release notes for this project should be documented in t
 - Added this changelog file for future changes and releases.
 - Added agent memory rules to keep topic-specific docs and `CHANGELOGS.md` updated with future changes.
 - Expanded the root `.gitignore` with Python virtual environment, cache, coverage, packaging, local database, upload, media, and static runtime artifacts for backend development.
+
+### Fixed
+
+- Fixed candidate form hydration mismatch caused by rendering random captcha values before client mount.
 
 ## Release Template
 
