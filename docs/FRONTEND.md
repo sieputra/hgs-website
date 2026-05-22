@@ -14,7 +14,11 @@
 - The frontend lives in `frontend/`.
 - The initial public page is implemented with Next.js App Router at `frontend/app/page.tsx`.
 - Candidate applications are implemented at `frontend/app/career/page.tsx`.
+- Candidate FAQs are implemented as a standalone page at `frontend/app/faq-kandidat/page.tsx`.
 - The first viewport follows the HGS reference direction: black navigation, split hero layout, logistics/staff imagery, dark copy panel, large serif headline, script accent word, rounded CTA, social buttons, and HGS logo placement.
+- The About HGS landing section fills the available viewport height beneath the sticky header.
+- The Social Media landing section fills the available viewport height beneath the sticky header.
+- The Contact landing section fills the available viewport height beneath the sticky header with office contact details and an embedded map in a two-column desktop layout.
 - Local brand and hero visuals live in `frontend/public/images/`.
 - The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.

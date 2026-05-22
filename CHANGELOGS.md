@@ -6,6 +6,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added a standalone `/faq-kandidat` page for candidate FAQs.
+- Added a dedicated landing page contact section with head office details.
 - Added backend validation and persistence for the expanded `/career` submission form fields, including family, social media, organization/training, and education details.
 - Added a recruitment process stepper to the `/career` hero.
 - Added a bouncing chevron control to the `/career` hero that scrolls candidates to the first application section.
@@ -25,6 +27,13 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed the Contact landing section to use a two-column details and map layout.
+- Changed the `/faq-kandidat` page to retain the public landing page menu.
+- Changed the Contact landing section to fill the available viewport height and removed its title block.
+- Changed the landing page FAQ navigation to open the standalone candidate FAQ page.
+- Refined the Contact landing section typography to match the other landing sections.
+- Changed the Social Media landing section to fill the available viewport height.
+- Changed the About HGS landing section to fill the available viewport height.
 - Expanded the career application API documentation with the full request schema, nested item schemas, and an example payload.
 - Clarified agent workflow instructions to keep `docs/API.md` updated whenever API behavior changes.
 - Changed mobile career form repeatable-section action buttons to center-align with a capped width.

@@ -2,7 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const navItems = ["Home", "Careers", "Gallery", "Social Media", "About", "Contact", "FAQ-Kandidat"];
+const navItems = [
+  { href: "#home", label: "Home" },
+  { href: "#careers", label: "Careers" },
+  { href: "#gallery", label: "Gallery" },
+  { href: "#social-media", label: "Social Media" },
+  { href: "#about", label: "About" },
+  { href: "#contact", label: "Contact" },
+  { href: "/faq-kandidat", label: "FAQ-Kandidat" },
+];
 
 const videoExtensions = [".mp4", ".webm", ".ogg"];
 
@@ -93,21 +101,6 @@ const services = [
   },
 ];
 
-const faqs = [
-  {
-    question: "Bergerak di bidang apa?",
-    answer: "Logistik, trucking, pergudangan, distribusi, dan fulfillment.",
-  },
-  {
-    question: "Apakah recruitment berbayar?",
-    answer: "Tidak. Proses recruitment HGS tidak dikenakan biaya apa pun.",
-  },
-  {
-    question: "Bagaimana cara melamar?",
-    answer: "Kandidat dapat menghubungi tim HR atau mengikuti form kandidat resmi HGS.",
-  },
-];
-
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
   const slideRefs = useRef<(HTMLElement | null)[]>([]);
@@ -155,8 +148,8 @@ export default function Home() {
         </a>
         <nav className="nav">
           {navItems.map((item) => (
-            <a className={item === "Home" ? "active" : ""} href={`#${item.toLowerCase().replaceAll(" ", "-")}`} key={item}>
-              {item}
+            <a className={item.label === "Home" ? "active" : ""} href={item.href} key={item.label}>
+              {item.label}
             </a>
           ))}
         </nav>
@@ -168,8 +161,8 @@ export default function Home() {
           </summary>
           <nav className="mobile-nav" aria-label="Mobile navigation">
             {navItems.map((item) => (
-              <a className={item === "Home" ? "active" : ""} href={`#${item.toLowerCase().replaceAll(" ", "-")}`} key={item}>
-                {item}
+              <a className={item.label === "Home" ? "active" : ""} href={item.href} key={item.label}>
+                {item.label}
               </a>
             ))}
           </nav>
@@ -328,22 +321,26 @@ export default function Home() {
         <a className="cta red" href="/career">Apply</a>
       </section>
 
-      <section className="faq-section" id="faq-kandidat">
-        <div className="section-heading">
-          <p className="eyebrow">FAQ Kandidat</p>
-          <h2>Clear answers for applicants.</h2>
+      <section className="contact-section" id="contact" aria-label="HGS contact details">
+        <div className="contact-details">
+          <p className="eyebrow">Head Office</p>
+          <p>Grand ITC Permata Hijau, Jl. Arteri Permata Hijau blok saphire No.19, RT.7/RW.10, Grogol Utara, Kec. Kby. Lama, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12210.</p>
+          <p>
+            <strong>Email :</strong> <a href="mailto:admin@hgs.co.id">admin@hgs.co.id</a><br />
+            <strong>Phone :</strong> <a href="tel:+622153664200">(021)53664200</a> / <a href="tel:+6282114540078">+6282114540078</a><br />
+            <strong>Whatsapp :</strong> <a href="https://wa.me/6282260580533">+62 822-6058-0533</a>
+          </p>
         </div>
-        <div className="faq-list">
-          {faqs.map((item) => (
-            <article key={item.question}>
-              <h3>{item.question}</h3>
-              <p>{item.answer}</p>
-            </article>
-          ))}
-        </div>
+        <iframe
+          className="contact-map"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.323329807692!2d106.7826676!3d-6.221026599999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f1329e5ce641%3A0x49d62303d582d554!2sPT.%20Handal%20Guna%20Sarana!5e0!3m2!1sen!2sid!4v1779442399452!5m2!1sen!2sid"
+          title="PT Handal Guna Sarana location map"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
       </section>
 
-      <footer className="footer" id="contact">
+      <footer className="footer">
         <picture className="footer-logo">
           <source srcSet="/images/logo.webp" type="image/webp" />
           <img src="/images/logo.webp" alt="HGS logo" width="1600" height="872" loading="lazy" decoding="async" />
