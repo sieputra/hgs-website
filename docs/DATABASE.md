@@ -422,12 +422,17 @@ Store candidate submissions in `career_applications`. Use a separate
 | `education_level` | VARCHAR(100) | No | Jenjang Pendidikan. |
 | `school_name` | VARCHAR(150) | No | Nama Sekolah / Universitas. |
 | `major` | VARCHAR(150) | No | Jurusan. |
+| `school_entry_year` | SMALLINT | No | Tahun masuk sekolah / universitas. |
+| `school_graduation_year` | SMALLINT | No | Tahun lulus sekolah / universitas. |
+| `school_address` | TEXT | No | Alamat Sekolah / Universitas. |
+| `grade_point_average` | VARCHAR(30) | No | Nilai rata-rata / IPK as entered by the candidate. |
 
 #### Position Preference
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `applied_position` | VARCHAR(100) | Yes | Posisi Yang Dilamar, for example driver or helper. |
+| `alternative_applied_position` | VARCHAR(100) | No | Alternatif posisi yang dilamar. |
 | `vacancy_source` | VARCHAR(100) | Yes | Info Lowongan Dari. |
 | `preferred_area` | VARCHAR(100) | No | Area Yang Diminati. |
 | `willing_to_be_placed_anywhere` | BOOLEAN | Yes | Siap ditempatkan sesuai kebutuhan perusahaan. |
@@ -446,6 +451,46 @@ Store candidate submissions in `career_applications`. Use a separate
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `status` | VARCHAR(50) | Yes | Application workflow status, for example submitted, reviewed, shortlisted, rejected, or hired. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
+
+### `career_application_social_media_accounts`
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `career_application_id` | UUID | Yes | Links to `career_applications`. |
+| `platform` | VARCHAR(50) | Yes | Social media platform selected by the candidate. |
+| `account_id` | VARCHAR(150) | Yes | Candidate nickname / ID on the platform. |
+| `sort_order` | SMALLINT | Yes | Preserves the order entered by the candidate. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
+
+### `career_application_family_members`
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `career_application_id` | UUID | Yes | Links to `career_applications`. |
+| `relationship` | VARCHAR(50) | Yes | Hubungan keluarga. |
+| `name` | VARCHAR(150) | Yes | Nama anggota keluarga. |
+| `education_level` | VARCHAR(100) | No | Pendidikan terakhir anggota keluarga. |
+| `occupation` | VARCHAR(150) | No | Pekerjaan anggota keluarga. |
+| `workplace` | VARCHAR(150) | No | Tempat bekerja anggota keluarga. |
+| `sort_order` | SMALLINT | Yes | Preserves the order entered by the candidate. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
+
+### `career_application_organization_experiences`
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `career_application_id` | UUID | Yes | Links to `career_applications`. |
+| `organization_name` | VARCHAR(150) | Yes | Nama organisasi / pelatihan. |
+| `position` | VARCHAR(100) | No | Jabatan or role. |
+| `period` | VARCHAR(100) | No | Candidate-entered period. |
+| `sort_order` | SMALLINT | Yes | Preserves the order entered by the candidate. |
 | `created_at` | TIMESTAMP | Yes | Record creation time. |
 | `updated_at` | TIMESTAMP | Yes | Last update time. |
 

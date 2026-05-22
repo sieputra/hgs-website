@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 
 from app.models import CareerApplicationModel
+from app.models import CareerApplicationFamilyMemberModel
+from app.models import CareerApplicationOrganizationExperienceModel
+from app.models import CareerApplicationSocialMediaAccountModel
 from app.models import CareerApplicationWorkExperienceModel
 from app.models import CareerJobModel
 from app.models import ContactModel
@@ -381,6 +384,9 @@ class DatabaseRecruitmentRepository:
         self,
         payload: dict[str, Any],
     ) -> SubmissionReceiptRecord:
+        family_members = payload.pop("family_members", [])
+        organization_experiences = payload.pop("organization_experiences", [])
+        social_media_accounts = payload.pop("social_media_accounts", [])
         work_experiences = payload.pop("work_experiences", [])
         career_job_slug = payload.pop("career_job_slug", None)
         career_job_id = None
@@ -400,6 +406,33 @@ class DatabaseRecruitmentRepository:
                 **work_experience,
             )
             for index, work_experience in enumerate(work_experiences, start=1)
+        ]
+        application.social_media_accounts = [
+            CareerApplicationSocialMediaAccountModel(
+                sort_order=index,
+                **social_media_account,
+            )
+            for index, social_media_account in enumerate(
+                social_media_accounts,
+                start=1,
+            )
+        ]
+        application.family_members = [
+            CareerApplicationFamilyMemberModel(
+                sort_order=index,
+                **family_member,
+            )
+            for index, family_member in enumerate(family_members, start=1)
+        ]
+        application.organization_experiences = [
+            CareerApplicationOrganizationExperienceModel(
+                sort_order=index,
+                **organization_experience,
+            )
+            for index, organization_experience in enumerate(
+                organization_experiences,
+                start=1,
+            )
         ]
         self._session.add(application)
         self._session.commit()

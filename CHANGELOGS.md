@@ -6,6 +6,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added backend validation and persistence for the expanded `/career` submission form fields, including family, social media, organization/training, and education details.
 - Added a recruitment process stepper to the `/career` hero.
 - Added a bouncing chevron control to the `/career` hero that scrolls candidates to the first application section.
 - Added an optional alternative applied-position picker to the career application form.

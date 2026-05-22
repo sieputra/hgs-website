@@ -61,6 +61,25 @@ class CareerApplicationWorkExperienceCreate(BaseModel):
     company_comment: str | None = None
 
 
+class CareerApplicationSocialMediaAccountCreate(BaseModel):
+    platform: str = Field(min_length=1, max_length=50)
+    account_id: str = Field(min_length=1, max_length=150)
+
+
+class CareerApplicationFamilyMemberCreate(BaseModel):
+    relationship: str = Field(min_length=1, max_length=50)
+    name: str = Field(min_length=1, max_length=150)
+    education_level: str | None = Field(default=None, max_length=100)
+    occupation: str | None = Field(default=None, max_length=150)
+    workplace: str | None = Field(default=None, max_length=150)
+
+
+class CareerApplicationOrganizationExperienceCreate(BaseModel):
+    organization_name: str = Field(min_length=1, max_length=150)
+    position: str | None = Field(default=None, max_length=100)
+    period: str | None = Field(default=None, max_length=100)
+
+
 class CareerApplicationCreate(BaseModel):
     career_job_slug: str | None = Field(default=None, max_length=150)
     full_name: str = Field(min_length=1, max_length=150)
@@ -84,12 +103,31 @@ class CareerApplicationCreate(BaseModel):
     education_level: str | None = Field(default=None, max_length=100)
     school_name: str | None = Field(default=None, max_length=150)
     major: str | None = Field(default=None, max_length=150)
+    school_entry_year: int | None = Field(default=None, ge=1950, le=2100)
+    school_graduation_year: int | None = Field(default=None, ge=1950, le=2100)
+    school_address: str | None = None
+    grade_point_average: str | None = Field(default=None, max_length=30)
     applied_position: str = Field(min_length=1, max_length=100)
+    alternative_applied_position: str | None = Field(default=None, max_length=100)
     vacancy_source: str = Field(min_length=1, max_length=100)
     preferred_area: str | None = Field(default=None, max_length=100)
     willing_to_be_placed_anywhere: bool
     available_interview_date: date | None = None
     interview_invitation_reason: str = Field(min_length=1)
+    social_media_accounts: list[CareerApplicationSocialMediaAccountCreate] = Field(
+        min_length=1,
+        max_length=5,
+    )
+    family_members: list[CareerApplicationFamilyMemberCreate] = Field(
+        min_length=1,
+        max_length=6,
+    )
+    organization_experiences: list[
+        CareerApplicationOrganizationExperienceCreate
+    ] = Field(
+        default_factory=list,
+        max_length=5,
+    )
     work_experiences: list[CareerApplicationWorkExperienceCreate] = Field(
         default_factory=list,
         max_length=5,

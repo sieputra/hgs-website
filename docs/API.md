@@ -280,8 +280,12 @@ POST /api/extl/v1/career-applications
 
 Accepts external candidate submissions using the candidate fields defined in
 `docs/DATABASE.md`. `career_job_slug` is optional; when provided, it must match
-an active public job slug. Work experiences are submitted through the
-`work_experiences` array and are capped at five entries in the current schema.
+an active public job slug. The `/career` form submits family history,
+social-media accounts, organization/training experience, and work experience as
+nested arrays. Social-media accounts are required with at least one and at most
+five entries; family members are required with at least one and at most six
+entries; organization and work experiences are optional and capped at five
+entries each.
 
 Success response data:
 

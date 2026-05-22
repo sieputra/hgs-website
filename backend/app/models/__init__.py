@@ -20,7 +20,7 @@ from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship as orm_relationship
 
 
 class Base(DeclarativeBase):
@@ -84,7 +84,7 @@ class DivisionModel(TimestampMixin, Base):
     sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    positions: Mapped[list["PositionModel"]] = relationship(
+    positions: Mapped[list["PositionModel"]] = orm_relationship(
         back_populates="division",
         cascade="all, delete-orphan",
         order_by="PositionModel.sort_order",
@@ -112,7 +112,7 @@ class PositionModel(TimestampMixin, Base):
     sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    division: Mapped[DivisionModel] = relationship(back_populates="positions")
+    division: Mapped[DivisionModel] = orm_relationship(back_populates="positions")
 
 
 class CareerJobModel(TimestampMixin, Base):
@@ -205,7 +205,12 @@ class CareerApplicationModel(TimestampMixin, Base):
     education_level: Mapped[str | None] = mapped_column(String(100))
     school_name: Mapped[str | None] = mapped_column(String(150))
     major: Mapped[str | None] = mapped_column(String(150))
+    school_entry_year: Mapped[int | None] = mapped_column(SmallInteger)
+    school_graduation_year: Mapped[int | None] = mapped_column(SmallInteger)
+    school_address: Mapped[str | None] = mapped_column(Text)
+    grade_point_average: Mapped[str | None] = mapped_column(String(30))
     applied_position: Mapped[str] = mapped_column(String(100), nullable=False)
+    alternative_applied_position: Mapped[str | None] = mapped_column(String(100))
     vacancy_source: Mapped[str] = mapped_column(String(100), nullable=False)
     preferred_area: Mapped[str | None] = mapped_column(String(100))
     willing_to_be_placed_anywhere: Mapped[bool] = mapped_column(
@@ -226,11 +231,32 @@ class CareerApplicationModel(TimestampMixin, Base):
     )
 
     work_experiences: Mapped[list["CareerApplicationWorkExperienceModel"]] = (
-        relationship(
+        orm_relationship(
             back_populates="career_application",
             cascade="all, delete-orphan",
             order_by="CareerApplicationWorkExperienceModel.sort_order",
         )
+    )
+    social_media_accounts: Mapped[
+        list["CareerApplicationSocialMediaAccountModel"]
+    ] = orm_relationship(
+        back_populates="career_application",
+        cascade="all, delete-orphan",
+        order_by="CareerApplicationSocialMediaAccountModel.sort_order",
+    )
+    family_members: Mapped[list["CareerApplicationFamilyMemberModel"]] = (
+        orm_relationship(
+            back_populates="career_application",
+            cascade="all, delete-orphan",
+            order_by="CareerApplicationFamilyMemberModel.sort_order",
+        )
+    )
+    organization_experiences: Mapped[
+        list["CareerApplicationOrganizationExperienceModel"]
+    ] = orm_relationship(
+        back_populates="career_application",
+        cascade="all, delete-orphan",
+        order_by="CareerApplicationOrganizationExperienceModel.sort_order",
     )
 
 
@@ -256,6 +282,76 @@ class CareerApplicationWorkExperienceModel(TimestampMixin, Base):
     company_comment: Mapped[str | None] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
 
-    career_application: Mapped[CareerApplicationModel] = relationship(
+    career_application: Mapped[CareerApplicationModel] = orm_relationship(
         back_populates="work_experiences"
+    )
+
+
+class CareerApplicationSocialMediaAccountModel(TimestampMixin, Base):
+    __tablename__ = "career_application_social_media_accounts"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    career_application_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("career_applications.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    platform: Mapped[str] = mapped_column(String(50), nullable=False)
+    account_id: Mapped[str] = mapped_column(String(150), nullable=False)
+    sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+
+    career_application: Mapped[CareerApplicationModel] = orm_relationship(
+        back_populates="social_media_accounts"
+    )
+
+
+class CareerApplicationFamilyMemberModel(TimestampMixin, Base):
+    __tablename__ = "career_application_family_members"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    career_application_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("career_applications.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    relationship: Mapped[str] = mapped_column(String(50), nullable=False)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    education_level: Mapped[str | None] = mapped_column(String(100))
+    occupation: Mapped[str | None] = mapped_column(String(150))
+    workplace: Mapped[str | None] = mapped_column(String(150))
+    sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+
+    career_application: Mapped[CareerApplicationModel] = orm_relationship(
+        back_populates="family_members"
+    )
+
+
+class CareerApplicationOrganizationExperienceModel(TimestampMixin, Base):
+    __tablename__ = "career_application_organization_experiences"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    career_application_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("career_applications.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    organization_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    position: Mapped[str | None] = mapped_column(String(100))
+    period: Mapped[str | None] = mapped_column(String(100))
+    sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+
+    career_application: Mapped[CareerApplicationModel] = orm_relationship(
+        back_populates="organization_experiences"
     )

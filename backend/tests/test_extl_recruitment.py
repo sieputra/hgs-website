@@ -121,7 +121,12 @@ async def test_extl_career_application_accepts_candidate_submission() -> None:
                 "education_level": "SMA",
                 "school_name": "SMA Contoh",
                 "major": "IPA",
+                "school_entry_year": 2009,
+                "school_graduation_year": 2012,
+                "school_address": "Jakarta Selatan",
+                "grade_point_average": "8.5",
                 "applied_position": "Driver",
+                "alternative_applied_position": "Helper",
                 "vacancy_source": "Website",
                 "preferred_area": "Jakarta",
                 "willing_to_be_placed_anywhere": True,
@@ -129,6 +134,28 @@ async def test_extl_career_application_accepts_candidate_submission() -> None:
                 "interview_invitation_reason": (
                     "Berpengalaman sebagai driver distribusi."
                 ),
+                "social_media_accounts": [
+                    {
+                        "platform": "Instagram",
+                        "account_id": "andi.saputra",
+                    }
+                ],
+                "family_members": [
+                    {
+                        "relationship": "Ibu",
+                        "name": "Siti",
+                        "education_level": "SMA",
+                        "occupation": "Wiraswasta",
+                        "workplace": "Toko Keluarga",
+                    }
+                ],
+                "organization_experiences": [
+                    {
+                        "organization_name": "Pelatihan Safety Driving",
+                        "position": "Peserta",
+                        "period": "2024",
+                    }
+                ],
                 "work_experiences": [
                     {
                         "company_name": "PT Lama",
@@ -179,6 +206,18 @@ async def test_extl_career_application_rejects_unknown_job_slug() -> None:
                 "interview_invitation_reason": (
                     "Berpengalaman sebagai driver distribusi."
                 ),
+                "social_media_accounts": [
+                    {
+                        "platform": "Instagram",
+                        "account_id": "andi.saputra",
+                    }
+                ],
+                "family_members": [
+                    {
+                        "relationship": "Ibu",
+                        "name": "Siti",
+                    }
+                ],
             },
         )
 
