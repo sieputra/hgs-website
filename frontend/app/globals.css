@@ -709,6 +709,21 @@ h2 {
   display: block;
 }
 
+.field-hint {
+  color: #6d626a;
+  display: block;
+  font-size: 0.86rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.required-note {
+  font-style: italic;
+  font-weight: 900;
+  margin-left: 4px;
+}
+
 .application-form input,
 .application-form select,
 .application-form textarea {

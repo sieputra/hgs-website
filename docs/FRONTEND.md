@@ -57,6 +57,10 @@ Current `/career` behavior:
 - Submits candidate payloads to `POST /api/extl/v1/career-applications`.
 - Uses a simple client-side math captcha before allowing submission.
 - Shows `Posisi dilamar` as a searchable picker grouped by division.
+- Keeps SIM and medical history fields inside the candidate identity section and captures additional education details for entry year, graduation year, school address, and grade/IPK.
+- Requires at least one family history row and supports adding multiple family members with relationship, name, education, occupation, and workplace fields.
+- Requires at least one social media account and supports adding multiple social media rows.
+- Captures multiple organization or training experiences with organization name, role, and period fields.
 - Supports up to five work experience entries, matching the current backend schema.
 
 Expected future recruitment capabilities:

@@ -33,6 +33,9 @@ type CaptchaChallenge = {
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
 const maxWorkExperiences = 5;
+const maxOrganizationExperiences = 5;
+const maxSocialMediaAccounts = 5;
+const maxFamilyMembers = 6;
 
 const identityValidOptions = [
   { value: "9999-12-31", label: "Seumur hidup" },
@@ -69,6 +72,9 @@ export default function CareerApplicationPage() {
   const [isPositionPickerOpen, setIsPositionPickerOpen] = useState(false);
   const [identityValidUntil, setIdentityValidUntil] = useState("9999-12-31");
   const [workExperienceCount, setWorkExperienceCount] = useState(1);
+  const [organizationExperienceCount, setOrganizationExperienceCount] = useState(1);
+  const [socialMediaAccountCount, setSocialMediaAccountCount] = useState(1);
+  const [familyMemberCount, setFamilyMemberCount] = useState(1);
   const [captcha, setCaptcha] = useState<CaptchaChallenge>(initialCaptcha);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -194,6 +200,67 @@ export default function CareerApplicationPage() {
       return;
     }
 
+    const socialMediaAccounts = Array.from({ length: socialMediaAccountCount }, (_, index) => {
+      const prefix = `social_media_accounts.${index}`;
+      const account = {
+        platform: readString(formData, `${prefix}.platform`),
+        account_id: readString(formData, `${prefix}.account_id`),
+      };
+      const hasContent = Object.values(account).some((value) => value !== "");
+
+      return hasContent ? account : null;
+    }).filter((account): account is NonNullable<typeof account> => account !== null);
+
+    const hasIncompleteSocialAccount = socialMediaAccounts.some(
+      (account) => account.platform.length === 0 || account.account_id.length === 0,
+    );
+
+    if (socialMediaAccounts.length === 0 || hasIncompleteSocialAccount) {
+      setStatus({
+        type: "error",
+        message: "Isi minimal satu akun social media lengkap dengan platform dan Nickname / ID.",
+      });
+      return;
+    }
+
+    const familyMembers = Array.from({ length: familyMemberCount }, (_, index) => {
+      const prefix = `family_members.${index}`;
+      const member = {
+        relationship: readString(formData, `${prefix}.relationship`),
+        name: readString(formData, `${prefix}.name`),
+        education_level: readOptionalString(formData, `${prefix}.education_level`),
+        occupation: readOptionalString(formData, `${prefix}.occupation`),
+        workplace: readOptionalString(formData, `${prefix}.workplace`),
+      };
+      const hasContent = Object.values(member).some((value) => value !== null && value !== "");
+
+      return hasContent ? member : null;
+    }).filter((member): member is NonNullable<typeof member> => member !== null);
+
+    const hasIncompleteFamilyMember = familyMembers.some(
+      (member) => member.relationship.length === 0 || member.name.length === 0,
+    );
+
+    if (familyMembers.length === 0 || hasIncompleteFamilyMember) {
+      setStatus({
+        type: "error",
+        message: "Isi minimal satu riwayat keluarga lengkap dengan hubungan dan nama.",
+      });
+      return;
+    }
+
+    const organizationExperiences = Array.from({ length: organizationExperienceCount }, (_, index) => {
+      const prefix = `organization_experiences.${index}`;
+      const experience = {
+        organization_name: readString(formData, `${prefix}.organization_name`),
+        position: readOptionalString(formData, `${prefix}.position`),
+        period: readOptionalString(formData, `${prefix}.period`),
+      };
+      const hasContent = Object.values(experience).some((value) => value !== null && value !== "");
+
+      return hasContent ? experience : null;
+    }).filter((experience): experience is NonNullable<typeof experience> => experience !== null);
+
     const payload = {
       career_job_slug: selectedJobSlug || null,
       full_name: readString(formData, "full_name"),
@@ -217,12 +284,19 @@ export default function CareerApplicationPage() {
       education_level: readOptionalString(formData, "education_level"),
       school_name: readOptionalString(formData, "school_name"),
       major: readOptionalString(formData, "major"),
+      school_entry_year: readOptionalString(formData, "school_entry_year"),
+      school_graduation_year: readOptionalString(formData, "school_graduation_year"),
+      school_address: readOptionalString(formData, "school_address"),
+      grade_point_average: readOptionalString(formData, "grade_point_average"),
       applied_position: appliedPosition,
       vacancy_source: readString(formData, "vacancy_source"),
       preferred_area: readOptionalString(formData, "preferred_area"),
       willing_to_be_placed_anywhere: formData.get("willing_to_be_placed_anywhere") === "on",
       available_interview_date: readOptionalString(formData, "available_interview_date"),
       interview_invitation_reason: readString(formData, "interview_invitation_reason"),
+      social_media_accounts: socialMediaAccounts,
+      family_members: familyMembers,
+      organization_experiences: organizationExperiences,
       work_experiences: workExperiences,
     };
 
@@ -253,6 +327,9 @@ export default function CareerApplicationPage() {
       setAppliedPosition("");
       setIdentityValidUntil("9999-12-31");
       setWorkExperienceCount(1);
+      setOrganizationExperienceCount(1);
+      setSocialMediaAccountCount(1);
+      setFamilyMemberCount(1);
       setCaptcha(createCaptcha());
       setCaptchaAnswer("");
     } catch (error) {
@@ -460,23 +537,6 @@ export default function CareerApplicationPage() {
               Agama
               <input name="religion" />
             </label>
-            <label className="full-span">
-              Alamat KTP
-              <textarea name="identity_address" rows={3} required />
-            </label>
-            <label className="full-span">
-              Alamat domisili
-              <textarea name="domicile_address" rows={3} required />
-            </label>
-          </div>
-        </section>
-
-        <section className="form-section">
-          <div className="form-section-heading">
-            <p className="eyebrow">SIM & Pendidikan</p>
-            <h2>Kelengkapan kandidat</h2>
-          </div>
-          <div className="form-grid two-columns">
             <label>
               Nomor SIM
               <input name="driving_license_number" required />
@@ -495,6 +555,145 @@ export default function CareerApplicationPage() {
               Masa berlaku SIM
               <input name="driving_license_valid_until" type="date" required />
             </label>
+            <label className="full-span">
+              Alamat KTP
+              <textarea name="identity_address" rows={3} required />
+            </label>
+            <label className="full-span">
+              Alamat domisili
+              <textarea name="domicile_address" rows={3} required />
+            </label>
+            <label className="full-span">
+              Riwayat penyakit
+              <textarea name="medical_history" rows={3} placeholder="Isi '-' bila tidak ada." />
+            </label>
+          </div>
+        </section>
+
+        <section className="form-section">
+          <div className="form-section-heading">
+            <p className="eyebrow">Riwayat Keluarga</p>
+            <h2>Riwayat keluarga</h2>
+          </div>
+          {Array.from({ length: familyMemberCount }, (_, index) => (
+            <fieldset className="work-experience" key={index}>
+              <legend>Keluarga {index + 1}</legend>
+              <div className="form-grid two-columns">
+                <label>
+                  Hubungan {index === 0 && <em className="required-note">Isi Minimal Satu</em>}
+                  <select name={`family_members.${index}.relationship`} defaultValue="">
+                    <option value="">-- pilih hubungan --</option>
+                    <option value="Ayah">Ayah</option>
+                    <option value="Ibu">Ibu</option>
+                    <option value="Suami">Suami</option>
+                    <option value="Istri">Istri</option>
+                    <option value="Anak">Anak</option>
+                    <option value="Saudara">Saudara</option>
+                    <option value="Wali">Wali</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                  <span className="field-hint">pilih hubungan / ikatan keluarga</span>
+                </label>
+                <label>
+                  Nama
+                  <input name={`family_members.${index}.name`} />
+                  <span className="field-hint">isi nama keluarga terkait</span>
+                </label>
+                <label>
+                  Pendidikan Terakhir
+                  <input name={`family_members.${index}.education_level`} />
+                  <span className="field-hint">pendidikan keluarga terkait</span>
+                </label>
+                <label>
+                  Pekerjaan
+                  <input name={`family_members.${index}.occupation`} />
+                  <span className="field-hint">pekerjaan keluarga terkait</span>
+                </label>
+                <label>
+                  Tempat Bekerja
+                  <input name={`family_members.${index}.workplace`} />
+                  <span className="field-hint">tempat bekerja keluarga terkait</span>
+                </label>
+              </div>
+            </fieldset>
+          ))}
+          <div className="form-actions inline-actions">
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => setFamilyMemberCount((count) => Math.min(count + 1, maxFamilyMembers))}
+              disabled={familyMemberCount >= maxFamilyMembers}
+            >
+              Tambah keluarga
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => setFamilyMemberCount((count) => Math.max(count - 1, 1))}
+              disabled={familyMemberCount <= 1}
+            >
+              Hapus terakhir
+            </button>
+          </div>
+        </section>
+
+        <section className="form-section">
+          <div className="form-section-heading">
+            <p className="eyebrow">Social Media</p>
+            <h2>Social Media</h2>
+          </div>
+          {Array.from({ length: socialMediaAccountCount }, (_, index) => (
+            <fieldset className="work-experience" key={index}>
+              <legend>Akun social media {index + 1}</legend>
+              <div className="form-grid two-columns">
+                <label>
+                  Social Media {index === 0 && <em className="required-note">* Isi Minimal Satu Akun</em>}
+                  <select name={`social_media_accounts.${index}.platform`} defaultValue="">
+                    <option value="">-- pilih sosial media--</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="X / Twitter">X / Twitter</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                  <span className="field-hint">pilih sosial media anda</span>
+                </label>
+                <label>
+                  Nickname / ID
+                  <input name={`social_media_accounts.${index}.account_id`} />
+                  <span className="field-hint">isi dengan id atau nama social media anda</span>
+                </label>
+              </div>
+            </fieldset>
+          ))}
+          <div className="form-actions inline-actions">
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => setSocialMediaAccountCount((count) => Math.min(count + 1, maxSocialMediaAccounts))}
+              disabled={socialMediaAccountCount >= maxSocialMediaAccounts}
+            >
+              Tambah social media
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => setSocialMediaAccountCount((count) => Math.max(count - 1, 1))}
+              disabled={socialMediaAccountCount <= 1}
+            >
+              Hapus terakhir
+            </button>
+          </div>
+        </section>
+
+        <section className="form-section">
+          <div className="form-section-heading">
+            <p className="eyebrow">Pendidikan</p>
+            <h2>Pendidikan terahkir kandidat</h2>
+          </div>
+          <div className="form-grid two-columns">
             <label>
               Pendidikan terakhir
               <input name="education_level" placeholder="SMA, SMK, D3, S1, dll." />
@@ -507,10 +706,69 @@ export default function CareerApplicationPage() {
               Jurusan
               <input name="major" />
             </label>
-            <label className="full-span">
-              Riwayat penyakit
-              <textarea name="medical_history" rows={3} placeholder="Isi '-' bila tidak ada." />
+            <label>
+              Tahun Masuk
+              <input name="school_entry_year" type="number" min="1950" max="2100" inputMode="numeric" />
             </label>
+            <label>
+              Tahun Lulus
+              <input name="school_graduation_year" type="number" min="1950" max="2100" inputMode="numeric" />
+            </label>
+            <label>
+              Nilai Rata-Rata / IPK
+              <input name="grade_point_average" placeholder="8.5 / 3.25" />
+            </label>
+            <label className="full-span">
+              Alamat Sekolah / Universitas
+              <textarea name="school_address" rows={3} />
+            </label>
+          </div>
+        </section>
+
+        <section className="form-section">
+          <div className="form-section-heading">
+            <p className="eyebrow">Pengalaman Organisasi</p>
+            <h2>Organisasi dan pelatihan</h2>
+          </div>
+          {Array.from({ length: organizationExperienceCount }, (_, index) => (
+            <fieldset className="work-experience" key={index}>
+              <legend>Pengalaman organisasi {index + 1}</legend>
+              <div className="form-grid two-columns">
+                <label>
+                  Nama Organisasi / Pelatihan
+                  <input name={`organization_experiences.${index}.organization_name`} />
+                  <span className="field-hint">isi jika ada, atau isi tidak ada atau kasih tanda (-)</span>
+                </label>
+                <label>
+                  Jabatan
+                  <input name={`organization_experiences.${index}.position`} />
+                  <span className="field-hint">isi jika ada, atau isi tidak ada atau kasih tanda (-)</span>
+                </label>
+                <label>
+                  Periode
+                  <input name={`organization_experiences.${index}.period`} />
+                  <span className="field-hint">isi jika ada, atau isi tidak ada atau kasih tanda (-)</span>
+                </label>
+              </div>
+            </fieldset>
+          ))}
+          <div className="form-actions inline-actions">
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => setOrganizationExperienceCount((count) => Math.min(count + 1, maxOrganizationExperiences))}
+              disabled={organizationExperienceCount >= maxOrganizationExperiences}
+            >
+              Tambah organisasi
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => setOrganizationExperienceCount((count) => Math.max(count - 1, 1))}
+              disabled={organizationExperienceCount <= 1}
+            >
+              Hapus terakhir
+            </button>
           </div>
         </section>
 

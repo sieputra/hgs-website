@@ -6,6 +6,9 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added a repeatable required family history section to the career application form.
+- Added a repeatable required social media account section to the career application form.
+- Added a repeatable candidate organization/training experience section to the career application form.
 - Added PostgreSQL integration with SQLAlchemy models, database-backed repositories, `.env.dev` database loading, and Alembic migrations for schema and seed data.
 - Added the `/career` candidate application page with EXTL API submission, job/position loading, work experience fields, and a simple math captcha.
 - Added a frontend `/api/:path*` rewrite so browser forms can call the backend same-origin by default.
@@ -18,6 +21,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Moved candidate SIM and medical history fields into the Data Diri section and expanded Pendidikan with entry year, graduation year, school address, and grade/IPK fields.
 - Changed the candidate `Posisi dilamar` field to a searchable picker grouped by division.
 - Routed public Apply CTAs to the candidate application page and expanded the landing career section to full viewport height.
 - Switched backend tests to async ASGI clients and made lightweight route dependencies async to avoid local TestClient thread-bridge hangs.
