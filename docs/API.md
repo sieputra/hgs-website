@@ -287,6 +287,158 @@ five entries; family members are required with at least one and at most six
 entries; organization and work experiences are optional and capped at five
 entries each.
 
+Request body:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `career_job_slug` | string or null | No | Active public job slug. Use `null` for a general application. |
+| `full_name` | string | Yes | Candidate full name, max 150 chars. |
+| `nickname` | string | Yes | Candidate nickname, max 100 chars. |
+| `identity_number` | string | Yes | KTP number, max 32 chars. |
+| `identity_valid_until` | date | Yes | KTP validity date. Use `9999-12-31` when the candidate selects seumur hidup. |
+| `identity_address` | string | Yes | KTP address. |
+| `domicile_address` | string | Yes | Current domicile address. |
+| `driving_license_number` | string | Yes | SIM number, max 32 chars. |
+| `driving_license_class` | string or null | No | SIM class, max 20 chars. |
+| `driving_license_valid_until` | date | Yes | SIM validity date. |
+| `birth_place` | string | Yes | Birth place, max 100 chars. |
+| `birth_date` | date | Yes | Birth date. |
+| `age` | integer | Yes | Candidate age, 15-80. |
+| `marital_status` | string or null | No | Marital status, max 50 chars. |
+| `gender` | string or null | No | Gender, max 30 chars. |
+| `mother_name` | string | Yes | Mother's name, max 150 chars. |
+| `religion` | string or null | No | Religion, max 50 chars. |
+| `phone_number` | string | Yes | Phone or WhatsApp number, max 30 chars. |
+| `medical_history` | string or null | No | Candidate medical history. |
+| `education_level` | string or null | No | Last education level, max 100 chars. |
+| `school_name` | string or null | No | School or university name, max 150 chars. |
+| `major` | string or null | No | Major, max 150 chars. |
+| `school_entry_year` | integer or null | No | Entry year, 1950-2100. |
+| `school_graduation_year` | integer or null | No | Graduation year, 1950-2100. |
+| `school_address` | string or null | No | School or university address. |
+| `grade_point_average` | string or null | No | Grade average or GPA as entered, max 30 chars. |
+| `applied_position` | string | Yes | Position applied for, max 100 chars. |
+| `alternative_applied_position` | string or null | No | Alternative position, max 100 chars. |
+| `vacancy_source` | string | Yes | Vacancy information source, max 100 chars. |
+| `preferred_area` | string or null | No | Preferred placement area, max 100 chars. |
+| `willing_to_be_placed_anywhere` | boolean | Yes | Whether the candidate is willing to be placed according to company needs. |
+| `available_interview_date` | date or null | No | Candidate's available interview date. |
+| `interview_invitation_reason` | string | Yes | Candidate's reason for joining the interview process. |
+| `social_media_accounts` | array | Yes | One to five social media account objects. |
+| `family_members` | array | Yes | One to six family member objects. |
+| `organization_experiences` | array | No | Zero to five organization/training experience objects. |
+| `work_experiences` | array | No | Zero to five work experience objects. |
+
+`social_media_accounts` item:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `platform` | string | Yes | Social media platform, max 50 chars. |
+| `account_id` | string | Yes | Nickname or account ID, max 150 chars. |
+
+`family_members` item:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `relationship` | string | Yes | Family relationship, max 50 chars. |
+| `name` | string | Yes | Family member name, max 150 chars. |
+| `education_level` | string or null | No | Last education level, max 100 chars. |
+| `occupation` | string or null | No | Occupation, max 150 chars. |
+| `workplace` | string or null | No | Workplace, max 150 chars. |
+
+`organization_experiences` item:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `organization_name` | string | Yes | Organization or training name, max 150 chars. |
+| `position` | string or null | No | Role or position, max 100 chars. |
+| `period` | string or null | No | Candidate-entered period, max 100 chars. |
+
+`work_experiences` item:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `company_name` | string | Yes | Company name, max 150 chars. |
+| `position` | string or null | No | Position, max 100 chars. |
+| `employment_duration` | string or null | No | Employment duration, max 100 chars. |
+| `salary` | decimal or null | No | Last salary, must be greater than or equal to zero. |
+| `company_phone_number` | string or null | No | Company phone number, max 30 chars. |
+| `leaving_reason` | string or null | No | Reason for leaving. |
+| `company_comment` | string or null | No | Candidate notes about the company. |
+
+Example request:
+
+```json
+{
+  "career_job_slug": "driver-operasional",
+  "full_name": "Andi Saputra",
+  "nickname": "Andi",
+  "identity_number": "3171000000000001",
+  "identity_valid_until": "9999-12-31",
+  "identity_address": "Jakarta Selatan",
+  "domicile_address": "Jakarta Selatan",
+  "driving_license_number": "SIMB10001",
+  "driving_license_class": "B1",
+  "driving_license_valid_until": "2030-12-31",
+  "birth_place": "Jakarta",
+  "birth_date": "1994-05-10",
+  "age": 31,
+  "marital_status": "Menikah",
+  "gender": "Laki-laki",
+  "mother_name": "Siti",
+  "religion": "Islam",
+  "phone_number": "08123456789",
+  "medical_history": null,
+  "education_level": "SMA",
+  "school_name": "SMA Contoh",
+  "major": "IPA",
+  "school_entry_year": 2009,
+  "school_graduation_year": 2012,
+  "school_address": "Jakarta Selatan",
+  "grade_point_average": "8.5",
+  "applied_position": "Driver",
+  "alternative_applied_position": "Helper",
+  "vacancy_source": "Website HGS",
+  "preferred_area": "Jakarta",
+  "willing_to_be_placed_anywhere": true,
+  "available_interview_date": "2026-06-01",
+  "interview_invitation_reason": "Berpengalaman sebagai driver distribusi.",
+  "social_media_accounts": [
+    {
+      "platform": "Instagram",
+      "account_id": "andi.saputra"
+    }
+  ],
+  "family_members": [
+    {
+      "relationship": "Ibu",
+      "name": "Siti",
+      "education_level": "SMA",
+      "occupation": "Wiraswasta",
+      "workplace": "Toko Keluarga"
+    }
+  ],
+  "organization_experiences": [
+    {
+      "organization_name": "Pelatihan Safety Driving",
+      "position": "Peserta",
+      "period": "2024"
+    }
+  ],
+  "work_experiences": [
+    {
+      "company_name": "PT Lama",
+      "position": "Driver",
+      "employment_duration": "2 tahun",
+      "salary": "4500000",
+      "company_phone_number": "021123456",
+      "leaving_reason": "Kontrak selesai",
+      "company_comment": "Lingkungan kerja baik"
+    }
+  ]
+}
+```
+
 Success response data:
 
 | Field | Type | Description |

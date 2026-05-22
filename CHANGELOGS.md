@@ -25,6 +25,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Expanded the career application API documentation with the full request schema, nested item schemas, and an example payload.
+- Clarified agent workflow instructions to keep `docs/API.md` updated whenever API behavior changes.
 - Changed mobile career form repeatable-section action buttons to center-align with a capped width.
 - Changed the `/career` hero chevron animation so the full circular control bounces.
 - Changed the `/career` hero to use `hero1.webp` as a 60% opacity background image.

@@ -15,6 +15,7 @@ This repository contains the HGS website project. Treat the codebase as the sour
 - Do not overwrite unrelated local changes.
 - Update `AGENTS.md` when durable project knowledge changes.
 - Update the matching file in `docs/` when a change affects documented project areas.
+- Update `docs/API.md` in the same change whenever API routes, payloads, response schemas, validation behavior, or API error behavior changes.
 - Update `CHANGELOGS.md` under `Unreleased` for meaningful project changes.
 
 ## Git Workflow
