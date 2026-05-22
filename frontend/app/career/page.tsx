@@ -590,9 +590,34 @@ export default function CareerApplicationPage() {
       </header>
 
       <section className="application-hero">
-        <p className="eyebrow">Career Application</p>
-        <h1>Candidate Submission</h1>
-        <p>Lengkapi data kandidat dengan benar. Proses rekrutmen HGS tidak dipungut biaya.</p>
+        <div className="application-hero-layout">
+          <ol className="application-steps" aria-label="Recruitment steps">
+            <li>
+              <span>1</span>
+              <p>Candidate Submission</p>
+            </li>
+            <li>
+              <span>2</span>
+              <p>HR Interview</p>
+            </li>
+            <li>
+              <span>3</span>
+              <p>User Interview</p>
+            </li>
+            <li>
+              <span>4</span>
+              <p>Announcement</p>
+            </li>
+          </ol>
+          <div className="application-hero-copy">
+            <p className="eyebrow">Career Application</p>
+            <h1>Candidate Submission</h1>
+            <p>Lengkapi data kandidat dengan benar. Proses rekrutmen HGS tidak dipungut biaya.</p>
+          </div>
+        </div>
+        <a className="hero-next-link" href="#application-details" aria-label="Go to application form">
+          <span aria-hidden="true" />
+        </a>
       </section>
 
       <form className="application-form" ref={formRef} onSubmit={handleSubmit}>
@@ -602,7 +627,7 @@ export default function CareerApplicationPage() {
           </div>
         )}
 
-        <section className="form-section">
+        <section className="form-section" id="application-details">
           <div className="form-section-heading">
             <p className="eyebrow">Lowongan</p>
             <h2>Posisi yang dilamar</h2>
@@ -659,11 +684,13 @@ export default function CareerApplicationPage() {
                 value={preferredArea}
               />
             </label>
+            <label className="checkbox-field">
+              <span>
+                <input name="willing_to_be_placed_anywhere" type="checkbox" />
+                Bersedia ditempatkan di area sesuai kebutuhan perusahaan
+              </span>
+            </label>
           </div>
-          <label className="checkbox-field">
-            <input name="willing_to_be_placed_anywhere" type="checkbox" />
-            <span>Bersedia ditempatkan di area sesuai kebutuhan perusahaan</span>
-          </label>
         </section>
 
         <section className="form-section">
@@ -852,14 +879,14 @@ export default function CareerApplicationPage() {
               <legend>Akun social media {index + 1}</legend>
               <div className="form-grid two-columns">
                 <label>
-                  Social Media {index === 0 && <em className="required-note">* Isi Minimal Satu Akun</em>}
+                  Social Media 
                   <SearchableSelect
                     name={`social_media_accounts.${index}.platform`}
                     options={socialMediaOptions}
                     placeholder="-- pilih sosial media--"
                     resetKey={formResetKey}
                   />
-                  <span className="field-hint">pilih sosial media anda</span>
+                  <span className="field-hint">{index === 0 && <em className="required-note">* Isi Minimal Satu Akun</em>}</span>
                 </label>
                 <label>
                   Nickname / ID

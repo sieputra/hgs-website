@@ -6,6 +6,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added a recruitment process stepper to the `/career` hero.
+- Added a bouncing chevron control to the `/career` hero that scrolls candidates to the first application section.
 - Added an optional alternative applied-position picker to the career application form.
 - Added a repeatable required family history section to the career application form.
 - Added a repeatable required social media account section to the career application form.
@@ -22,6 +24,10 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed mobile career form repeatable-section action buttons to center-align with a capped width.
+- Changed the `/career` hero chevron animation so the full circular control bounces.
+- Changed the `/career` hero to use `hero1.webp` as a 60% opacity background image.
+- Changed the `/career` hero section to fill the available viewport height.
 - Changed `Sumber informasi lowongan` to a searchable source list with `Website HGS` as the default.
 - Changed select-style career application fields to searchable picker UI and restricted preferred placement areas to Jakarta, Bandung, Bogor, Subang, and Sukabumi.
 - Moved candidate SIM and medical history fields into the Data Diri section and expanded Pendidikan with entry year, graduation year, school address, and grade/IPK fields.
@@ -50,6 +56,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Fixed
 
+- Fixed vertical alignment for career form checkbox rows beside standard fields.
 - Fixed candidate form hydration mismatch caused by rendering random captcha values before client mount.
 
 ## Release Template

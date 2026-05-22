@@ -626,7 +626,93 @@ h2 {
 .application-hero {
   background: var(--ink);
   color: white;
-  padding: clamp(54px, 8vw, 104px) clamp(20px, 8vw, 150px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100dvh - var(--header-height));
+  padding: clamp(64px, 8vw, 112px) clamp(20px, 8vw, 150px) clamp(108px, 10vw, 140px);
+  position: relative;
+}
+
+.application-hero::before {
+  background-image: linear-gradient(rgba(29, 19, 26, 0.42), rgba(29, 19, 26, 0.62)), url("/images/hero/hero1.webp");
+  background-position: center;
+  background-size: cover;
+  content: "";
+  inset: 0;
+  opacity: 0.6;
+  position: absolute;
+}
+
+.application-hero-layout {
+  align-items: center;
+  display: grid;
+  gap: clamp(34px, 5vw, 82px);
+  grid-template-columns: minmax(220px, 280px) minmax(0, 780px);
+  max-width: 1180px;
+  position: relative;
+  z-index: 1;
+}
+
+.application-steps {
+  counter-reset: application-step;
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.application-steps li {
+  align-items: center;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 86px;
+  position: relative;
+}
+
+.application-steps li:not(:last-child)::after {
+  background: rgba(255, 255, 255, 0.22);
+  bottom: -16px;
+  content: "";
+  left: 20px;
+  position: absolute;
+  top: 58px;
+  width: 2px;
+}
+
+.application-steps span {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: white;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 900;
+  height: 42px;
+  justify-content: center;
+  position: relative;
+  width: 42px;
+  z-index: 1;
+}
+
+.application-steps li:first-child span {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.application-steps p {
+  color: #f3edf1;
+  font-size: clamp(0.95rem, 1.1vw, 1.08rem);
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.application-hero-copy {
+  min-width: 0;
 }
 
 .application-hero h1 {
@@ -641,6 +727,55 @@ h2 {
   line-height: 1.45;
   margin: 22px 0 0;
   max-width: 780px;
+}
+
+.hero-next-link {
+  align-items: center;
+  animation: chevron-circle-bounce 1.5s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  bottom: clamp(28px, 5vw, 54px);
+  display: inline-flex;
+  height: 56px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  transition: background 160ms ease, border-color 160ms ease;
+  width: 56px;
+  z-index: 1;
+}
+
+.hero-next-link:hover,
+.hero-next-link:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.hero-next-link span {
+  border-bottom: 3px solid white;
+  border-right: 3px solid white;
+  display: block;
+  height: 18px;
+  transform: rotate(45deg);
+  width: 18px;
+}
+
+@keyframes chevron-circle-bounce {
+  0%,
+  100% {
+    transform: translate(-50%, -4px);
+  }
+
+  50% {
+    transform: translate(-50%, 6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-next-link {
+    animation: none;
+  }
 }
 
 .application-form {
@@ -823,16 +958,25 @@ h2 {
 }
 
 .checkbox-field {
-  align-items: flex-start;
+  align-items: center;
   display: flex;
   gap: 12px;
-  margin-top: 18px;
+  min-height: 48px;
+  padding-top: calc(0.92rem * 1.35 + 8px);
+}
+
+.checkbox-field span {
+  align-items: center;
+  display: flex;
+  gap: 8px;
 }
 
 .checkbox-field input {
+  flex: 0 0 20px;
   height: 20px;
-  margin-top: 2px;
+  margin: 0;
   min-height: 20px;
+  padding: 0;
   width: 20px;
 }
 
@@ -1307,7 +1451,39 @@ h2 {
   }
 
   .application-hero {
-    padding: 44px 20px;
+    padding: 56px 20px 104px;
+  }
+
+  .application-hero-layout {
+    align-items: start;
+    gap: 34px;
+    grid-template-columns: 1fr;
+  }
+
+  .application-steps {
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .application-steps li {
+    gap: 10px;
+    grid-template-columns: 34px minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .application-steps li:not(:last-child)::after {
+    display: none;
+  }
+
+  .application-steps span {
+    font-size: 0.78rem;
+    height: 34px;
+    width: 34px;
+  }
+
+  .application-steps p {
+    font-size: 0.86rem;
   }
 
   .application-hero h1 {
@@ -1322,6 +1498,10 @@ h2 {
     padding: 24px 16px 56px;
   }
 
+  .checkbox-field {
+    padding-top: 0;
+  }
+
   .form-section,
   .work-experience {
     padding: 20px;
@@ -1332,8 +1512,19 @@ h2 {
     display: grid;
   }
 
+  .inline-actions {
+    justify-content: center;
+    justify-items: center;
+  }
+
   .submit-button,
   .secondary-button {
     width: 100%;
+  }
+
+  .inline-actions .secondary-button {
+    justify-self: center;
+    max-width: none;
+    width: min(100%, 240px);
   }
 }

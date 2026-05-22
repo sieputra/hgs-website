@@ -53,6 +53,10 @@ Recruitment should live on separate routes because it tends to grow independentl
 Current `/career` behavior:
 
 - Opens from the public Apply CTAs.
+- Displays a full-height `hero1.webp` image hero with a bouncing chevron link that scrolls to the first application section.
+- Shows a recruitment process stepper in the hero: Candidate Submission, HR Interview, User Interview, and Announcement.
+- Centers repeatable-section add/remove action buttons on mobile.
+- Aligns checkbox rows with neighboring form controls on desktop while keeping stacked mobile fields compact.
 - Loads public jobs and divisions from the EXTL API when available.
 - Submits candidate payloads to `POST /api/extl/v1/career-applications`.
 - Uses a simple client-side math captcha before allowing submission.
