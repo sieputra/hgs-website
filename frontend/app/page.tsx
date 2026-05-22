@@ -139,6 +139,22 @@ type GalleryResponse = {
   data?: GalleryImage[];
 };
 
+type CareerJob = {
+  slug: string;
+  title: string;
+  division_name: string;
+  position_name: string;
+  location: string;
+  employment_type: string;
+  summary: string;
+  sort_order: number;
+};
+
+type JobsResponse = {
+  success: boolean;
+  data?: CareerJob[];
+};
+
 const fallbackGalleryImages: GalleryImage[] = [
   {
     id: "8a93a98c-f3bb-4928-87ee-59dc5f5d7401",
@@ -190,6 +206,39 @@ const fallbackGalleryImages: GalleryImage[] = [
   },
 ];
 
+const fallbackCareerJobs: CareerJob[] = [
+  {
+    slug: "driver-operasional",
+    title: "Driver Operasional",
+    division_name: "OPERATIONAL TRANSPORT",
+    position_name: "Driver",
+    location: "Jakarta, Tangerang, Jawa Barat",
+    employment_type: "Full-time",
+    summary: "Mendukung operasional distribusi dan pengiriman pelanggan HGS.",
+    sort_order: 1,
+  },
+  {
+    slug: "helper-gudang",
+    title: "Helper Gudang",
+    division_name: "DIVISI WAREHOUSE",
+    position_name: "Staff Gudang",
+    location: "Jabodetabek dan Jawa Barat",
+    employment_type: "Full-time",
+    summary: "Membantu aktivitas inbound, outbound, dan kerapihan area gudang.",
+    sort_order: 2,
+  },
+  {
+    slug: "staff-hrd",
+    title: "Staff HRD",
+    division_name: "DIVISI HR GA",
+    position_name: "Staff HRD",
+    location: "Jakarta Selatan",
+    employment_type: "Full-time",
+    summary: "Mendukung administrasi HR, rekrutmen, dan kebutuhan karyawan.",
+    sort_order: 3,
+  },
+];
+
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
@@ -197,6 +246,8 @@ export default function Home() {
   const [isServicesLoading, setIsServicesLoading] = useState(true);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(fallbackGalleryImages);
   const [isGalleryLoading, setIsGalleryLoading] = useState(true);
+  const [careerJobs, setCareerJobs] = useState<CareerJob[]>(fallbackCareerJobs);
+  const [isCareerJobsLoading, setIsCareerJobsLoading] = useState(true);
   const galleryTrackRef = useRef<HTMLDivElement | null>(null);
   const heroSliderRef = useRef<HTMLElement | null>(null);
   const heroWheelLockRef = useRef(false);
@@ -288,6 +339,45 @@ export default function Home() {
     }
 
     loadGalleryImages();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadCareerJobs() {
+      try {
+        setIsCareerJobsLoading(true);
+        const response = await fetch("/api/extl/v1/jobs", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load career jobs.");
+        }
+
+        const payload = (await response.json()) as JobsResponse;
+        if (!payload.success || !Array.isArray(payload.data)) {
+          throw new Error("Invalid jobs response.");
+        }
+
+        const orderedJobs = payload.data.slice().sort((a, b) => a.sort_order - b.sort_order);
+        setCareerJobs(orderedJobs.length > 0 ? orderedJobs : fallbackCareerJobs);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setCareerJobs(fallbackCareerJobs);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsCareerJobsLoading(false);
+        }
+      }
+    }
+
+    loadCareerJobs();
 
     return () => {
       controller.abort();
@@ -550,12 +640,22 @@ export default function Home() {
       </section>
 
       <section className="career-cta" id="careers">
-        <div>
+        <div className="career-copy">
           <p className="eyebrow">Careers</p>
           <h2>Drive your career with HGS.</h2>
           <p>Driver, helper, warehouse, fleet, HR, finance, IT, and sales opportunities are prepared to grow into dedicated recruitment routes.</p>
+          <a className="cta red" href="/career">Apply</a>
         </div>
-        <a className="cta red" href="/career">Apply</a>
+        <div className="career-job-list" aria-busy={isCareerJobsLoading} aria-label="Available jobs">
+          {careerJobs.map((job) => (
+            <a className="career-job-card" href={`/carrer?job=${encodeURIComponent(job.slug)}#application-details`} key={job.slug}>
+              <span>{job.employment_type}</span>
+              <h3>{job.title}</h3>
+              <p>{job.summary}</p>
+              <small>{job.location}</small>
+            </a>
+          ))}
+        </div>
       </section>
 
       <section className="contact-section" id="contact" aria-label="HGS contact details">

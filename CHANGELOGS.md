@@ -6,6 +6,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added public Careers job cards that link directly to the application details section with the selected job prefilled.
+- Added `/carrer` as a compatibility route for recruitment links that use the alternate spelling.
 - Added automatic homepage hero slide rotation with hover/focus pause and reduced-motion support.
 - Added right-side current slide indicators and wheel up/down slide navigation for the homepage hero.
 - Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
@@ -33,6 +35,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed the homepage Careers section to use an exact viewport-height layout with the job cards contained inside the section.
 - Changed the homepage Services section to load content from the EXTL services API with local fallback content.
 - Changed the homepage hero from horizontal scroll-snap movement to stacked fade slide changes.
 - Changed public Gallery navigation to scroll to the homepage gallery section.

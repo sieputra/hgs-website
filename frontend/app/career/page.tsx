@@ -70,6 +70,30 @@ const vacancySourceOptions = [
   label: source,
 }));
 
+const fallbackCareerJobs: CareerJob[] = [
+  {
+    slug: "driver-operasional",
+    title: "Driver Operasional",
+    position_name: "Driver",
+    location: "Jakarta, Tangerang, Jawa Barat",
+    employment_type: "Full-time",
+  },
+  {
+    slug: "helper-gudang",
+    title: "Helper Gudang",
+    position_name: "Staff Gudang",
+    location: "Jabodetabek dan Jawa Barat",
+    employment_type: "Full-time",
+  },
+  {
+    slug: "staff-hrd",
+    title: "Staff HRD",
+    position_name: "Staff HRD",
+    location: "Jakarta Selatan",
+    employment_type: "Full-time",
+  },
+];
+
 const genderOptions = [
   { value: "Laki-laki", label: "Laki-laki" },
   { value: "Perempuan", label: "Perempuan" },
@@ -354,11 +378,12 @@ export default function CareerApplicationPage() {
         ])) as [ApiEnvelope<CareerJob[]>, ApiEnvelope<Division[]>];
 
         if (isMounted) {
-          setJobs(jobsPayload.data);
+          setJobs(jobsPayload.data.length > 0 ? jobsPayload.data : fallbackCareerJobs);
           setDivisions(divisionsPayload.data);
         }
       } catch {
         if (isMounted) {
+          setJobs(fallbackCareerJobs);
           setStatus({
             type: "error",
             message: "Daftar lowongan belum dapat dimuat. Form tetap bisa dikirim dengan posisi yang Anda isi.",

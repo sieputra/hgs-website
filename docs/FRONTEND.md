@@ -24,6 +24,7 @@
 - The Gallery homepage section fills the available viewport height beneath the sticky header, vertically centers the horizontal image mosaic, uses arrow controls, and hides the horizontal scrollbar.
 - The Social Media landing section fills the available viewport height beneath the sticky header.
 - The Contact landing section fills the available viewport height beneath the sticky header with office contact details and an embedded map in a two-column desktop layout.
+- The homepage Careers section fills the available viewport height, loads active public jobs from `GET /api/extl/v1/jobs`, falls back to bundled starter jobs, shows them as cards, and links each card to the recruitment form with the selected job prefilled.
 - Local brand and hero visuals live in `frontend/public/images/`.
 - The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.
@@ -56,6 +57,7 @@ Recruitment should live on separate routes because it tends to grow independentl
 
 ```text
 /career
+/carrer
 /career/jobs
 /career/jobs/[slug]
 ```
@@ -63,11 +65,13 @@ Recruitment should live on separate routes because it tends to grow independentl
 Current `/career` behavior:
 
 - Opens from the public Apply CTAs.
+- Can also be reached through `/carrer` for compatibility with existing recruitment links.
 - Displays a full-height `hero1.webp` image hero with a bouncing chevron link that scrolls to the first application section.
 - Shows a recruitment process stepper in the hero: Candidate Submission, HR Interview, User Interview, and Announcement.
 - Centers repeatable-section add/remove action buttons on mobile.
 - Aligns checkbox rows with neighboring form controls on desktop while keeping stacked mobile fields compact.
-- Loads public jobs and divisions from the EXTL API when available.
+- Loads public jobs and divisions from the EXTL API when available, with bundled starter jobs available for prefilled links if the jobs API cannot be reached.
+- Prefills `Lowongan tersedia` and `Posisi dilamar` when opened with a `job` query parameter.
 - Submits candidate payloads to `POST /api/extl/v1/career-applications`.
 - Uses a simple client-side math captcha before allowing submission.
 - Shows `Posisi dilamar` as a searchable picker grouped by division.
