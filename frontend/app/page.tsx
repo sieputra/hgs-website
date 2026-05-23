@@ -37,7 +37,7 @@ const slides = [
     imageWidth: 1600,
     media_align: "left",
     kicker: "PT Handal Guna Sarana",
-    title: ["To Drive", "Driver"],
+    title: ["To Drive", "a Driver"],
     script: "you need",
     scriptColor: "red",
     body: "Drivers are the people who keep goods moving. Looking for a job? Come join us.",
@@ -140,13 +140,18 @@ type GalleryResponse = {
 };
 
 type CareerJob = {
+  code?: string;
   slug: string;
   title: string;
+  division_code?: string;
   division_name: string;
+  position_code?: string;
   position_name: string;
   location: string;
   employment_type: string;
   summary: string;
+  responsibilities: string[];
+  requirements: string[];
   sort_order: number;
 };
 
@@ -215,6 +220,16 @@ const fallbackCareerJobs: CareerJob[] = [
     location: "Jakarta, Tangerang, Jawa Barat",
     employment_type: "Full-time",
     summary: "Mendukung operasional distribusi dan pengiriman pelanggan HGS.",
+    responsibilities: [
+      "Melakukan pengantaran sesuai rute dan jadwal operasional.",
+      "Menjaga kelayakan kendaraan sebelum dan sesudah perjalanan.",
+      "Berkoordinasi dengan dispatcher dan tim lapangan.",
+    ],
+    requirements: [
+      "Memiliki SIM aktif sesuai kebutuhan unit.",
+      "Memahami area Jakarta, Tangerang, atau Jawa Barat.",
+      "Disiplin, jujur, dan siap mengikuti arahan operasional.",
+    ],
     sort_order: 1,
   },
   {
@@ -225,6 +240,16 @@ const fallbackCareerJobs: CareerJob[] = [
     location: "Jabodetabek dan Jawa Barat",
     employment_type: "Full-time",
     summary: "Membantu aktivitas inbound, outbound, dan kerapihan area gudang.",
+    responsibilities: [
+      "Membantu proses bongkar muat barang.",
+      "Menata barang sesuai instruksi leader shift.",
+      "Menjaga kebersihan dan keselamatan area kerja.",
+    ],
+    requirements: [
+      "Teliti dan mampu bekerja dalam tim.",
+      "Bersedia bekerja mengikuti jadwal operasional gudang.",
+      "Pengalaman gudang menjadi nilai tambah.",
+    ],
     sort_order: 2,
   },
   {
@@ -235,6 +260,16 @@ const fallbackCareerJobs: CareerJob[] = [
     location: "Jakarta Selatan",
     employment_type: "Full-time",
     summary: "Mendukung administrasi HR, rekrutmen, dan kebutuhan karyawan.",
+    responsibilities: [
+      "Mengelola data kandidat dan proses administrasi rekrutmen.",
+      "Mendukung komunikasi dengan kandidat dan karyawan.",
+      "Membantu pelaporan HR sesuai kebutuhan operasional.",
+    ],
+    requirements: [
+      "Memahami administrasi HR dasar.",
+      "Komunikatif dan rapi dalam pengelolaan data.",
+      "Mampu menggunakan aplikasi perkantoran.",
+    ],
     sort_order: 3,
   },
 ];
@@ -248,6 +283,7 @@ export default function Home() {
   const [isGalleryLoading, setIsGalleryLoading] = useState(true);
   const [careerJobs, setCareerJobs] = useState<CareerJob[]>(fallbackCareerJobs);
   const [isCareerJobsLoading, setIsCareerJobsLoading] = useState(true);
+  const [selectedCareerJob, setSelectedCareerJob] = useState<CareerJob | null>(null);
   const galleryTrackRef = useRef<HTMLDivElement | null>(null);
   const careerJobListRef = useRef<HTMLDivElement | null>(null);
   const heroSliderRef = useRef<HTMLElement | null>(null);
@@ -306,6 +342,23 @@ export default function Home() {
       controller.abort();
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedCareerJob) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedCareerJob(null);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [selectedCareerJob]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -677,12 +730,28 @@ export default function Home() {
             ref={careerJobListRef}
           >
             {careerJobs.map((job) => (
-              <a className="career-job-card" href={`/career?job=${encodeURIComponent(job.slug)}#application-details`} key={job.slug}>
+              <article className="career-job-card" key={job.slug}>
                 <span>{job.employment_type}</span>
                 <h3>{job.title}</h3>
                 <p>{job.summary}</p>
                 <small>{job.location}</small>
-              </a>
+                <div className="career-job-card-actions">
+                  <a className="career-job-apply-link" href={`/career?job=${encodeURIComponent(job.slug)}#application-details`}>
+                    Apply
+                  </a>
+                  <button
+                    aria-label={`View ${job.title} job details`}
+                    className="career-job-detail-button"
+                    onClick={() => setSelectedCareerJob(job)}
+                    type="button"
+                  >
+                    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </article>
             ))}
           </div>
           <button
@@ -697,6 +766,65 @@ export default function Home() {
           </button>
         </div>
       </section>
+
+      {selectedCareerJob ? (
+        <div
+          aria-labelledby="career-job-detail-title"
+          aria-modal="true"
+          className="career-job-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedCareerJob(null);
+            }
+          }}
+          role="dialog"
+        >
+          <div className="career-job-modal">
+            <div className="career-job-modal-head">
+              <div>
+                <span>{selectedCareerJob.employment_type}</span>
+                <h2 id="career-job-detail-title">{selectedCareerJob.title}</h2>
+              </div>
+              <button aria-label="Close job details" onClick={() => setSelectedCareerJob(null)} type="button">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="career-job-modal-meta">
+              <span>{selectedCareerJob.division_name}</span>
+              <span>{selectedCareerJob.position_name}</span>
+              <span>{selectedCareerJob.location}</span>
+            </div>
+
+            <p className="career-job-modal-summary">{selectedCareerJob.summary}</p>
+
+            <div className="career-job-modal-grid">
+              <section>
+                <h3>Responsibilities</h3>
+                <ul>
+                  {selectedCareerJob.responsibilities.map((responsibility) => (
+                    <li key={responsibility}>{responsibility}</li>
+                  ))}
+                </ul>
+              </section>
+              <section>
+                <h3>Requirements</h3>
+                <ul>
+                  {selectedCareerJob.requirements.map((requirement) => (
+                    <li key={requirement}>{requirement}</li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+
+            <a className="cta red" href={`/career?job=${encodeURIComponent(selectedCareerJob.slug)}#application-details`}>
+              Apply for this job
+            </a>
+          </div>
+        </div>
+      ) : null}
 
       <section className="contact-section" id="contact" aria-label="HGS contact details">
         <div className="contact-details">

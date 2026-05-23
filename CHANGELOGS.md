@@ -16,6 +16,7 @@ All notable changes and release notes for this project should be documented in t
 - Added `admin_roles` and `admin_users` database tables with built-in roles for super admin, admin, content admin, and recruitment admin.
 - Added a protected `python -m app.cli.create_admin` CLI for creating or updating admin users by role.
 - Added public Careers job cards that link directly to the application details section with the selected job prefilled.
+- Added eye-icon detail buttons on homepage Careers job cards that open a popup with job responsibilities, requirements, and an application link.
 - Added automatic homepage hero slide rotation with hover/focus pause and reduced-motion support.
 - Added right-side current slide indicators and wheel up/down slide navigation for the homepage hero.
 - Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
@@ -27,6 +28,7 @@ All notable changes and release notes for this project should be documented in t
 - Added a standalone `/faq-kandidat` page for candidate FAQs.
 - Added a dedicated landing page contact section with head office details.
 - Added backend validation and persistence for the expanded `/career` submission form fields, including family, social media, organization/training, and education details.
+- Added required self-photo and PDF CV uploads to the `/career` form, with backend validation and storage under `uploads/career-applications/`.
 - Added a recruitment process stepper to the `/career` hero.
 - Added a bouncing chevron control to the `/career` hero that scrolls candidates to the first application section.
 - Added an optional alternative applied-position picker to the career application form.

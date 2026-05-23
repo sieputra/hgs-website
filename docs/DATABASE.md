@@ -507,8 +507,8 @@ Store candidate submissions in `career_applications`. Use a separate
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `photo_file_id` | UUID | No | Links to `media_assets`; accepted formats: JPG or PNG, max 1 MB. |
-| `resume_file_id` | UUID | No | Links to `media_assets`; accepted format: PDF, max 1 MB. |
+| `self_photo_url` | VARCHAR(255) | No | Uploaded candidate self-photo URL under `/uploads/career-applications/`; accepted formats: JPG, PNG, or WebP, max 2 MB. |
+| `cv_file_url` | VARCHAR(255) | No | Uploaded candidate CV URL under `/uploads/career-applications/`; accepted format: PDF, max 5 MB. |
 
 #### Audit Fields
 

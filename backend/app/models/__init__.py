@@ -277,6 +277,8 @@ class CareerApplicationModel(TimestampMixin, Base):
     )
     available_interview_date: Mapped[date | None] = mapped_column(Date)
     interview_invitation_reason: Mapped[str] = mapped_column(Text, nullable=False)
+    self_photo_url: Mapped[str | None] = mapped_column(String(255))
+    cv_file_url: Mapped[str | None] = mapped_column(String(255))
     status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,

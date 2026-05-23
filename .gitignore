@@ -42,7 +42,10 @@ backend/.mypy_cache/
 backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
-backend/uploads/
+backend/uploads/*
+!backend/uploads/.gitkeep
+!backend/uploads/career-applications/
+!backend/uploads/career-applications/.gitkeep
 backend/media/
 backend/staticfiles/
 

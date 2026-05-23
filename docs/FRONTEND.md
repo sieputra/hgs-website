@@ -26,7 +26,7 @@
 - The Gallery homepage section fills the available viewport height beneath the sticky header, vertically centers the horizontal image mosaic, uses arrow controls, and hides the horizontal scrollbar.
 - The Social Media landing section fills the available viewport height beneath the sticky header.
 - The Contact landing section fills the available viewport height beneath the sticky header with office contact details and an embedded map in a two-column desktop layout.
-- The homepage Careers section fills the available viewport height, loads active public jobs from `GET /api/extl/v1/jobs`, falls back to bundled starter jobs, shows them as cards, and links each card to the recruitment form with the selected job prefilled.
+- The homepage Careers section fills the available viewport height, loads active public jobs from `GET /api/extl/v1/jobs`, falls back to bundled starter jobs, shows them as cards with Apply links, and includes an eye-icon detail button that opens a popup with responsibilities, requirements, and a selected-job application link.
 - Local brand and hero visuals live in `frontend/public/images/`.
 - The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.
@@ -120,7 +120,7 @@ Current `/career` behavior:
 - Aligns checkbox rows with neighboring form controls on desktop while keeping stacked mobile fields compact.
 - Loads public jobs and divisions from the EXTL API when available, with bundled starter jobs available for prefilled links if the jobs API cannot be reached.
 - Prefills `Lowongan tersedia` and `Posisi dilamar` when opened with a `job` query parameter.
-- Submits candidate payloads to `POST /api/extl/v1/career-applications`.
+- Submits candidate payloads to `POST /api/extl/v1/career-applications` as multipart form data with required self-photo and PDF CV uploads.
 - Uses a simple client-side math captcha before allowing submission.
 - Shows `Posisi dilamar` as a searchable picker grouped by division.
 - Supports an optional `Alternatif Posisi dilamar` picker and limits preferred placement area choices to Jakarta, Bandung, Bogor, Subang, and Sukabumi.

@@ -41,6 +41,8 @@ const maxWorkExperiences = 5;
 const maxOrganizationExperiences = 5;
 const maxSocialMediaAccounts = 5;
 const maxFamilyMembers = 6;
+const maxSelfPhotoBytes = 2 * 1024 * 1024;
+const maxCvBytes = 5 * 1024 * 1024;
 
 const identityValidOptions = [
   { value: "9999-12-31", label: "Seumur hidup" },
@@ -143,6 +145,11 @@ function readString(formData: FormData, name: string) {
 function readOptionalString(formData: FormData, name: string) {
   const value = readString(formData, name);
   return value.length > 0 ? value : null;
+}
+
+function readFile(formData: FormData, name: string) {
+  const file = formData.get(name);
+  return file instanceof File && file.size > 0 ? file : null;
 }
 
 function SearchableSelect({
@@ -555,15 +562,50 @@ export default function CareerApplicationPage() {
       work_experiences: workExperiences,
     };
 
+    const selfPhoto = readFile(formData, "self_photo");
+    const cvFile = readFile(formData, "cv_file");
+
+    if (!selfPhoto) {
+      setStatus({ type: "error", message: "Upload foto diri wajib diisi." });
+      return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(selfPhoto.type)) {
+      setStatus({ type: "error", message: "Foto diri harus berformat JPG, PNG, atau WebP." });
+      return;
+    }
+
+    if (selfPhoto.size > maxSelfPhotoBytes) {
+      setStatus({ type: "error", message: "Ukuran foto diri maksimal 2 MB." });
+      return;
+    }
+
+    if (!cvFile) {
+      setStatus({ type: "error", message: "Upload CV PDF wajib diisi." });
+      return;
+    }
+
+    if (cvFile.type !== "application/pdf") {
+      setStatus({ type: "error", message: "CV harus berformat PDF." });
+      return;
+    }
+
+    if (cvFile.size > maxCvBytes) {
+      setStatus({ type: "error", message: "Ukuran CV maksimal 5 MB." });
+      return;
+    }
+
+    const submissionData = new FormData();
+    submissionData.append("payload", JSON.stringify(payload));
+    submissionData.append("self_photo", selfPhoto);
+    submissionData.append("cv_file", cvFile);
+
     setIsSubmitting(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/extl/v1/career-applications`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        body: submissionData,
       });
       const responsePayload = await response.json().catch(() => null);
 
@@ -666,7 +708,7 @@ export default function CareerApplicationPage() {
                   { value: "", label: "Lamaran umum" },
                   ...jobs.map((job) => ({
                     value: job.slug,
-                    label: `${job.title} - ${job.location}`,
+                    label: `${job.title}`,
                   })),
                 ]}
                 placeholder="Cari lowongan..."
@@ -1079,6 +1121,25 @@ export default function CareerApplicationPage() {
             >
               Hapus terakhir
             </button>
+          </div>
+        </section>
+
+        <section className="form-section">
+          <div className="form-section-heading">
+            <p className="eyebrow">Dokumen</p>
+            <h2>Upload kandidat</h2>
+          </div>
+          <div className="form-grid two-columns">
+            <label>
+              Foto diri
+              <input accept="image/jpeg,image/png,image/webp" name="self_photo" required type="file" />
+              <span className="field-hint">Format JPG, PNG, atau WebP. Maksimal 2 MB.</span>
+            </label>
+            <label>
+              CV PDF
+              <input accept="application/pdf" name="cv_file" required type="file" />
+              <span className="field-hint">Upload CV dalam format PDF. Maksimal 5 MB.</span>
+            </label>
           </div>
         </section>
 

@@ -201,6 +201,8 @@ class CareerApplicationCreate(BaseModel):
     willing_to_be_placed_anywhere: bool
     available_interview_date: date | None = None
     interview_invitation_reason: str = Field(min_length=1)
+    self_photo_url: str | None = Field(default=None, max_length=255)
+    cv_file_url: str | None = Field(default=None, max_length=255)
     social_media_accounts: list[CareerApplicationSocialMediaAccountCreate] = Field(
         min_length=1,
         max_length=5,

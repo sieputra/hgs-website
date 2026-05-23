@@ -51,8 +51,9 @@ without a database. Route handlers call a service layer, and the service layer
 calls a repository layer so the public API contract stays stable.
 
 Career application submissions persist the `/career` form's flat candidate
-fields on `career_applications`, and use child tables for social-media accounts,
-family members, organization/training experience, and work history.
+fields on `career_applications`, store uploaded self-photo and PDF CV paths
+under `/uploads/career-applications/`, and use child tables for social-media
+accounts, family members, organization/training experience, and work history.
 
 Database setup:
 

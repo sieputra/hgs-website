@@ -298,13 +298,16 @@ POST /api/extl/v1/career-applications
 ```
 
 Accepts external candidate submissions using the candidate fields defined in
-`docs/DATABASE.md`. `career_job_slug` is optional; when provided, it must match
-an active public job slug. The `/career` form submits family history,
-social-media accounts, organization/training experience, and work experience as
-nested arrays. Social-media accounts are required with at least one and at most
-five entries; family members are required with at least one and at most six
-entries; organization and work experiences are optional and capped at five
-entries each.
+`docs/DATABASE.md`. JSON request bodies remain supported for API clients. The
+public `/career` form submits `multipart/form-data` with a `payload` JSON field,
+plus `self_photo` and `cv_file` uploads saved under
+`/uploads/career-applications/`. `career_job_slug` is optional; when provided,
+it must match an active public job slug. The `/career` form submits family
+history, social-media accounts, organization/training experience, and work
+experience as nested arrays. Social-media accounts are required with at least
+one and at most five entries; family members are required with at least one and
+at most six entries; organization and work experiences are optional and capped
+at five entries each.
 
 Request body:
 
@@ -343,6 +346,8 @@ Request body:
 | `willing_to_be_placed_anywhere` | boolean | Yes | Whether the candidate is willing to be placed according to company needs. |
 | `available_interview_date` | date or null | No | Candidate's available interview date. |
 | `interview_invitation_reason` | string | Yes | Candidate's reason for joining the interview process. |
+| `self_photo` | file | Yes on `/career` form | Multipart upload only. JPG, PNG, or WebP, max 2 MB. Stored as `self_photo_url`. |
+| `cv_file` | file | Yes on `/career` form | Multipart upload only. PDF, max 5 MB. Stored as `cv_file_url`. |
 | `social_media_accounts` | array | Yes | One to five social media account objects. |
 | `family_members` | array | Yes | One to six family member objects. |
 | `organization_experiences` | array | No | Zero to five organization/training experience objects. |
