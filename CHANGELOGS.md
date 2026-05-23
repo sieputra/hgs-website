@@ -10,6 +10,8 @@ All notable changes and release notes for this project should be documented in t
 - Added INTL admin authentication with HMAC bearer tokens, PBKDF2 password hashing, RBAC roles, and protected user-management endpoints.
 - Added INTL admin role creation and editing endpoints for RBAC management.
 - Added INTL admin delete endpoints for users and custom roles with self-delete, system-role, and assigned-role safeguards.
+- Added INTL admin Services and FAQ CRUD endpoints with content-management RBAC permissions.
+- Added `/admin/services` and `/admin/faqs` management screens under a new Content Management menu group.
 - Added `admin_roles` and `admin_users` database tables with built-in roles for super admin, admin, content admin, and recruitment admin.
 - Added a protected `python -m app.cli.create_admin` CLI for creating or updating admin users by role.
 - Added public Careers job cards that link directly to the application details section with the selected job prefilled.
@@ -40,7 +42,11 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed INTL API resource routes to remove the `/admin` path segment from protected roles, users, services, FAQs, and gallery endpoints.
 - Changed INTL admin gallery endpoints to require `gallery.read` or `gallery.create` permissions.
+- Changed built-in admin and content admin roles to include Services and FAQ management permissions.
+- Changed Services and FAQ admin table status cells to inline switches for direct active/inactive updates.
+- Changed Services and FAQ admin tables to hide code/order columns and support drag-and-drop order updates.
 - Changed the `/admin` left menu to use inline SVG icons and group Users and Roles under User Management.
 - Changed grouped `/admin` left menu sections to collapse by default and expand/collapse from the group row.
 - Changed the `/admin` dashboard to separate Users and Roles into sidebar-controlled views with smaller UI typography and a sticky desktop sidebar.

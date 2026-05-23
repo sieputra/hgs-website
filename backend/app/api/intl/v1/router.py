@@ -20,10 +20,18 @@ from app.schemas.admin import AdminUserCreate
 from app.schemas.admin import AdminUserUpdate
 from app.schemas.common import ApiResponse
 from app.schemas.gallery import GalleryImageAdmin
+from app.schemas.public_content import FAQAdmin
+from app.schemas.public_content import FAQCreate
+from app.schemas.public_content import FAQUpdate
+from app.schemas.public_content import PublicServiceAdmin
+from app.schemas.public_content import PublicServiceCreate
+from app.schemas.public_content import PublicServiceUpdate
 from app.services.admin import AdminService
 from app.services.admin import get_admin_service
 from app.services.gallery import GalleryService
 from app.services.gallery import get_gallery_service
+from app.services.public_content import PublicContentService
+from app.services.public_content import get_admin_public_content_service
 
 router = APIRouter(tags=["INTL v1"])
 
@@ -59,7 +67,7 @@ async def get_admin_me(
 
 
 @router.get(
-    "/admin/roles",
+    "/roles",
     response_model=ApiResponse[list[AdminRole]],
 )
 async def list_admin_roles(
@@ -71,7 +79,7 @@ async def list_admin_roles(
 
 
 @router.post(
-    "/admin/roles",
+    "/roles",
     response_model=ApiResponse[AdminRole],
     status_code=201,
 )
@@ -90,7 +98,7 @@ async def create_admin_role(
 
 
 @router.patch(
-    "/admin/roles/{role_id}",
+    "/roles/{role_id}",
     response_model=ApiResponse[AdminRole],
 )
 async def update_admin_role(
@@ -109,7 +117,7 @@ async def update_admin_role(
 
 
 @router.delete(
-    "/admin/roles/{role_id}",
+    "/roles/{role_id}",
     response_model=ApiResponse[dict[str, str]],
 )
 async def delete_admin_role(
@@ -122,7 +130,7 @@ async def delete_admin_role(
 
 
 @router.get(
-    "/admin/users",
+    "/users",
     response_model=ApiResponse[list[AdminUser]],
 )
 async def list_admin_users(
@@ -134,7 +142,7 @@ async def list_admin_users(
 
 
 @router.post(
-    "/admin/users",
+    "/users",
     response_model=ApiResponse[AdminUser],
     status_code=201,
 )
@@ -154,7 +162,7 @@ async def create_admin_user(
 
 
 @router.patch(
-    "/admin/users/{user_id}",
+    "/users/{user_id}",
     response_model=ApiResponse[AdminUser],
 )
 async def update_admin_user(
@@ -174,7 +182,7 @@ async def update_admin_user(
 
 
 @router.delete(
-    "/admin/users/{user_id}",
+    "/users/{user_id}",
     response_model=ApiResponse[dict[str, str]],
 )
 async def delete_admin_user(
@@ -187,7 +195,161 @@ async def delete_admin_user(
 
 
 @router.get(
-    "/admin/gallery/images",
+    "/services",
+    response_model=ApiResponse[list[PublicServiceAdmin]],
+)
+async def list_admin_services(
+    _: Annotated[AdminUser, Depends(require_permission("service.read"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    services = public_content_service.list_admin_services()
+    return api_response(data=services, meta={"total": len(services)})
+
+
+@router.post(
+    "/services",
+    response_model=ApiResponse[PublicServiceAdmin],
+    status_code=201,
+)
+async def create_admin_service(
+    payload: PublicServiceCreate,
+    _: Annotated[AdminUser, Depends(require_permission("service.create"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    service = public_content_service.create_service(
+        code=payload.code,
+        title=payload.title,
+        summary=payload.summary,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=service, message="Service created")
+
+
+@router.patch(
+    "/services/{service_id}",
+    response_model=ApiResponse[PublicServiceAdmin],
+)
+async def update_admin_service(
+    service_id: UUID,
+    payload: PublicServiceUpdate,
+    _: Annotated[AdminUser, Depends(require_permission("service.update"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    service = public_content_service.update_service(
+        service_id=service_id,
+        title=payload.title,
+        summary=payload.summary,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=service, message="Service updated")
+
+
+@router.delete(
+    "/services/{service_id}",
+    response_model=ApiResponse[dict[str, str]],
+)
+async def delete_admin_service(
+    service_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("service.delete"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    public_content_service.delete_service(service_id=service_id)
+    return api_response(data={"id": str(service_id)}, message="Service deleted")
+
+
+@router.get(
+    "/faqs",
+    response_model=ApiResponse[list[FAQAdmin]],
+)
+async def list_admin_faqs(
+    _: Annotated[AdminUser, Depends(require_permission("faq.read"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    faqs = public_content_service.list_admin_faqs()
+    return api_response(data=faqs, meta={"total": len(faqs)})
+
+
+@router.post(
+    "/faqs",
+    response_model=ApiResponse[FAQAdmin],
+    status_code=201,
+)
+async def create_admin_faq(
+    payload: FAQCreate,
+    _: Annotated[AdminUser, Depends(require_permission("faq.create"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    faq = public_content_service.create_faq(
+        code=payload.code,
+        question=payload.question,
+        answer=payload.answer,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=faq, message="FAQ created")
+
+
+@router.patch(
+    "/faqs/{faq_id}",
+    response_model=ApiResponse[FAQAdmin],
+)
+async def update_admin_faq(
+    faq_id: UUID,
+    payload: FAQUpdate,
+    _: Annotated[AdminUser, Depends(require_permission("faq.update"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    faq = public_content_service.update_faq(
+        faq_id=faq_id,
+        question=payload.question,
+        answer=payload.answer,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=faq, message="FAQ updated")
+
+
+@router.delete(
+    "/faqs/{faq_id}",
+    response_model=ApiResponse[dict[str, str]],
+)
+async def delete_admin_faq(
+    faq_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("faq.delete"))],
+    public_content_service: Annotated[
+        PublicContentService,
+        Depends(get_admin_public_content_service),
+    ],
+) -> dict[str, object]:
+    public_content_service.delete_faq(faq_id=faq_id)
+    return api_response(data={"id": str(faq_id)}, message="FAQ deleted")
+
+
+@router.get(
+    "/gallery/images",
     response_model=ApiResponse[list[GalleryImageAdmin]],
 )
 async def list_admin_gallery_images(
@@ -202,7 +364,7 @@ async def list_admin_gallery_images(
 
 
 @router.post(
-    "/admin/gallery/images",
+    "/gallery/images",
     response_model=ApiResponse[GalleryImageAdmin],
     status_code=201,
 )

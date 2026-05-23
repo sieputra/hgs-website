@@ -528,7 +528,7 @@ Requires any active admin token.
 ### List Admin Roles
 
 ```http
-GET /api/intl/v1/admin/roles
+GET /api/intl/v1/roles
 ```
 
 Required permission: `role.read`.
@@ -549,14 +549,14 @@ Built-in role codes:
 | Code | Permissions |
 | --- | --- |
 | `super_admin` | `*` |
-| `admin` | `role.read`, `role.create`, `role.update`, `role.delete`, `user.read`, `user.create`, `user.update`, `user.delete`, `gallery.read`, `gallery.create` |
-| `content_admin` | `gallery.read`, `gallery.create` |
+| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.read`, `gallery.create` |
+| `content_admin` | `service.*`, `faq.*`, `gallery.read`, `gallery.create` |
 | `recruitment_admin` | `recruitment.read`, `recruitment.update` |
 
 ### Create Admin Role
 
 ```http
-POST /api/intl/v1/admin/roles
+POST /api/intl/v1/roles
 ```
 
 Required permission: `role.create`.
@@ -575,7 +575,7 @@ Request:
 ### Update Admin Role
 
 ```http
-PATCH /api/intl/v1/admin/roles/{role_id}
+PATCH /api/intl/v1/roles/{role_id}
 ```
 
 Required permission: `role.update`. Role code is stable and cannot be changed
@@ -594,7 +594,7 @@ Request fields are optional:
 ### Delete Admin Role
 
 ```http
-DELETE /api/intl/v1/admin/roles/{role_id}
+DELETE /api/intl/v1/roles/{role_id}
 ```
 
 Required permission: `role.delete`. System roles cannot be deleted, and roles
@@ -603,7 +603,7 @@ assigned to admin users must be unassigned before deletion.
 ### List Admin Users
 
 ```http
-GET /api/intl/v1/admin/users
+GET /api/intl/v1/users
 ```
 
 Required permission: `user.read`.
@@ -624,7 +624,7 @@ Response data item:
 ### Create Admin User
 
 ```http
-POST /api/intl/v1/admin/users
+POST /api/intl/v1/users
 ```
 
 Required permission: `user.create`.
@@ -644,7 +644,7 @@ Request:
 ### Update Admin User
 
 ```http
-PATCH /api/intl/v1/admin/users/{user_id}
+PATCH /api/intl/v1/users/{user_id}
 ```
 
 Required permission: `user.update`.
@@ -663,16 +663,158 @@ Request fields are optional:
 ### Delete Admin User
 
 ```http
-DELETE /api/intl/v1/admin/users/{user_id}
+DELETE /api/intl/v1/users/{user_id}
 ```
 
 Required permission: `user.delete`. The signed-in admin cannot delete their own
 account from the active session.
 
+### List Admin Services
+
+```http
+GET /api/intl/v1/services
+```
+
+Returns all service records, including inactive services. Required permission:
+`service.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Service identifier. |
+| `code` | string | Stable service code. |
+| `title` | string | Public service title. |
+| `summary` | string | Short public service description. |
+| `sort_order` | integer | Display order. |
+| `is_active` | boolean | Whether the service appears on public EXTL listings. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Create Admin Service
+
+```http
+POST /api/intl/v1/services
+```
+
+Required permission: `service.create`. The service code must be unique and is
+stored uppercase.
+
+Request:
+
+```json
+{
+  "code": "COLD_CHAIN",
+  "title": "Cold Chain",
+  "summary": "Temperature-controlled distribution support.",
+  "sort_order": 7,
+  "is_active": true
+}
+```
+
+### Update Admin Service
+
+```http
+PATCH /api/intl/v1/services/{service_id}
+```
+
+Required permission: `service.update`. Service code is stable and cannot be
+changed through this endpoint.
+
+Request fields are optional:
+
+```json
+{
+  "title": "Cold Chain Logistics",
+  "summary": "Updated public description.",
+  "sort_order": 7,
+  "is_active": true
+}
+```
+
+### Delete Admin Service
+
+```http
+DELETE /api/intl/v1/services/{service_id}
+```
+
+Required permission: `service.delete`. Deletes the service record.
+
+### List Admin FAQs
+
+```http
+GET /api/intl/v1/faqs
+```
+
+Returns all FAQ records, including inactive FAQs. Required permission:
+`faq.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | FAQ identifier. |
+| `code` | string | Stable FAQ code. |
+| `question` | string | Public FAQ question. |
+| `answer` | string | Public FAQ answer. |
+| `sort_order` | integer | Display order. |
+| `is_active` | boolean | Whether the FAQ appears on public EXTL listings. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Create Admin FAQ
+
+```http
+POST /api/intl/v1/faqs
+```
+
+Required permission: `faq.create`. The FAQ code must be unique and is stored
+uppercase.
+
+Request:
+
+```json
+{
+  "code": "APPLICATION_STATUS",
+  "question": "Bagaimana cara cek status lamaran?",
+  "answer": "Hubungi Admin HR pada jam kerja.",
+  "sort_order": 18,
+  "is_active": true
+}
+```
+
+### Update Admin FAQ
+
+```http
+PATCH /api/intl/v1/faqs/{faq_id}
+```
+
+Required permission: `faq.update`. FAQ code is stable and cannot be changed
+through this endpoint.
+
+Request fields are optional:
+
+```json
+{
+  "question": "Bagaimana cara cek status lamaran?",
+  "answer": "Jawaban yang sudah diperbarui.",
+  "sort_order": 18,
+  "is_active": true
+}
+```
+
+### Delete Admin FAQ
+
+```http
+DELETE /api/intl/v1/faqs/{faq_id}
+```
+
+Required permission: `faq.delete`. Deletes the FAQ record.
+
 ### List Admin Gallery Images
 
 ```http
-GET /api/intl/v1/admin/gallery/images
+GET /api/intl/v1/gallery/images
 ```
 
 Returns gallery images for admin management, including inactive images and file
@@ -681,7 +823,7 @@ metadata. Required permission: `gallery.read`.
 ### Upload Admin Gallery Image
 
 ```http
-POST /api/intl/v1/admin/gallery/images
+POST /api/intl/v1/gallery/images
 Content-Type: multipart/form-data
 ```
 
@@ -719,6 +861,6 @@ Planned INTL endpoints:
 ```text
 POST /api/intl/v1/auth/refresh
 POST /api/intl/v1/auth/logout
-GET /api/intl/v1/admin/jobs
+GET /api/intl/v1/jobs
 GET /api/intl/v1/dashboard
 ```

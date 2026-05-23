@@ -81,6 +81,26 @@ async def test_intl_admin_gallery_requires_admin_authentication() -> None:
         transport=ASGITransport(app=create_app()),
         base_url="http://test",
     ) as client:
-        response = await client.get("/api/intl/v1/admin/gallery/images")
+        response = await client.get("/api/intl/v1/gallery/images")
+
+    assert response.status_code == 401
+
+
+async def test_intl_admin_services_requires_admin_authentication() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/intl/v1/services")
+
+    assert response.status_code == 401
+
+
+async def test_intl_admin_faqs_requires_admin_authentication() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/intl/v1/faqs")
 
     assert response.status_code == 401

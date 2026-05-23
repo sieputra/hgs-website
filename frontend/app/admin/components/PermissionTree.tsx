@@ -12,6 +12,14 @@ const permissionGroups = [
     permissions: ["user.read", "user.create", "user.update", "user.delete"],
   },
   {
+    label: "Services",
+    permissions: ["service.read", "service.create", "service.update", "service.delete"],
+  },
+  {
+    label: "FAQ",
+    permissions: ["faq.read", "faq.create", "faq.update", "faq.delete"],
+  },
+  {
     label: "Gallery",
     permissions: ["gallery.read", "gallery.create"],
   },

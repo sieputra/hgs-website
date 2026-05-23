@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -233,12 +234,83 @@ class DatabasePublicContentRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
+    def list_admin_services(self) -> list[PublicServiceModel]:
+        return list(
+            self._session.scalars(
+                select(PublicServiceModel).order_by(
+                    PublicServiceModel.sort_order,
+                    PublicServiceModel.title,
+                )
+            )
+        )
+
     def list_services(self) -> list[PublicServiceModel]:
         return list(
             self._session.scalars(
                 select(PublicServiceModel)
                 .where(PublicServiceModel.is_active.is_(True))
                 .order_by(PublicServiceModel.sort_order)
+            )
+        )
+
+    def get_service(self, service_id: UUID) -> PublicServiceModel | None:
+        return self._session.get(PublicServiceModel, service_id)
+
+    def get_service_by_code(self, code: str) -> PublicServiceModel | None:
+        return self._session.scalar(
+            select(PublicServiceModel).where(PublicServiceModel.code == code)
+        )
+
+    def create_service(
+        self,
+        *,
+        code: str,
+        title: str,
+        summary: str,
+        sort_order: int,
+        is_active: bool,
+    ) -> PublicServiceModel:
+        service = PublicServiceModel(
+            code=code,
+            title=title,
+            summary=summary,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+        self._session.add(service)
+        self._session.commit()
+        self._session.refresh(service)
+        return service
+
+    def update_service(
+        self,
+        service: PublicServiceModel,
+        *,
+        title: str | None = None,
+        summary: str | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> PublicServiceModel:
+        if title is not None:
+            service.title = title
+        if summary is not None:
+            service.summary = summary
+        if sort_order is not None:
+            service.sort_order = sort_order
+        if is_active is not None:
+            service.is_active = is_active
+        self._session.commit()
+        self._session.refresh(service)
+        return service
+
+    def delete_service(self, service: PublicServiceModel) -> None:
+        self._session.delete(service)
+        self._session.commit()
+
+    def list_admin_faqs(self) -> list[FAQModel]:
+        return list(
+            self._session.scalars(
+                select(FAQModel).order_by(FAQModel.sort_order, FAQModel.question)
             )
         )
 
@@ -250,3 +322,55 @@ class DatabasePublicContentRepository:
                 .order_by(FAQModel.sort_order)
             )
         )
+
+    def get_faq(self, faq_id: UUID) -> FAQModel | None:
+        return self._session.get(FAQModel, faq_id)
+
+    def get_faq_by_code(self, code: str) -> FAQModel | None:
+        return self._session.scalar(select(FAQModel).where(FAQModel.code == code))
+
+    def create_faq(
+        self,
+        *,
+        code: str,
+        question: str,
+        answer: str,
+        sort_order: int,
+        is_active: bool,
+    ) -> FAQModel:
+        faq = FAQModel(
+            code=code,
+            question=question,
+            answer=answer,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+        self._session.add(faq)
+        self._session.commit()
+        self._session.refresh(faq)
+        return faq
+
+    def update_faq(
+        self,
+        faq: FAQModel,
+        *,
+        question: str | None = None,
+        answer: str | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> FAQModel:
+        if question is not None:
+            faq.question = question
+        if answer is not None:
+            faq.answer = answer
+        if sort_order is not None:
+            faq.sort_order = sort_order
+        if is_active is not None:
+            faq.is_active = is_active
+        self._session.commit()
+        self._session.refresh(faq)
+        return faq
+
+    def delete_faq(self, faq: FAQModel) -> None:
+        self._session.delete(faq)
+        self._session.commit()

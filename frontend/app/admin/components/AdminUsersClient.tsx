@@ -83,13 +83,13 @@ export function AdminUsersClient({
     setToast(null);
     try {
       if (modal.mode === "create") {
-        await adminClientRequest<AdminUser>("/api/intl/v1/admin/users", {
+        await adminClientRequest<AdminUser>("/api/intl/v1/users", {
           method: "POST",
           body: JSON.stringify(userForm),
         });
         setToast({ message: "Admin user created.", tone: "success" });
       } else {
-        await adminClientRequest<AdminUser>(`/api/intl/v1/admin/users/${userForm.id}`, {
+        await adminClientRequest<AdminUser>(`/api/intl/v1/users/${userForm.id}`, {
           method: "PATCH",
           body: JSON.stringify({
             full_name: userForm.full_name,
@@ -116,7 +116,7 @@ export function AdminUsersClient({
     setIsLoading(true);
     setToast(null);
     try {
-      await adminClientRequest<{ id: string }>(`/api/intl/v1/admin/users/${user.id}`, {
+      await adminClientRequest<{ id: string }>(`/api/intl/v1/users/${user.id}`, {
         method: "DELETE",
       });
       setModal(null);

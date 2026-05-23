@@ -32,10 +32,11 @@
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.
 - Uploaded backend media is available to the frontend through the Next.js `/uploads/:path*` rewrite.
 - The admin dashboard is available at `/admin` with login, a default Dashboard
-  page, separated Users and Roles pages, user creation, role assignment,
-  activation toggles, and role create/edit/delete actions backed by the INTL API.
+  page, route-backed Services, FAQ, Users, and Roles pages, user creation, role
+  assignment, activation toggles, and modal CRUD actions backed by the INTL API.
 - After admin login, users land on `/admin`. Users and Roles are route-backed
-  admin sections at `/admin/users` and `/admin/roles`.
+  admin sections at `/admin/users` and `/admin/roles`; content management uses
+  `/admin/services` and `/admin/faqs`.
 - Admin menu pages are dynamic server-rendered routes backed by the admin token
   cookie. Each route loads only the data needed for that menu: Users loads
   users plus role options for assignment, while Roles loads roles only.
@@ -45,6 +46,9 @@
   actions open form modals, and delete actions open confirmation modals before
   calling the API. Success and error feedback appears as popup toast
   notifications instead of inline content notices.
+- Services and FAQ admin tables hide internal code/order columns, allow direct
+  active/inactive visibility changes through switch controls, and support
+  drag-and-drop row reordering that persists `sort_order` through the INTL API.
 - Role create/edit forms use a grouped permission tree with checkbox controls,
   including an all-permissions root option and module-level parent checkboxes.
   The role modal uses a two-column desktop layout with role details on the left
@@ -55,8 +59,9 @@
   expand/collapse row, and moves the signed-in account block plus sign-out
   action to a square, sticky top app bar.
 - The `/admin` left navigation and top navigation are reusable client
-  components in `frontend/app/admin/components/AdminDashboardShell.tsx`; feature
-  pages should use the server wrapper in
+  components in `frontend/app/admin/components/AdminDashboardShell.tsx`; the
+  Content Management nav group contains Services and FAQ, while User Management
+  contains Users and Roles. Feature pages should use the server wrapper in
   `frontend/app/admin/components/AdminServerShell.tsx` unless they need to
   compose `AdminLeftNavbar` and `AdminTopNavbar` directly.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.

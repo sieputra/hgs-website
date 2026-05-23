@@ -17,10 +17,10 @@ export default async function AdminUsersPage() {
     const currentUser = await getCurrentAdminUser(token);
     const permissions = new Set(currentUser.role.permissions);
     const usersPromise = hasPermission(permissions, "user.read")
-      ? adminApiRequest<AdminUser[]>("/api/intl/v1/admin/users", token)
+      ? adminApiRequest<AdminUser[]>("/api/intl/v1/users", token)
       : Promise.resolve([]);
     const rolesPromise = adminApiRequest<AdminRole[]>(
-      "/api/intl/v1/admin/roles",
+      "/api/intl/v1/roles",
       token,
     ).catch(() => []);
     const [users, roles] = await Promise.all([usersPromise, rolesPromise]);

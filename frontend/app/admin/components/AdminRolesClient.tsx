@@ -80,13 +80,13 @@ export function AdminRolesClient({
     };
     try {
       if (modal.mode === "edit") {
-        await adminClientRequest<AdminRole>(`/api/intl/v1/admin/roles/${roleForm.id}`, {
+        await adminClientRequest<AdminRole>(`/api/intl/v1/roles/${roleForm.id}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
         setToast({ message: "Admin role updated.", tone: "success" });
       } else {
-        await adminClientRequest<AdminRole>("/api/intl/v1/admin/roles", {
+        await adminClientRequest<AdminRole>("/api/intl/v1/roles", {
           method: "POST",
           body: JSON.stringify({ ...payload, code: roleForm.code }),
         });
@@ -108,7 +108,7 @@ export function AdminRolesClient({
     setIsLoading(true);
     setToast(null);
     try {
-      await adminClientRequest<{ id: string }>(`/api/intl/v1/admin/roles/${role.id}`, {
+      await adminClientRequest<{ id: string }>(`/api/intl/v1/roles/${role.id}`, {
         method: "DELETE",
       });
       setModal(null);

@@ -25,7 +25,29 @@ export type AdminUser = {
   updated_at: string;
 };
 
-export type AdminView = "dashboard" | "users" | "roles";
+export type PublicServiceAdmin = {
+  id: string;
+  code: string;
+  title: string;
+  summary: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FAQAdmin = {
+  id: string;
+  code: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminView = "dashboard" | "users" | "roles" | "services" | "faqs";
 
 export type LoginResponse = {
   access_token: string;

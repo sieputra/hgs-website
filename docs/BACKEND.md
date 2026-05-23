@@ -19,16 +19,24 @@ POST /api/extl/v1/career-applications
 GET /api/intl/v1/health
 POST /api/intl/v1/auth/login
 GET /api/intl/v1/auth/me
-GET /api/intl/v1/admin/roles
-POST /api/intl/v1/admin/roles
-PATCH /api/intl/v1/admin/roles/{role_id}
-DELETE /api/intl/v1/admin/roles/{role_id}
-GET /api/intl/v1/admin/users
-POST /api/intl/v1/admin/users
-PATCH /api/intl/v1/admin/users/{user_id}
-DELETE /api/intl/v1/admin/users/{user_id}
-GET /api/intl/v1/admin/gallery/images
-POST /api/intl/v1/admin/gallery/images
+GET /api/intl/v1/roles
+POST /api/intl/v1/roles
+PATCH /api/intl/v1/roles/{role_id}
+DELETE /api/intl/v1/roles/{role_id}
+GET /api/intl/v1/users
+POST /api/intl/v1/users
+PATCH /api/intl/v1/users/{user_id}
+DELETE /api/intl/v1/users/{user_id}
+GET /api/intl/v1/services
+POST /api/intl/v1/services
+PATCH /api/intl/v1/services/{service_id}
+DELETE /api/intl/v1/services/{service_id}
+GET /api/intl/v1/faqs
+POST /api/intl/v1/faqs
+PATCH /api/intl/v1/faqs/{faq_id}
+DELETE /api/intl/v1/faqs/{faq_id}
+GET /api/intl/v1/gallery/images
+POST /api/intl/v1/gallery/images
 ```
 
 Endpoint contracts and examples are documented in `docs/API.md`.
@@ -69,13 +77,15 @@ Gallery uploads are optimized to WebP, resized to fit 1920x1280, stored under
 
 The INTL admin surface uses HMAC-signed bearer tokens and role-based
 permissions. Built-in roles are `super_admin`, `admin`, `content_admin`, and
-`recruitment_admin`. Admin gallery management requires `gallery.read` or
-`gallery.create`; role management requires `role.read`, `role.create`,
-`role.update`, or `role.delete`; user management requires `user.read`,
-`user.create`, `user.update`, or `user.delete`. Role codes are stable after
-creation, while role name, description, and permissions can be edited. System
-roles cannot be deleted, assigned roles must be unassigned before deletion, and
-admins cannot delete their own active account.
+`recruitment_admin`. Service and FAQ content management use `service.read`,
+`service.create`, `service.update`, `service.delete`, `faq.read`, `faq.create`,
+`faq.update`, and `faq.delete`; admin gallery management requires
+`gallery.read` or `gallery.create`; role management requires `role.read`,
+`role.create`, `role.update`, or `role.delete`; user management requires
+`user.read`, `user.create`, `user.update`, or `user.delete`. Role codes are
+stable after creation, while role name, description, and permissions can be
+edited. System roles cannot be deleted, assigned roles must be unassigned before
+deletion, and admins cannot delete their own active account.
 
 Bootstrap or update an admin account with the protected CLI after setting
 `DATABASE_URL`, `ADMIN_AUTH_SECRET_KEY`, and `ADMIN_CLI_SECRET`:
@@ -168,8 +178,8 @@ Use it for:
 Example routes:
 
 ```text
-/api/intl/v1/admin/jobs
-/api/intl/v1/admin/users
+/api/intl/v1/jobs
+/api/intl/v1/users
 /api/intl/v1/dashboard
 ```
 

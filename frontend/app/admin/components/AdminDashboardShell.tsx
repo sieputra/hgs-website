@@ -7,7 +7,14 @@ import { useState } from "react";
 
 import { clearAdminSession } from "../lib/client-auth";
 
-type AdminDashboardNavIconName = "dashboard" | "roles" | "user-management" | "users";
+type AdminDashboardNavIconName =
+  | "content-management"
+  | "dashboard"
+  | "faqs"
+  | "roles"
+  | "services"
+  | "user-management"
+  | "users";
 
 export type AdminDashboardNavLink = {
   href: string;
@@ -250,6 +257,37 @@ function AdminNavIcon({ name }: { name: AdminDashboardNavIconName }) {
         <circle cx="10" cy="8" r="3" />
         <path d="M18 8v6" />
         <path d="M15 11h6" />
+      </svg>
+    );
+  }
+
+  if (name === "content-management") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <path d="M5 5h14v14H5z" />
+        <path d="M8 9h8" />
+        <path d="M8 13h5" />
+      </svg>
+    );
+  }
+
+  if (name === "services") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <path d="M4 7h16" />
+        <path d="M6 7l1 11h10l1-11" />
+        <path d="M9 7V5h6v2" />
+        <path d="M9 12h6" />
+      </svg>
+    );
+  }
+
+  if (name === "faqs") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <path d="M5 5h14v11H8l-3 3V5z" />
+        <path d="M10 9a2 2 0 1 1 2 2v1" />
+        <path d="M12 15h.01" />
       </svg>
     );
   }

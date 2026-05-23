@@ -18,7 +18,7 @@ from app.services.admin import has_permission
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
-def get_current_admin_user(
+async def get_current_admin_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> AdminUserModel:
     if credentials is None:
@@ -44,7 +44,7 @@ def get_current_admin_user(
 
 
 def require_permission(permission: str) -> Callable[[], AdminUserModel]:
-    def dependency(
+    async def dependency(
         current_user: AdminUserModel = Depends(get_current_admin_user),
     ) -> AdminUserModel:
         if not has_permission(current_user, permission):

@@ -16,6 +16,25 @@ const adminNavItems: AdminDashboardNavItem[] = [
   {
     children: [
       {
+        href: "/admin/services",
+        id: "services",
+        icon: "services",
+        label: "Services",
+      },
+      {
+        href: "/admin/faqs",
+        id: "faqs",
+        icon: "faqs",
+        label: "FAQ",
+      },
+    ],
+    icon: "content-management",
+    id: "content-management",
+    label: "Content Management",
+  },
+  {
+    children: [
+      {
         href: "/admin/users",
         id: "users",
         icon: "users",
