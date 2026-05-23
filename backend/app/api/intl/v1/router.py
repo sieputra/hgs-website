@@ -26,6 +26,11 @@ from app.schemas.public_content import FAQUpdate
 from app.schemas.public_content import PublicServiceAdmin
 from app.schemas.public_content import PublicServiceCreate
 from app.schemas.public_content import PublicServiceUpdate
+from app.schemas.recruitment import CareerApplicationAdmin
+from app.schemas.recruitment import CareerApplicationAdminComment
+from app.schemas.recruitment import CareerApplicationAdminSummary
+from app.schemas.recruitment import CareerApplicationCommentCreate
+from app.schemas.recruitment import CareerApplicationStatusUpdate
 from app.schemas.recruitment import CareerJobAdmin
 from app.schemas.recruitment import CareerJobCreate
 from app.schemas.recruitment import CareerJobUpdate
@@ -600,6 +605,82 @@ async def delete_admin_job(
 ) -> dict[str, object]:
     recruitment_service.delete_job(job_id=job_id)
     return api_response(data={"id": str(job_id)}, message="Job deleted")
+
+
+@router.get(
+    "/recruitment/applications",
+    response_model=ApiResponse[list[CareerApplicationAdminSummary]],
+)
+async def list_admin_career_applications(
+    _: Annotated[AdminUser, Depends(require_permission("recruitment.read"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    applications = recruitment_service.list_admin_career_applications()
+    return api_response(data=applications, meta={"total": len(applications)})
+
+
+@router.get(
+    "/recruitment/applications/{application_id}",
+    response_model=ApiResponse[CareerApplicationAdmin],
+)
+async def get_admin_career_application(
+    application_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("recruitment.read"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    application = recruitment_service.get_admin_career_application(
+        application_id=application_id,
+    )
+    return api_response(data=application)
+
+
+@router.patch(
+    "/recruitment/applications/{application_id}",
+    response_model=ApiResponse[CareerApplicationAdmin],
+)
+async def update_admin_career_application(
+    application_id: UUID,
+    payload: CareerApplicationStatusUpdate,
+    current_user: Annotated[AdminUser, Depends(require_permission("recruitment.update"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    application = recruitment_service.update_career_application_status(
+        application_id=application_id,
+        application_status=payload.status,
+        admin_user_id=current_user.id,
+    )
+    return api_response(data=application, message="Career application updated")
+
+
+@router.post(
+    "/recruitment/applications/{application_id}/comments",
+    response_model=ApiResponse[CareerApplicationAdminComment],
+    status_code=201,
+)
+async def create_admin_career_application_comment(
+    application_id: UUID,
+    payload: CareerApplicationCommentCreate,
+    current_user: Annotated[AdminUser, Depends(require_permission("recruitment.update"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    comment = recruitment_service.create_career_application_comment(
+        application_id=application_id,
+        admin_user_id=current_user.id,
+        comment=payload.comment,
+    )
+    return api_response(data=comment, message="Career application comment created")
 
 
 @router.get(

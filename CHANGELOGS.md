@@ -15,6 +15,8 @@ All notable changes and release notes for this project should be documented in t
 - Added `/admin/gallery` under Content Management for listing gallery images and uploading new gallery photos.
 - Added `admin_roles` and `admin_users` database tables with built-in roles for super admin, admin, content admin, and recruitment admin.
 - Added a protected `python -m app.cli.create_admin` CLI for creating or updating admin users by role.
+- Added `/admin/recruitment` under Human Resources with career application list and kanban views backed by INTL recruitment application endpoints.
+- Added full-panel Recruitment kanban card details with candidate data tabs and persisted right-side internal comments.
 - Added public Careers job cards that link directly to the application details section with the selected job prefilled.
 - Added eye-icon detail buttons on homepage Careers job cards that open a popup with job responsibilities, requirements, and an application link.
 - Added automatic homepage hero slide rotation with hover/focus pause and reduced-motion support.
@@ -32,6 +34,7 @@ All notable changes and release notes for this project should be documented in t
 - Added a recruitment process stepper to the `/career` hero.
 - Added a bouncing chevron control to the `/career` hero that scrolls candidates to the first application section.
 - Added an optional alternative applied-position picker to the career application form.
+- Added career form toast notifications and a full-screen progress overlay while submissions are processing.
 - Added a repeatable required family history section to the career application form.
 - Added a repeatable required social media account section to the career application form.
 - Added a repeatable candidate organization/training experience section to the career application form.
@@ -51,7 +54,21 @@ All notable changes and release notes for this project should be documented in t
 - Changed INTL API resource routes to remove the `/admin` path segment from protected roles, users, services, FAQs, and gallery endpoints.
 - Changed INTL admin gallery endpoints to require `gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete` permissions by action.
 - Changed `/admin/gallery` to support editable metadata, image replacement, drag-and-drop ordering, status toggles, and delete confirmations.
-- Changed `/admin` sidebar navigation to include a Human Resources group for Division, Position, and Jobs with draggable ordering tables.
+- Changed `/admin` sidebar navigation to include a Human Resources group with Recruitment first, followed by Division, Position, and Jobs.
+- Changed admin and recruitment admin permissions to support recruitment application reading and status updates.
+- Changed Recruitment workflow to keep `offer` as the stored status while displaying it as Announcement, and added `canceled` as a Done status.
+- Changed the Recruitment kanban board to fill the available admin content height.
+- Changed Recruitment to open in kanban view by default.
+- Changed Recruitment kanban/list loading to use lightweight applicant summaries and fetch full applicant detail only when a kanban card is opened.
+- Changed the Recruitment detail panel to use an uploaded-photo header thumbnail, icon-only tabs, inline text detail fields, an edge-to-edge fullscreen layout, natural-height scrolling content, and a red close button.
+- Changed the Recruitment detail panel to expose allowed workflow status transitions through a green dropdown and automatically comment on every status change.
+- Changed the Recruitment status dropdown to use the soft teal action color and refresh applicant comments after status updates.
+- Changed the Recruitment detail panel to remove upload pills from Identitas Kandidat and show uploaded CV PDFs in a dedicated CV tab with an error fallback.
+- Changed Recruitment Done kanban cards to show only candidate name and phone number.
+- Changed Recruitment Done kanban cards to use pastel final-status colors for Onboard, Rejected, and Canceled.
+- Changed the Recruitment list/kanban view toggle to icon-only buttons.
+- Changed Recruitment list and kanban cards to remove inline status-changing controls.
+- Changed Recruitment kanban cards to hide Photo and CV file links.
 - Changed the Jobs admin form to select positions from the Position master table, use fixed location tags, use an employment type dropdown, and edit responsibilities/requirements as add-remove lists.
 - Changed admin gallery uploads to use a drop-target file picker in create and edit modals.
 - Changed built-in admin and content admin roles to include Services and FAQ management permissions.
@@ -96,6 +113,7 @@ All notable changes and release notes for this project should be documented in t
 - Changed the `/career` hero to use `hero1.webp` as a 60% opacity background image.
 - Changed the `/career` hero section to fill the available viewport height.
 - Changed `Sumber informasi lowongan` to a searchable source list with `Website HGS` as the default.
+- Changed the career application API to require self-photo and CV upload parts for multipart submissions and ignore client-supplied stored upload URLs.
 - Changed select-style career application fields to searchable picker UI and restricted preferred placement areas to Jakarta, Bandung, Bogor, Subang, and Sukabumi.
 - Moved candidate SIM and medical history fields into the Data Diri section and expanded Pendidikan with entry year, graduation year, school address, and grade/IPK fields.
 - Changed the candidate `Posisi dilamar` field to a searchable picker grouped by division.

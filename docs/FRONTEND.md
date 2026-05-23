@@ -36,8 +36,9 @@
   assignment, activation toggles, and modal CRUD actions backed by the INTL API.
 - After admin login, users land on `/admin`. Users and Roles are route-backed
   admin sections at `/admin/users` and `/admin/roles`; Human Resources uses
-  `/admin/divisions`, `/admin/positions`, and `/admin/jobs`; content management uses
-  `/admin/services`, `/admin/faqs`, and `/admin/gallery`.
+  `/admin/recruitment`, `/admin/divisions`, `/admin/positions`, and
+  `/admin/jobs`; content management uses `/admin/services`, `/admin/faqs`, and
+  `/admin/gallery`.
 - Admin menu pages are dynamic server-rendered routes backed by the admin token
   cookie. Each route loads only the data needed for that menu: Users loads
   users plus role options for assignment, while Roles loads roles only.
@@ -54,10 +55,32 @@
   It lists INTL gallery image records with thumbnails, supports drag-and-drop
   ordering, inline active/inactive switches, edit/delete action modals, and
   drop-target image uploads or replacement through multipart INTL endpoints.
-- Human Resources admin management lives at `/admin/divisions`,
-  `/admin/positions`, and `/admin/jobs`. These tables use modal create/edit forms, confirmation modals
-  before delete calls, inline active/inactive switches, and drag-and-drop row
-  reordering that persists `sort_order` through the INTL API.
+- Human Resources admin management lives at `/admin/recruitment`,
+  `/admin/divisions`, `/admin/positions`, and `/admin/jobs`. Recruitment is the
+  first Human Resources menu item and displays career applications as a list or
+  kanban view using the New, Interview HR, Interview User, Announcement, and
+  Done status columns; the kanban board fills the available admin content
+  height, and the list/kanban cards do not expose inline status-changing
+  controls. Clicking a kanban card opens a full-panel candidate detail popup
+  and then loads the full applicant detail for that card. The panel has
+  icon-only tabs for applied position, candidate identity, latest education,
+  family history, social media, organization/training history, and work
+  history, shows detail fields as inline text, and displays the uploaded
+  candidate photo as a small header thumbnail. The panel is fullscreen,
+  edge-to-edge, uses a red close button, and scrolls tab content only when the
+  content exceeds the available space. A green status dropdown sits to the left
+  of the close button and exposes the next allowed workflow actions for the
+  current status. The panel keeps internal recruitment comments in a right-side
+  rail with a textarea composer at the bottom. The identity tab does not show
+  upload file pills; uploaded CVs are shown in a dedicated CV tab with an error
+  fallback when the file cannot be loaded. Kanban cards omit file links, and
+  cards in the Done column show only candidate name and phone with pastel
+  colors by final status: green for Onboard, red for Rejected, and yellow for
+  Canceled. The list view retains the upload file column. Division, Position,
+  and Jobs tables use modal
+  create/edit forms, confirmation modals before delete calls, inline
+  active/inactive switches, and drag-and-drop row reordering that persists
+  `sort_order` through the INTL API.
 - The Jobs admin form selects Position from the Position master table, limits
   Location to Jakarta, Bandung, Bogor, Subang, and Sukabumi as selectable tags,
   uses an Employment Type dropdown for Full Time or Part Time, and edits
@@ -68,15 +91,15 @@
   and permission selection on the right.
 - The `/admin` desktop sidebar is sticky, supports fold/unfold, keeps primary
   navigation at the top without data-count badges, uses inline SVG icons, groups
-  Division, Position, and Jobs under Human Resources, Users and Roles under a
-  default-collapsed User Management section with an expand/collapse row, and
-  moves the signed-in account block plus sign-out action to a square, sticky top
-  app bar.
+  Recruitment, Division, Position, and Jobs under Human Resources, Users and
+  Roles under a default-collapsed User Management section with an
+  expand/collapse row, and moves the signed-in account block plus sign-out
+  action to a square, sticky top app bar.
 - The `/admin` left navigation and top navigation are reusable client
   components in `frontend/app/admin/components/AdminDashboardShell.tsx`; Human
-  Resources contains Division, Position, and Jobs, Content Management contains Services,
-  FAQ, and Gallery, while User Management contains Users and Roles. Feature
-  pages should use the server wrapper in
+  Resources contains Recruitment, Division, Position, and Jobs, Content
+  Management contains Services, FAQ, and Gallery, while User Management contains
+  Users and Roles. Feature pages should use the server wrapper in
   `frontend/app/admin/components/AdminServerShell.tsx` unless they need to
   compose `AdminLeftNavbar` and `AdminTopNavbar` directly.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.
@@ -121,6 +144,7 @@ Current `/career` behavior:
 - Loads public jobs and divisions from the EXTL API when available, with bundled starter jobs available for prefilled links if the jobs API cannot be reached.
 - Prefills `Lowongan tersedia` and `Posisi dilamar` when opened with a `job` query parameter.
 - Submits candidate payloads to `POST /api/extl/v1/career-applications` as multipart form data with required self-photo and PDF CV uploads.
+- Shows toast notifications for career form submission success and error states, disables the submit button while submitting, and displays a full-screen submission progress overlay.
 - Uses a simple client-side math captcha before allowing submission.
 - Shows `Posisi dilamar` as a searchable picker grouped by division.
 - Supports an optional `Alternatif Posisi dilamar` picker and limits preferred placement area choices to Jakarta, Bandung, Bogor, Subang, and Sukabumi.

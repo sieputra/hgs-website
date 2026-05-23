@@ -188,6 +188,9 @@ Example routes:
 
 ```text
 /api/intl/v1/jobs
+/api/intl/v1/recruitment/applications
+/api/intl/v1/recruitment/applications/{application_id}
+/api/intl/v1/recruitment/applications/{application_id}/comments
 /api/intl/v1/users
 /api/intl/v1/dashboard
 ```

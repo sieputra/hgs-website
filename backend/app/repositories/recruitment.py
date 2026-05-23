@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC
+from datetime import date
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -9,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 
+from app.models import CareerApplicationCommentModel
 from app.models import CareerApplicationModel
 from app.models import CareerApplicationFamilyMemberModel
 from app.models import CareerApplicationOrganizationExperienceModel
@@ -60,6 +62,113 @@ class SubmissionReceiptRecord:
     id: UUID
     status: str
     submitted_at: datetime
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminWorkExperienceRecord:
+    id: UUID
+    company_name: str
+    position: str | None
+    employment_duration: str | None
+    salary: Any
+    company_phone_number: str | None
+    leaving_reason: str | None
+    company_comment: str | None
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminSocialMediaAccountRecord:
+    id: UUID
+    platform: str
+    account_id: str
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminFamilyMemberRecord:
+    id: UUID
+    relationship: str
+    name: str
+    education_level: str | None
+    occupation: str | None
+    workplace: str | None
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminOrganizationExperienceRecord:
+    id: UUID
+    organization_name: str
+    position: str | None
+    period: str | None
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminCommentRecord:
+    id: UUID
+    admin_user_id: UUID | None
+    author_name: str | None
+    author_email: str | None
+    comment: str
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminSummaryRecord:
+    id: UUID
+    career_job_id: UUID | None
+    job_slug: str | None
+    job_title: str | None
+    job_location: str | None
+    job_employment_type: str | None
+    division_name: str | None
+    position_name: str | None
+    full_name: str
+    nickname: str
+    age: int
+    gender: str | None
+    phone_number: str
+    education_level: str | None
+    school_name: str | None
+    major: str | None
+    applied_position: str
+    alternative_applied_position: str | None
+    vacancy_source: str
+    preferred_area: str | None
+    available_interview_date: date | None
+    self_photo_url: str | None
+    cv_file_url: str | None
+    status: str
+    applied_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class CareerApplicationAdminRecord(CareerApplicationAdminSummaryRecord):
+    identity_number: str
+    identity_valid_until: date
+    identity_address: str
+    domicile_address: str
+    driving_license_number: str
+    driving_license_class: str | None
+    driving_license_valid_until: date
+    birth_place: str
+    birth_date: date
+    marital_status: str | None
+    mother_name: str
+    religion: str | None
+    medical_history: str | None
+    school_entry_year: int | None
+    school_graduation_year: int | None
+    school_address: str | None
+    grade_point_average: str | None
+    willing_to_be_placed_anywhere: bool
+    interview_invitation_reason: str
+    social_media_accounts: list[CareerApplicationAdminSocialMediaAccountRecord]
+    family_members: list[CareerApplicationAdminFamilyMemberRecord]
+    organization_experiences: list[CareerApplicationAdminOrganizationExperienceRecord]
+    work_experiences: list[CareerApplicationAdminWorkExperienceRecord]
+    comments: list[CareerApplicationAdminCommentRecord]
 
 
 class RecruitmentRepository:
@@ -611,6 +720,205 @@ class DatabaseRecruitmentRepository:
     def delete_job(self, job: CareerJobModel) -> None:
         self._session.delete(job)
         self._session.commit()
+
+    def list_admin_career_applications(
+        self,
+    ) -> list[CareerApplicationAdminSummaryRecord]:
+        applications = self._session.scalars(
+            select(CareerApplicationModel)
+            .options(selectinload(CareerApplicationModel.career_job))
+            .order_by(
+                CareerApplicationModel.applied_at.desc(),
+                CareerApplicationModel.created_at.desc(),
+            )
+        )
+        return [
+            self._career_application_admin_summary_record(application)
+            for application in applications
+        ]
+
+    def get_career_application(
+        self,
+        application_id: UUID,
+    ) -> CareerApplicationModel | None:
+        return self._session.scalar(
+            select(CareerApplicationModel)
+            .options(
+                selectinload(CareerApplicationModel.career_job),
+                selectinload(CareerApplicationModel.family_members),
+                selectinload(CareerApplicationModel.organization_experiences),
+                selectinload(CareerApplicationModel.social_media_accounts),
+                selectinload(CareerApplicationModel.work_experiences),
+                selectinload(CareerApplicationModel.comments).selectinload(
+                    CareerApplicationCommentModel.admin_user
+                ),
+            )
+            .where(CareerApplicationModel.id == application_id)
+        )
+
+    def update_career_application_status(
+        self,
+        application: CareerApplicationModel,
+        *,
+        status: str,
+    ) -> CareerApplicationAdminRecord:
+        application.status = status
+        self._session.commit()
+        self._session.refresh(application)
+        return self._career_application_admin_record(application)
+
+    def career_application_admin_record(
+        self,
+        application: CareerApplicationModel,
+    ) -> CareerApplicationAdminRecord:
+        return self._career_application_admin_record(application)
+
+    def create_career_application_comment(
+        self,
+        application: CareerApplicationModel,
+        *,
+        admin_user_id: UUID,
+        comment: str,
+    ) -> CareerApplicationAdminCommentRecord:
+        application_comment = CareerApplicationCommentModel(
+            career_application_id=application.id,
+            admin_user_id=admin_user_id,
+            comment=comment,
+        )
+        self._session.add(application_comment)
+        self._session.commit()
+        self._session.refresh(application_comment)
+        application_comment = self._session.scalar(
+            select(CareerApplicationCommentModel)
+            .options(selectinload(CareerApplicationCommentModel.admin_user))
+            .where(CareerApplicationCommentModel.id == application_comment.id)
+        )
+        if application_comment is None:
+            raise RuntimeError("Career application comment was not created.")
+        return self._career_application_comment_record(application_comment)
+
+    def _career_application_admin_record(
+        self,
+        application: CareerApplicationModel,
+    ) -> CareerApplicationAdminRecord:
+        summary = self._career_application_admin_summary_record(application)
+        return CareerApplicationAdminRecord(
+            **summary.__dict__,
+            identity_number=application.identity_number,
+            identity_valid_until=application.identity_valid_until,
+            identity_address=application.identity_address,
+            domicile_address=application.domicile_address,
+            driving_license_number=application.driving_license_number,
+            driving_license_class=application.driving_license_class,
+            driving_license_valid_until=application.driving_license_valid_until,
+            birth_place=application.birth_place,
+            birth_date=application.birth_date,
+            marital_status=application.marital_status,
+            mother_name=application.mother_name,
+            religion=application.religion,
+            medical_history=application.medical_history,
+            school_entry_year=application.school_entry_year,
+            school_graduation_year=application.school_graduation_year,
+            school_address=application.school_address,
+            grade_point_average=application.grade_point_average,
+            willing_to_be_placed_anywhere=application.willing_to_be_placed_anywhere,
+            interview_invitation_reason=application.interview_invitation_reason,
+            social_media_accounts=[
+                CareerApplicationAdminSocialMediaAccountRecord(
+                    id=account.id,
+                    platform=account.platform,
+                    account_id=account.account_id,
+                )
+                for account in application.social_media_accounts
+            ],
+            family_members=[
+                CareerApplicationAdminFamilyMemberRecord(
+                    id=member.id,
+                    relationship=member.relationship,
+                    name=member.name,
+                    education_level=member.education_level,
+                    occupation=member.occupation,
+                    workplace=member.workplace,
+                )
+                for member in application.family_members
+            ],
+            organization_experiences=[
+                CareerApplicationAdminOrganizationExperienceRecord(
+                    id=experience.id,
+                    organization_name=experience.organization_name,
+                    position=experience.position,
+                    period=experience.period,
+                )
+                for experience in application.organization_experiences
+            ],
+            work_experiences=[
+                CareerApplicationAdminWorkExperienceRecord(
+                    id=experience.id,
+                    company_name=experience.company_name,
+                    position=experience.position,
+                    employment_duration=experience.employment_duration,
+                    salary=experience.salary,
+                    company_phone_number=experience.company_phone_number,
+                    leaving_reason=experience.leaving_reason,
+                    company_comment=experience.company_comment,
+                )
+                for experience in application.work_experiences
+            ],
+            comments=[
+                self._career_application_comment_record(comment)
+                for comment in application.comments
+            ],
+        )
+
+    def _career_application_admin_summary_record(
+        self,
+        application: CareerApplicationModel,
+    ) -> CareerApplicationAdminSummaryRecord:
+        job = application.career_job
+        return CareerApplicationAdminSummaryRecord(
+            id=application.id,
+            career_job_id=application.career_job_id,
+            job_slug=job.slug if job is not None else None,
+            job_title=job.title if job is not None else None,
+            job_location=job.location if job is not None else None,
+            job_employment_type=job.employment_type if job is not None else None,
+            division_name=job.division_name if job is not None else None,
+            position_name=job.position_name if job is not None else None,
+            full_name=application.full_name,
+            nickname=application.nickname,
+            age=application.age,
+            gender=application.gender,
+            phone_number=application.phone_number,
+            education_level=application.education_level,
+            school_name=application.school_name,
+            major=application.major,
+            applied_position=application.applied_position,
+            alternative_applied_position=application.alternative_applied_position,
+            vacancy_source=application.vacancy_source,
+            preferred_area=application.preferred_area,
+            available_interview_date=application.available_interview_date,
+            self_photo_url=application.self_photo_url,
+            cv_file_url=application.cv_file_url,
+            status=application.status,
+            applied_at=application.applied_at,
+            created_at=application.created_at,
+            updated_at=application.updated_at,
+        )
+
+    def _career_application_comment_record(
+        self,
+        comment: CareerApplicationCommentModel,
+    ) -> CareerApplicationAdminCommentRecord:
+        admin_user = comment.admin_user
+        return CareerApplicationAdminCommentRecord(
+            id=comment.id,
+            admin_user_id=comment.admin_user_id,
+            author_name=admin_user.full_name if admin_user is not None else None,
+            author_email=admin_user.email if admin_user is not None else None,
+            comment=comment.comment,
+            created_at=comment.created_at,
+            updated_at=comment.updated_at,
+        )
 
     def create_contact_submission(
         self,

@@ -8,6 +8,9 @@ from app.core.config import settings
 from app.db.session import get_session_factory
 from app.repositories.recruitment import DatabaseRecruitmentRepository
 from app.repositories.recruitment import RecruitmentRepository
+from app.schemas.recruitment import CareerApplicationAdmin
+from app.schemas.recruitment import CareerApplicationAdminComment
+from app.schemas.recruitment import CareerApplicationAdminSummary
 from app.schemas.recruitment import CareerApplicationCreate
 from app.schemas.recruitment import CareerJob
 from app.schemas.recruitment import CareerJobAdmin
@@ -16,6 +19,17 @@ from app.schemas.recruitment import Division
 from app.schemas.recruitment import DivisionAdmin
 from app.schemas.recruitment import PositionAdmin
 from app.schemas.recruitment import SubmissionReceipt
+
+
+CAREER_APPLICATION_STATUSES = {
+    "submitted",
+    "hr_interview",
+    "user_interview",
+    "offer",
+    "onboard",
+    "rejected",
+    "canceled",
+}
 
 
 class RecruitmentService:
@@ -374,6 +388,93 @@ class RecruitmentService:
             )
         repository.delete_job(job)
 
+    def list_admin_career_applications(self) -> list[CareerApplicationAdminSummary]:
+        repository = self._database_repository()
+        return [
+            CareerApplicationAdminSummary.model_validate(application)
+            for application in repository.list_admin_career_applications()
+        ]
+
+    def get_admin_career_application(
+        self,
+        *,
+        application_id: UUID,
+    ) -> CareerApplicationAdmin:
+        repository = self._database_repository()
+        application = repository.get_career_application(application_id)
+        if application is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Career application was not found.",
+            )
+        return CareerApplicationAdmin.model_validate(
+            repository.career_application_admin_record(application)
+        )
+
+    def update_career_application_status(
+        self,
+        *,
+        application_id: UUID,
+        application_status: str,
+        admin_user_id: UUID,
+    ) -> CareerApplicationAdmin:
+        repository = self._database_repository()
+        application = repository.get_career_application(application_id)
+        if application is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Career application was not found.",
+            )
+        next_status = _clean_required_text(application_status, "status")
+        if next_status not in CAREER_APPLICATION_STATUSES:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Career application status is not supported.",
+            )
+        previous_status = application.status
+        updated_application = repository.update_career_application_status(
+            application,
+            status=next_status,
+        )
+        if previous_status != next_status:
+            repository.create_career_application_comment(
+                application,
+                admin_user_id=admin_user_id,
+                comment=(
+                    "Status changed from "
+                    f"{_career_application_status_label(previous_status)} to "
+                    f"{_career_application_status_label(next_status)}."
+                ),
+            )
+            refreshed_application = repository.get_career_application(application_id)
+            if refreshed_application is not None:
+                updated_application = repository.career_application_admin_record(
+                    refreshed_application
+                )
+        return CareerApplicationAdmin.model_validate(updated_application)
+
+    def create_career_application_comment(
+        self,
+        *,
+        application_id: UUID,
+        admin_user_id: UUID,
+        comment: str,
+    ) -> CareerApplicationAdminComment:
+        repository = self._database_repository()
+        application = repository.get_career_application(application_id)
+        if application is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Career application was not found.",
+            )
+        clean_comment = _clean_required_text(comment, "comment")
+        created_comment = repository.create_career_application_comment(
+            application,
+            admin_user_id=admin_user_id,
+            comment=clean_comment,
+        )
+        return CareerApplicationAdminComment.model_validate(created_comment)
+
     def create_contact_submission(
         self,
         payload: ContactSubmissionCreate,
@@ -439,3 +540,15 @@ def _clean_required_list(value: list[str], field_name: str) -> list[str]:
             detail=f"{field_name} must include at least one item.",
         )
     return cleaned_values
+
+
+def _career_application_status_label(value: str) -> str:
+    return {
+        "submitted": "New",
+        "hr_interview": "Interview HR",
+        "user_interview": "Interview User",
+        "offer": "Announcement",
+        "onboard": "Onboard",
+        "rejected": "Rejected",
+        "canceled": "Canceled",
+    }.get(value, value.replace("_", " ").title())

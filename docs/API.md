@@ -301,13 +301,15 @@ Accepts external candidate submissions using the candidate fields defined in
 `docs/DATABASE.md`. JSON request bodies remain supported for API clients. The
 public `/career` form submits `multipart/form-data` with a `payload` JSON field,
 plus `self_photo` and `cv_file` uploads saved under
-`/uploads/career-applications/`. `career_job_slug` is optional; when provided,
-it must match an active public job slug. The `/career` form submits family
-history, social-media accounts, organization/training experience, and work
-experience as nested arrays. Social-media accounts are required with at least
-one and at most five entries; family members are required with at least one and
-at most six entries; organization and work experiences are optional and capped
-at five entries each.
+`/uploads/career-applications/`. Multipart submissions must include both upload
+parts; the API ignores client-supplied `self_photo_url` and `cv_file_url`
+payload fields and derives those stored paths from the uploaded files.
+`career_job_slug` is optional; when provided, it must match an active public job
+slug. The `/career` form submits family history, social-media accounts,
+organization/training experience, and work experience as nested arrays.
+Social-media accounts are required with at least one and at most five entries;
+family members are required with at least one and at most six entries;
+organization and work experiences are optional and capped at five entries each.
 
 Request body:
 
@@ -346,8 +348,8 @@ Request body:
 | `willing_to_be_placed_anywhere` | boolean | Yes | Whether the candidate is willing to be placed according to company needs. |
 | `available_interview_date` | date or null | No | Candidate's available interview date. |
 | `interview_invitation_reason` | string | Yes | Candidate's reason for joining the interview process. |
-| `self_photo` | file | Yes on `/career` form | Multipart upload only. JPG, PNG, or WebP, max 2 MB. Stored as `self_photo_url`. |
-| `cv_file` | file | Yes on `/career` form | Multipart upload only. PDF, max 5 MB. Stored as `cv_file_url`. |
+| `self_photo` | file | Yes for multipart | Multipart upload only. JPG, PNG, or WebP, max 2 MB. Stored as `self_photo_url`. |
+| `cv_file` | file | Yes for multipart | Multipart upload only. PDF, max 5 MB. Stored as `cv_file_url`. |
 | `social_media_accounts` | array | Yes | One to five social media account objects. |
 | `family_members` | array | Yes | One to six family member objects. |
 | `organization_experiences` | array | No | Zero to five organization/training experience objects. |
@@ -554,7 +556,7 @@ Built-in role codes:
 | Code | Permissions |
 | --- | --- |
 | `super_admin` | `*` |
-| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.*`, `division.*`, `position.*`, `job.*` |
+| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.*`, `recruitment.*`, `division.*`, `position.*`, `job.*` |
 | `content_admin` | `service.*`, `faq.*`, `gallery.*` |
 | `recruitment_admin` | `recruitment.read`, `recruitment.update`, `division.*`, `position.*`, `job.*` |
 
@@ -1057,6 +1059,141 @@ DELETE /api/intl/v1/jobs/{job_id}
 ```
 
 Required permission: `job.delete`. Deletes the job posting record.
+
+### List Admin Recruitment Applications
+
+```http
+GET /api/intl/v1/recruitment/applications
+```
+
+Returns lightweight career application summary rows joined with the related
+career job snapshot when a submitted `career_job_slug` matched an active job.
+Required permission: `recruitment.read`. Results are ordered newest first. Use
+`GET /api/intl/v1/recruitment/applications/{application_id}` to load the full
+applicant detail only after a row or kanban card is opened.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Career application identifier. |
+| `career_job_id` | UUID or null | Linked career job record when known. |
+| `job_slug` | string or null | Linked public job slug. |
+| `job_title` | string or null | Linked public job title. |
+| `job_location` | string or null | Linked job location snapshot. |
+| `job_employment_type` | string or null | Linked job employment type. |
+| `division_name` | string or null | Linked job division snapshot. |
+| `position_name` | string or null | Linked job position snapshot. |
+| `full_name` | string | Candidate full name. |
+| `nickname` | string | Candidate nickname. |
+| `age` | integer | Candidate age. |
+| `gender` | string or null | Candidate gender. |
+| `phone_number` | string | Candidate phone or WhatsApp number. |
+| `education_level` | string or null | Candidate education level. |
+| `school_name` | string or null | Candidate school or university. |
+| `major` | string or null | Candidate major. |
+| `applied_position` | string | Candidate-entered applied position. |
+| `alternative_applied_position` | string or null | Candidate-entered alternative position. |
+| `vacancy_source` | string | Candidate-entered vacancy source. |
+| `preferred_area` | string or null | Candidate preferred placement area. |
+| `available_interview_date` | date or null | Candidate available interview date. |
+| `self_photo_url` | string or null | Stored self-photo URL. |
+| `cv_file_url` | string or null | Stored CV URL. |
+| `status` | string | Workflow status. Current supported values are `submitted`, `hr_interview`, `user_interview`, `offer`, `onboard`, `rejected`, and `canceled`. |
+| `applied_at` | datetime | Submission timestamp. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Get Admin Recruitment Application
+
+```http
+GET /api/intl/v1/recruitment/applications/{application_id}
+```
+
+Required permission: `recruitment.read`. Returns the full candidate
+application detail for an opened application. The response includes all summary
+fields plus identity, education, position preference, social media, family,
+organization/training, work history, upload URLs, and internal comments.
+
+Additional response fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `identity_number` | string | Candidate KTP number. |
+| `identity_valid_until` | date | KTP validity date. |
+| `identity_address` | string | Candidate KTP address. |
+| `domicile_address` | string | Candidate domicile address. |
+| `driving_license_number` | string | Candidate SIM number. |
+| `driving_license_class` | string or null | Candidate SIM class. |
+| `driving_license_valid_until` | date | SIM validity date. |
+| `birth_place` | string | Candidate birth place. |
+| `birth_date` | date | Candidate birth date. |
+| `marital_status` | string or null | Candidate marital status. |
+| `mother_name` | string | Candidate mother name. |
+| `religion` | string or null | Candidate religion. |
+| `medical_history` | string or null | Candidate medical history. |
+| `school_entry_year` | integer or null | Candidate school entry year. |
+| `school_graduation_year` | integer or null | Candidate school graduation year. |
+| `school_address` | string or null | Candidate school or university address. |
+| `grade_point_average` | string or null | Candidate grade or GPA. |
+| `willing_to_be_placed_anywhere` | boolean | Whether the candidate is willing to be placed according to company needs. |
+| `interview_invitation_reason` | string | Candidate reason they should be invited to interview. |
+| `social_media_accounts` | array | Submitted social media accounts with `id`, `platform`, and `account_id`. |
+| `family_members` | array | Submitted family history with `id`, `relationship`, `name`, `education_level`, `occupation`, and `workplace`. |
+| `organization_experiences` | array | Submitted organization/training history with `id`, `organization_name`, `position`, and `period`. |
+| `work_experiences` | array | Submitted work history with `id`, `company_name`, `position`, `employment_duration`, `salary`, `company_phone_number`, `leaving_reason`, and `company_comment`. |
+| `comments` | array | Internal recruitment comments with author metadata and timestamps. |
+
+### Update Admin Recruitment Application
+
+```http
+PATCH /api/intl/v1/recruitment/applications/{application_id}
+```
+
+Required permission: `recruitment.update`. Updates the application workflow
+status and automatically creates an internal recruitment comment when the
+status changes. Supported status values map to the admin kanban columns as
+follows: `submitted` is New, `hr_interview` is Interview HR, `user_interview`
+is Interview User, `offer` is Announcement, and
+`onboard`/`rejected`/`canceled` are Done.
+
+Request:
+
+```json
+{
+  "status": "hr_interview"
+}
+```
+
+### Create Admin Recruitment Application Comment
+
+```http
+POST /api/intl/v1/recruitment/applications/{application_id}/comments
+```
+
+Required permission: `recruitment.update`. Creates an internal recruitment
+comment on a career application and returns the created comment with author
+metadata.
+
+Request:
+
+```json
+{
+  "comment": "Candidate confirmed HR interview availability."
+}
+```
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Comment identifier. |
+| `admin_user_id` | UUID or null | Admin author identifier. |
+| `author_name` | string or null | Admin author display name. |
+| `author_email` | string or null | Admin author email. |
+| `comment` | string | Internal comment text. |
+| `created_at` | datetime | Comment creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
 
 ### List Admin Gallery Images
 

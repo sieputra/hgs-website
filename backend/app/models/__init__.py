@@ -78,6 +78,9 @@ class AdminUserModel(TimestampMixin, Base):
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     role: Mapped[AdminRoleModel] = orm_relationship(back_populates="users")
+    recruitment_comments: Mapped[list["CareerApplicationCommentModel"]] = (
+        orm_relationship(back_populates="admin_user")
+    )
 
 
 class PublicServiceModel(TimestampMixin, Base):
@@ -290,6 +293,7 @@ class CareerApplicationModel(TimestampMixin, Base):
         nullable=False,
     )
 
+    career_job: Mapped[CareerJobModel | None] = orm_relationship()
     work_experiences: Mapped[list["CareerApplicationWorkExperienceModel"]] = (
         orm_relationship(
             back_populates="career_application",
@@ -317,6 +321,11 @@ class CareerApplicationModel(TimestampMixin, Base):
         back_populates="career_application",
         cascade="all, delete-orphan",
         order_by="CareerApplicationOrganizationExperienceModel.sort_order",
+    )
+    comments: Mapped[list["CareerApplicationCommentModel"]] = orm_relationship(
+        back_populates="career_application",
+        cascade="all, delete-orphan",
+        order_by="CareerApplicationCommentModel.created_at",
     )
 
 
@@ -414,4 +423,31 @@ class CareerApplicationOrganizationExperienceModel(TimestampMixin, Base):
 
     career_application: Mapped[CareerApplicationModel] = orm_relationship(
         back_populates="organization_experiences"
+    )
+
+
+class CareerApplicationCommentModel(TimestampMixin, Base):
+    __tablename__ = "career_application_comments"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    career_application_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("career_applications.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    admin_user_id: Mapped[UUID | None] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("admin_users.id", ondelete="SET NULL"),
+    )
+    comment: Mapped[str] = mapped_column(Text, nullable=False)
+
+    admin_user: Mapped[AdminUserModel | None] = orm_relationship(
+        back_populates="recruitment_comments"
+    )
+    career_application: Mapped[CareerApplicationModel] = orm_relationship(
+        back_populates="comments"
     )

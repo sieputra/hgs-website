@@ -68,7 +68,8 @@ role name, description, and permissions can be edited after creation. System
 roles cannot be deleted. Human Resources permissions use `division.read`,
 `division.create`, `division.update`, `division.delete`, `position.read`,
 `position.create`, `position.update`, `position.delete`, `job.read`,
-`job.create`, `job.update`, and `job.delete`.
+`job.create`, `job.update`, `job.delete`, `recruitment.read`, and
+`recruitment.update`.
 
 ### `admin_users`
 
@@ -514,9 +515,17 @@ Store candidate submissions in `career_applications`. Use a separate
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `status` | VARCHAR(50) | Yes | Application workflow status, for example submitted, reviewed, shortlisted, rejected, or hired. |
+| `status` | VARCHAR(50) | Yes | Application workflow status. Supported admin workflow values are `submitted`, `hr_interview`, `user_interview`, `offer`, `onboard`, `rejected`, and `canceled`. |
 | `created_at` | TIMESTAMP | Yes | Record creation time. |
 | `updated_at` | TIMESTAMP | Yes | Last update time. |
+
+Admin Recruitment groups application statuses as New (`submitted`), Interview
+HR (`hr_interview`), Interview User (`user_interview`), Announcement (`offer`),
+and Done (`onboard`, `rejected`, or `canceled`).
+
+Admin comments for a candidate application are stored in
+`career_application_comments` and are shown in the Recruitment kanban detail
+panel.
 
 ### `career_application_social_media_accounts`
 
@@ -572,6 +581,17 @@ Store candidate submissions in `career_applications`. Use a separate
 | `leaving_reason` | TEXT | No | Alasan Keluar. |
 | `company_comment` | TEXT | No | Komentar Tentang Perusahaan. |
 | `sort_order` | SMALLINT | Yes | Preserves the order entered by the candidate. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
+
+### `career_application_comments`
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `career_application_id` | UUID | Yes | Links to `career_applications`; deleted with the application. |
+| `admin_user_id` | UUID | No | Admin author. Set to null if the admin user is deleted. |
+| `comment` | TEXT | Yes | Internal recruitment comment. |
 | `created_at` | TIMESTAMP | Yes | Record creation time. |
 | `updated_at` | TIMESTAMP | Yes | Last update time. |
 

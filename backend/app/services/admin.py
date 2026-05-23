@@ -57,6 +57,8 @@ DEFAULT_ADMIN_ROLES = (
             "gallery.create",
             "gallery.update",
             "gallery.delete",
+            "recruitment.read",
+            "recruitment.update",
             "division.read",
             "division.create",
             "division.update",

@@ -36,6 +36,11 @@ type SelectOption = {
   label: string;
 };
 
+type FormStatus = {
+  type: "success" | "error";
+  message: string;
+};
+
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
 const maxWorkExperiences = 5;
 const maxOrganizationExperiences = 5;
@@ -350,11 +355,26 @@ export default function CareerApplicationPage() {
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formResetKey, setFormResetKey] = useState(0);
-  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [status, setStatus] = useState<FormStatus | null>(null);
+  const [toast, setToast] = useState<FormStatus | null>(null);
 
   useEffect(() => {
     setCaptcha(createCaptcha());
   }, []);
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setToast(null);
+    }, 4600);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [toast]);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -391,7 +411,7 @@ export default function CareerApplicationPage() {
       } catch {
         if (isMounted) {
           setJobs(fallbackCareerJobs);
-          setStatus({
+          showStatus({
             type: "error",
             message: "Daftar lowongan belum dapat dimuat. Form tetap bisa dikirim dengan posisi yang Anda isi.",
           });
@@ -423,12 +443,22 @@ export default function CareerApplicationPage() {
     }
   }
 
+  function showStatus(nextStatus: FormStatus) {
+    setStatus(nextStatus);
+    setToast(nextStatus);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus(null);
+    setToast(null);
+
+    if (isSubmitting) {
+      return;
+    }
 
     if (Number(captchaAnswer) !== captcha.left + captcha.right) {
-      setStatus({ type: "error", message: "Jawaban captcha belum sesuai. Silakan coba lagi." });
+      showStatus({ type: "error", message: "Jawaban captcha belum sesuai. Silakan coba lagi." });
       setCaptcha(createCaptcha());
       setCaptchaAnswer("");
       return;
@@ -454,7 +484,7 @@ export default function CareerApplicationPage() {
     const missingCompanyName = workExperiences.some((experience) => experience.company_name.length === 0);
 
     if (missingCompanyName) {
-      setStatus({
+      showStatus({
         type: "error",
         message: "Nama perusahaan wajib diisi pada setiap pengalaman kerja yang ditambahkan.",
       });
@@ -477,7 +507,7 @@ export default function CareerApplicationPage() {
     );
 
     if (socialMediaAccounts.length === 0 || hasIncompleteSocialAccount) {
-      setStatus({
+      showStatus({
         type: "error",
         message: "Isi minimal satu akun social media lengkap dengan platform dan Nickname / ID.",
       });
@@ -503,7 +533,7 @@ export default function CareerApplicationPage() {
     );
 
     if (familyMembers.length === 0 || hasIncompleteFamilyMember) {
-      setStatus({
+      showStatus({
         type: "error",
         message: "Isi minimal satu riwayat keluarga lengkap dengan hubungan dan nama.",
       });
@@ -566,32 +596,32 @@ export default function CareerApplicationPage() {
     const cvFile = readFile(formData, "cv_file");
 
     if (!selfPhoto) {
-      setStatus({ type: "error", message: "Upload foto diri wajib diisi." });
+      showStatus({ type: "error", message: "Upload foto diri wajib diisi." });
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(selfPhoto.type)) {
-      setStatus({ type: "error", message: "Foto diri harus berformat JPG, PNG, atau WebP." });
+      showStatus({ type: "error", message: "Foto diri harus berformat JPG, PNG, atau WebP." });
       return;
     }
 
     if (selfPhoto.size > maxSelfPhotoBytes) {
-      setStatus({ type: "error", message: "Ukuran foto diri maksimal 2 MB." });
+      showStatus({ type: "error", message: "Ukuran foto diri maksimal 2 MB." });
       return;
     }
 
     if (!cvFile) {
-      setStatus({ type: "error", message: "Upload CV PDF wajib diisi." });
+      showStatus({ type: "error", message: "Upload CV PDF wajib diisi." });
       return;
     }
 
     if (cvFile.type !== "application/pdf") {
-      setStatus({ type: "error", message: "CV harus berformat PDF." });
+      showStatus({ type: "error", message: "CV harus berformat PDF." });
       return;
     }
 
     if (cvFile.size > maxCvBytes) {
-      setStatus({ type: "error", message: "Ukuran CV maksimal 5 MB." });
+      showStatus({ type: "error", message: "Ukuran CV maksimal 5 MB." });
       return;
     }
 
@@ -615,7 +645,7 @@ export default function CareerApplicationPage() {
         throw new Error(message || "Application could not be submitted.");
       }
 
-      setStatus({
+      showStatus({
         type: "success",
         message: "Lamaran berhasil dikirim. Tim HR HGS akan menghubungi Anda sesuai proses rekrutmen.",
       });
@@ -634,7 +664,7 @@ export default function CareerApplicationPage() {
       setCaptcha(createCaptcha());
       setCaptchaAnswer("");
     } catch (error) {
-      setStatus({
+      showStatus({
         type: "error",
         message: error instanceof Error ? error.message : "Lamaran belum berhasil dikirim. Silakan coba lagi.",
       });
@@ -647,6 +677,31 @@ export default function CareerApplicationPage() {
 
   return (
     <main className="application-page">
+      {toast && (
+        <div className="application-toast-region" role="status" aria-live="polite">
+          <div className={`application-toast ${toast.type}`}>
+            <p>{toast.message}</p>
+            <button aria-label="Tutup notifikasi" onClick={() => setToast(null)} type="button">
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                <path d="M7 7l10 10" />
+                <path d="M17 7L7 17" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isSubmitting && (
+        <div className="application-submit-overlay" role="status" aria-live="assertive">
+          <div className="application-submit-progress" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <p>Mengirim lamaran...</p>
+        </div>
+      )}
+
       <header className="application-header">
         <a className="application-logo" href="/" aria-label="HGS home">
           <img src="/images/logo.webp" alt="HGS Simply to serve logo" width="1600" height="872" />
@@ -687,7 +742,7 @@ export default function CareerApplicationPage() {
         </a>
       </section>
 
-      <form className="application-form" ref={formRef} onSubmit={handleSubmit}>
+      <form aria-busy={isSubmitting} className="application-form" ref={formRef} onSubmit={handleSubmit}>
         {status && (
           <div className={`form-status ${status.type}`} role="status">
             {status.message}

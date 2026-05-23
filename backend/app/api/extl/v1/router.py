@@ -175,33 +175,40 @@ async def _career_application_payload_from_request(
                 status_code=422,
                 detail="Career application payload must be an object.",
             )
+        _remove_client_upload_paths(payload_data)
 
         payload = _validate_career_application_payload(payload_data)
         upload_updates: dict[str, str] = {}
 
         self_photo = form.get("self_photo")
-        if isinstance(self_photo, UploadFile):
-            upload_updates["self_photo_url"] = await _save_career_upload(
-                upload=self_photo,
-                field_name="Self photo",
-                allowed_content_types=PHOTO_CONTENT_TYPES,
-                max_size=settings.max_career_photo_bytes,
-                validate_pdf=False,
+        if not isinstance(self_photo, UploadFile):
+            raise HTTPException(
+                status_code=422,
+                detail="Self photo upload is required.",
             )
+        upload_updates["self_photo_url"] = await _save_career_upload(
+            upload=self_photo,
+            field_name="Self photo",
+            allowed_content_types=PHOTO_CONTENT_TYPES,
+            max_size=settings.max_career_photo_bytes,
+            validate_pdf=False,
+        )
 
         cv_file = form.get("cv_file")
-        if isinstance(cv_file, UploadFile):
-            upload_updates["cv_file_url"] = await _save_career_upload(
-                upload=cv_file,
-                field_name="CV file",
-                allowed_content_types={PDF_CONTENT_TYPE: ".pdf"},
-                max_size=settings.max_career_cv_bytes,
-                validate_pdf=True,
+        if not isinstance(cv_file, UploadFile):
+            raise HTTPException(
+                status_code=422,
+                detail="CV PDF upload is required.",
             )
+        upload_updates["cv_file_url"] = await _save_career_upload(
+            upload=cv_file,
+            field_name="CV file",
+            allowed_content_types={PDF_CONTENT_TYPE: ".pdf"},
+            max_size=settings.max_career_cv_bytes,
+            validate_pdf=True,
+        )
 
-        if upload_updates:
-            return payload.model_copy(update=upload_updates)
-        return payload
+        return payload.model_copy(update=upload_updates)
     else:
         try:
             payload_data = await request.json()
@@ -210,8 +217,15 @@ async def _career_application_payload_from_request(
                 status_code=422,
                 detail="Career application request body must be valid JSON.",
             ) from exc
+        if isinstance(payload_data, dict):
+            _remove_client_upload_paths(payload_data)
 
     return _validate_career_application_payload(payload_data)
+
+
+def _remove_client_upload_paths(payload_data: dict[str, object]) -> None:
+    payload_data.pop("self_photo_url", None)
+    payload_data.pop("cv_file_url", None)
 
 
 def _validate_career_application_payload(

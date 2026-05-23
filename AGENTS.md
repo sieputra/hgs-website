@@ -24,4 +24,4 @@
 - Admin dashboard lives at `/admin`; INTL admin APIs use bearer-token auth with RBAC roles and a protected admin bootstrap CLI.
 - Default admin datatable CRUD workflow: create and edit open form modals; delete opens a confirmation modal before the API call.
 - Admin dashboard shell convention: the left sidebar is sticky and foldable, contains only primary navigation, and account/sign-out controls live in a square sticky top app bar.
-- Admin Human Resources menu contains Division, Position, and Jobs; all use modal CRUD, confirmation deletes, inline status switches, and draggable row ordering.
+- Admin Human Resources menu contains Recruitment first, then Division, Position, and Jobs; Recruitment has list and kanban application views, while master data pages use modal CRUD, confirmation deletes, inline status switches, and draggable row ordering.

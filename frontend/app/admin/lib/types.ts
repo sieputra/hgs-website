@@ -106,8 +106,118 @@ export type CareerJobAdmin = {
   updated_at: string;
 };
 
+export type CareerApplicationStatus =
+  | "submitted"
+  | "hr_interview"
+  | "user_interview"
+  | "offer"
+  | "onboard"
+  | "rejected"
+  | "canceled";
+
+export type CareerApplicationWorkExperienceAdmin = {
+  id: string;
+  company_name: string;
+  position: string | null;
+  employment_duration: string | null;
+  salary: string | number | null;
+  company_phone_number: string | null;
+  leaving_reason: string | null;
+  company_comment: string | null;
+};
+
+export type CareerApplicationSocialMediaAccountAdmin = {
+  id: string;
+  platform: string;
+  account_id: string;
+};
+
+export type CareerApplicationFamilyMemberAdmin = {
+  id: string;
+  relationship: string;
+  name: string;
+  education_level: string | null;
+  occupation: string | null;
+  workplace: string | null;
+};
+
+export type CareerApplicationOrganizationExperienceAdmin = {
+  id: string;
+  organization_name: string;
+  position: string | null;
+  period: string | null;
+};
+
+export type CareerApplicationCommentAdmin = {
+  id: string;
+  admin_user_id: string | null;
+  author_name: string | null;
+  author_email: string | null;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CareerApplicationSummaryAdmin = {
+  id: string;
+  career_job_id: string | null;
+  job_slug: string | null;
+  job_title: string | null;
+  job_location: string | null;
+  job_employment_type: string | null;
+  division_name: string | null;
+  position_name: string | null;
+  full_name: string;
+  nickname: string;
+  age: number;
+  gender: string | null;
+  phone_number: string;
+  education_level: string | null;
+  school_name: string | null;
+  major: string | null;
+  applied_position: string;
+  alternative_applied_position: string | null;
+  vacancy_source: string;
+  preferred_area: string | null;
+  available_interview_date: string | null;
+  self_photo_url: string | null;
+  cv_file_url: string | null;
+  status: string;
+  applied_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CareerApplicationAdmin = CareerApplicationSummaryAdmin & {
+  identity_number: string;
+  identity_valid_until: string;
+  identity_address: string;
+  domicile_address: string;
+  driving_license_number: string;
+  driving_license_class: string | null;
+  driving_license_valid_until: string;
+  birth_place: string;
+  birth_date: string;
+  marital_status: string | null;
+  mother_name: string;
+  religion: string | null;
+  medical_history: string | null;
+  school_entry_year: number | null;
+  school_graduation_year: number | null;
+  school_address: string | null;
+  grade_point_average: string | null;
+  willing_to_be_placed_anywhere: boolean;
+  interview_invitation_reason: string;
+  social_media_accounts: CareerApplicationSocialMediaAccountAdmin[];
+  family_members: CareerApplicationFamilyMemberAdmin[];
+  organization_experiences: CareerApplicationOrganizationExperienceAdmin[];
+  work_experiences: CareerApplicationWorkExperienceAdmin[];
+  comments: CareerApplicationCommentAdmin[];
+};
+
 export type AdminView =
   | "dashboard"
+  | "recruitment"
   | "users"
   | "roles"
   | "services"

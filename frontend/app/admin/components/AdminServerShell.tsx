@@ -16,6 +16,12 @@ const adminNavItems: AdminDashboardNavItem[] = [
   {
     children: [
       {
+        href: "/admin/recruitment",
+        id: "recruitment",
+        icon: "recruitment",
+        label: "Recruitment",
+      },
+      {
         href: "/admin/divisions",
         id: "divisions",
         icon: "divisions",

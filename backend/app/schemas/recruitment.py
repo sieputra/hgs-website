@@ -130,6 +130,126 @@ class CareerJobUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class CareerApplicationAdminWorkExperience(BaseModel):
+    id: UUID
+    company_name: str
+    position: str | None
+    employment_duration: str | None
+    salary: Decimal | None
+    company_phone_number: str | None
+    leaving_reason: str | None
+    company_comment: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CareerApplicationAdminSocialMediaAccount(BaseModel):
+    id: UUID
+    platform: str
+    account_id: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CareerApplicationAdminFamilyMember(BaseModel):
+    id: UUID
+    relationship: str
+    name: str
+    education_level: str | None
+    occupation: str | None
+    workplace: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CareerApplicationAdminOrganizationExperience(BaseModel):
+    id: UUID
+    organization_name: str
+    position: str | None
+    period: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CareerApplicationAdminComment(BaseModel):
+    id: UUID
+    admin_user_id: UUID | None
+    author_name: str | None
+    author_email: str | None
+    comment: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CareerApplicationAdminSummary(BaseModel):
+    id: UUID
+    career_job_id: UUID | None
+    job_slug: str | None
+    job_title: str | None
+    job_location: str | None
+    job_employment_type: str | None
+    division_name: str | None
+    position_name: str | None
+    full_name: str
+    nickname: str
+    age: int
+    gender: str | None
+    phone_number: str
+    education_level: str | None
+    school_name: str | None
+    major: str | None
+    applied_position: str
+    alternative_applied_position: str | None
+    vacancy_source: str
+    preferred_area: str | None
+    available_interview_date: date | None
+    self_photo_url: str | None
+    cv_file_url: str | None
+    status: str
+    applied_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CareerApplicationAdmin(CareerApplicationAdminSummary):
+    identity_number: str
+    identity_valid_until: date
+    identity_address: str
+    domicile_address: str
+    driving_license_number: str
+    driving_license_class: str | None
+    driving_license_valid_until: date
+    birth_place: str
+    birth_date: date
+    marital_status: str | None
+    mother_name: str
+    religion: str | None
+    medical_history: str | None
+    school_entry_year: int | None
+    school_graduation_year: int | None
+    school_address: str | None
+    grade_point_average: str | None
+    willing_to_be_placed_anywhere: bool
+    interview_invitation_reason: str
+    social_media_accounts: list[CareerApplicationAdminSocialMediaAccount]
+    family_members: list[CareerApplicationAdminFamilyMember]
+    organization_experiences: list[CareerApplicationAdminOrganizationExperience]
+    work_experiences: list[CareerApplicationAdminWorkExperience]
+    comments: list[CareerApplicationAdminComment]
+
+
+class CareerApplicationStatusUpdate(BaseModel):
+    status: str = Field(min_length=1, max_length=50)
+
+
+class CareerApplicationCommentCreate(BaseModel):
+    comment: str = Field(min_length=1, max_length=5000)
+
+
 class ContactSubmissionCreate(BaseModel):
     full_name: str = Field(min_length=1, max_length=150)
     email: str = Field(min_length=3, max_length=150)

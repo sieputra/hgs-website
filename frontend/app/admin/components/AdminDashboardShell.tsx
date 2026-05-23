@@ -16,6 +16,7 @@ type AdminDashboardNavIconName =
   | "human-resources"
   | "jobs"
   | "positions"
+  | "recruitment"
   | "roles"
   | "services"
   | "user-management"
@@ -282,6 +283,18 @@ function AdminNavIcon({ name }: { name: AdminDashboardNavIconName }) {
         <path d="M4 20v-9l8-6 8 6v9" />
         <path d="M8 20v-6h8v6" />
         <path d="M10 10h4" />
+      </svg>
+    );
+  }
+
+  if (name === "recruitment") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <path d="M5 20v-2a4 4 0 0 1 4-4h2" />
+        <circle cx="10" cy="8" r="3" />
+        <path d="M15 11l2 2 4-5" />
+        <path d="M15 19h5" />
+        <path d="M17.5 16.5v5" />
       </svg>
     );
   }

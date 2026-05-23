@@ -45,6 +45,7 @@ backend/*.sqlite3
 backend/uploads/*
 !backend/uploads/.gitkeep
 !backend/uploads/career-applications/
+backend/uploads/career-applications/*
 !backend/uploads/career-applications/.gitkeep
 backend/media/
 backend/staticfiles/

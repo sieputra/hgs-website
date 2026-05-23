@@ -13,6 +13,47 @@ from app.main import create_app
 pytestmark = pytest.mark.anyio
 
 
+def minimal_career_application_payload() -> dict[str, object]:
+    return {
+        "career_job_slug": "driver-operasional",
+        "full_name": "Andi Saputra",
+        "nickname": "Andi",
+        "identity_number": "3171000000000001",
+        "identity_valid_until": "2030-12-31",
+        "identity_address": "Jakarta Selatan",
+        "domicile_address": "Jakarta Selatan",
+        "driving_license_number": "SIMB10001",
+        "driving_license_valid_until": "2030-12-31",
+        "birth_place": "Jakarta",
+        "birth_date": "1994-05-10",
+        "age": 31,
+        "mother_name": "Siti",
+        "phone_number": "08123456789",
+        "applied_position": "Driver",
+        "vacancy_source": "Website",
+        "willing_to_be_placed_anywhere": True,
+        "interview_invitation_reason": "Berpengalaman sebagai driver distribusi.",
+        "social_media_accounts": [
+            {
+                "platform": "Instagram",
+                "account_id": "andi.saputra",
+            }
+        ],
+        "family_members": [
+            {
+                "relationship": "Ibu",
+                "name": "Siti",
+            }
+        ],
+    }
+
+
+def tiny_png_bytes() -> bytes:
+    image_buffer = BytesIO()
+    Image.new("RGB", (1, 1), color=(255, 255, 255)).save(image_buffer, format="PNG")
+    return image_buffer.getvalue()
+
+
 async def test_extl_divisions_returns_master_data_with_positions() -> None:
     async with AsyncClient(
         transport=ASGITransport(app=create_app()),
@@ -186,51 +227,15 @@ async def test_extl_career_application_accepts_candidate_submission() -> None:
 async def test_extl_career_application_accepts_candidate_uploads(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(settings, "upload_dir", str(tmp_path))
 
-    application_payload = {
-        "career_job_slug": "driver-operasional",
-        "full_name": "Andi Saputra",
-        "nickname": "Andi",
-        "identity_number": "3171000000000001",
-        "identity_valid_until": "2030-12-31",
-        "identity_address": "Jakarta Selatan",
-        "domicile_address": "Jakarta Selatan",
-        "driving_license_number": "SIMB10001",
-        "driving_license_valid_until": "2030-12-31",
-        "birth_place": "Jakarta",
-        "birth_date": "1994-05-10",
-        "age": 31,
-        "mother_name": "Siti",
-        "phone_number": "08123456789",
-        "applied_position": "Driver",
-        "vacancy_source": "Website",
-        "willing_to_be_placed_anywhere": True,
-        "interview_invitation_reason": "Berpengalaman sebagai driver distribusi.",
-        "social_media_accounts": [
-            {
-                "platform": "Instagram",
-                "account_id": "andi.saputra",
-            }
-        ],
-        "family_members": [
-            {
-                "relationship": "Ibu",
-                "name": "Siti",
-            }
-        ],
-    }
-    image_buffer = BytesIO()
-    Image.new("RGB", (1, 1), color=(255, 255, 255)).save(image_buffer, format="PNG")
-    png_bytes = image_buffer.getvalue()
-
     async with AsyncClient(
         transport=ASGITransport(app=create_app()),
         base_url="http://test",
     ) as client:
         response = await client.post(
             "/api/extl/v1/career-applications",
-            data={"payload": json.dumps(application_payload)},
+            data={"payload": json.dumps(minimal_career_application_payload())},
             files={
-                "self_photo": ("self-photo.png", png_bytes, "image/png"),
+                "self_photo": ("self-photo.png", tiny_png_bytes(), "image/png"),
                 "cv_file": ("cv.pdf", b"%PDF-1.4\n%%EOF", "application/pdf"),
             },
         )
@@ -243,6 +248,23 @@ async def test_extl_career_application_accepts_candidate_uploads(tmp_path, monke
     assert payload["data"]["status"] == "submitted"
     assert len(list(upload_dir.glob("*.png"))) == 1
     assert len(list(upload_dir.glob("*.pdf"))) == 1
+
+
+async def test_extl_career_application_requires_upload_files() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.post(
+            "/api/extl/v1/career-applications",
+            data={"payload": json.dumps(minimal_career_application_payload())},
+            files={
+                "self_photo": ("self-photo.png", tiny_png_bytes(), "image/png"),
+            },
+        )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "CV PDF upload is required."
 
 
 async def test_extl_career_application_rejects_unknown_job_slug() -> None:
