@@ -19,3 +19,12 @@ export function DeleteActionIcon() {
     </svg>
   );
 }
+
+export function ViewActionIcon() {
+  return (
+    <svg aria-hidden="true" className="admin-action-icon" fill="none" viewBox="0 0 24 24">
+      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+    </svg>
+  );
+}

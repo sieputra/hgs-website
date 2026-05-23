@@ -61,23 +61,31 @@
   kanban view using the New, Interview HR, Interview User, Announcement, and
   Done status columns; the kanban board fills the available admin content
   height, and the list/kanban cards do not expose inline status-changing
-  controls. Clicking a kanban card opens a full-panel candidate detail popup
+  controls. Kanban cards can be dragged between columns using the same allowed
+  status flow as the detail-panel status dropdown; dropping a card into Done
+  sets it to Rejected by default. Clicking a kanban card opens a full-panel candidate detail popup
   and then loads the full applicant detail for that card. The panel has
   icon-only tabs for applied position, candidate identity, latest education,
   family history, social media, organization/training history, and work
   history, shows detail fields as inline text, and displays the uploaded
-  candidate photo as a small header thumbnail. The panel is fullscreen,
+  candidate photo as a small header thumbnail that opens a larger photo
+  preview popup. The panel is fullscreen,
   edge-to-edge, uses a red close button, and scrolls tab content only when the
   content exceeds the available space. A green status dropdown sits to the left
   of the close button and exposes the next allowed workflow actions for the
   current status. The panel keeps internal recruitment comments in a right-side
   rail with a textarea composer at the bottom. The identity tab does not show
   upload file pills; uploaded CVs are shown in a dedicated CV tab with an error
-  fallback when the file cannot be loaded. Kanban cards omit file links, and
+  fallback when the file cannot be loaded. The list view provides filters for
+  candidate name, phone number, preferred area, applied date range, and job
+  position, omits file links, and opens the same full-panel candidate detail
+  popup from an eye-icon action button at the right side of each row. List rows
+  show applicant thumbnails in the candidate column, and clicking an uploaded
+  thumbnail opens the larger photo preview popup. Kanban
+  cards omit file links, and
   cards in the Done column show only candidate name and phone with pastel
   colors by final status: green for Onboard, red for Rejected, and yellow for
-  Canceled. The list view retains the upload file column. Division, Position,
-  and Jobs tables use modal
+  Canceled. Division, Position, and Jobs tables use modal
   create/edit forms, confirmation modals before delete calls, inline
   active/inactive switches, and drag-and-drop row reordering that persists
   `sort_order` through the INTL API.

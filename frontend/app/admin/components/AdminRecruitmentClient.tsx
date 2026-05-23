@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 
 import { AdminToast, type AdminToastState } from "./AdminToast";
+import { ViewActionIcon } from "./AdminActionIcons";
 import { adminClientRequest } from "../lib/client-api";
 import { hasPermission } from "../lib/permissions";
 import type {
@@ -14,6 +15,18 @@ import type {
 } from "../lib/types";
 
 type RecruitmentViewMode = "list" | "kanban";
+type RecruitmentListFilters = {
+  area: string;
+  appliedFrom: string;
+  appliedTo: string;
+  candidateName: string;
+  jobPosition: string;
+  phone: string;
+};
+type RecruitmentPhotoPreview = {
+  name: string;
+  url: string;
+};
 type RecruitmentDetailTab =
   | "identity"
   | "cv"
@@ -80,6 +93,8 @@ export function AdminRecruitmentClient({
   const [selectedTab, setSelectedTab] = useState<RecruitmentDetailTab>("position");
   const [toast, setToast] = useState<AdminToastState>(null);
   const [viewMode, setViewMode] = useState<RecruitmentViewMode>("kanban");
+  const [movingApplicationId, setMovingApplicationId] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<RecruitmentPhotoPreview | null>(null);
 
   const selectedApplication = useMemo(
     () => (selectedApplicationId ? applicationDetailsById[selectedApplicationId] : null),
@@ -141,6 +156,18 @@ export function AdminRecruitmentClient({
     setSelectedApplicationId(null);
   }
 
+  function openPhotoPreview(
+    application: CareerApplicationSummaryAdmin | CareerApplicationAdmin,
+  ) {
+    if (!application.self_photo_url) {
+      return;
+    }
+    setPhotoPreview({
+      name: application.full_name,
+      url: application.self_photo_url,
+    });
+  }
+
   function appendApplicationComment(
     applicationId: string,
     comment: CareerApplicationCommentAdmin,
@@ -170,6 +197,51 @@ export function AdminRecruitmentClient({
       ...currentDetails,
       [application.id]: application,
     }));
+  }
+
+  async function moveApplicationStatus(
+    application: CareerApplicationSummaryAdmin,
+    nextStatus: CareerApplicationStatus,
+  ) {
+    if (!canUpdateRecruitment || movingApplicationId) {
+      return;
+    }
+    if (application.status === nextStatus) {
+      return;
+    }
+    if (!canMoveApplicationToStatus(application.status, nextStatus)) {
+      setToast({
+        message: "This status move is not allowed by the recruitment workflow.",
+        tone: "error",
+      });
+      return;
+    }
+
+    setMovingApplicationId(application.id);
+    try {
+      const updatedApplication = await adminClientRequest<CareerApplicationAdmin>(
+        `/api/intl/v1/recruitment/applications/${application.id}`,
+        {
+          body: JSON.stringify({ status: nextStatus }),
+          method: "PATCH",
+        },
+      );
+      const refreshedApplication = await adminClientRequest<CareerApplicationAdmin>(
+        `/api/intl/v1/recruitment/applications/${updatedApplication.id}`,
+      );
+      updateApplication(refreshedApplication);
+      setToast({
+        message: `Moved to ${statusLabel(nextStatus)} and comment added.`,
+        tone: "success",
+      });
+    } catch (error) {
+      setToast({
+        message: error instanceof Error ? error.message : "Failed to move application.",
+        tone: "error",
+      });
+    } finally {
+      setMovingApplicationId(null);
+    }
   }
 
   return (
@@ -208,10 +280,17 @@ export function AdminRecruitmentClient({
 
       {canReadRecruitment ? (
         viewMode === "list" ? (
-          <RecruitmentList applications={applicationItems} />
+          <RecruitmentList
+            applications={applicationItems}
+            onOpenApplication={openApplicationPanel}
+            onPreviewPhoto={openPhotoPreview}
+          />
         ) : (
           <RecruitmentKanban
+            canMoveApplications={canUpdateRecruitment}
             columns={groupedApplications}
+            movingApplicationId={movingApplicationId}
+            onMoveApplication={moveApplicationStatus}
             onOpenApplication={openApplicationPanel}
           />
         )
@@ -231,8 +310,17 @@ export function AdminRecruitmentClient({
           onClose={closeApplicationPanel}
           onToast={setToast}
           onUpdateApplication={updateApplication}
+          onPreviewPhoto={openPhotoPreview}
+          photoPreview={photoPreview}
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
+        />
+      ) : null}
+
+      {photoPreview ? (
+        <PhotoPreviewDialog
+          photo={photoPreview}
+          onClose={() => setPhotoPreview(null)}
         />
       ) : null}
 
@@ -243,103 +331,368 @@ export function AdminRecruitmentClient({
 
 function RecruitmentList({
   applications,
+  onOpenApplication,
+  onPreviewPhoto,
 }: {
   applications: CareerApplicationSummaryAdmin[];
+  onOpenApplication: (application: CareerApplicationSummaryAdmin) => void;
+  onPreviewPhoto: (application: CareerApplicationSummaryAdmin) => void;
 }) {
+  const [filters, setFilters] = useState<RecruitmentListFilters>({
+    area: "",
+    appliedFrom: "",
+    appliedTo: "",
+    candidateName: "",
+    jobPosition: "",
+    phone: "",
+  });
+  const jobPositionOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          applications
+            .map((application) => jobPositionFilterLabel(application))
+            .filter(Boolean),
+        ),
+      ).sort((first, second) => first.localeCompare(second)),
+    [applications],
+  );
+  const filteredApplications = useMemo(
+    () =>
+      applications.filter((application) =>
+        matchesRecruitmentListFilters(application, filters),
+      ),
+    [applications, filters],
+  );
+  const hasActiveFilters = Object.values(filters).some(Boolean);
+
+  function updateFilter(name: keyof RecruitmentListFilters, value: string) {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [name]: value,
+    }));
+  }
+
+  function resetFilters() {
+    setFilters({
+      area: "",
+      appliedFrom: "",
+      appliedTo: "",
+      candidateName: "",
+      jobPosition: "",
+      phone: "",
+    });
+  }
+
   return (
-    <div className="admin-table-wrap">
-      <table className="admin-table admin-recruitment-table">
-        <thead>
-          <tr>
-            <th>Candidate</th>
-            <th>Career</th>
-            <th>Area</th>
-            <th>Applied</th>
-            <th>Status</th>
-            <th>Files</th>
-          </tr>
-        </thead>
-        <tbody>
-          {applications.map((application) => (
-            <tr key={application.id}>
-              <td>
-                <strong>{application.full_name}</strong>
-                <small>{application.phone_number}</small>
-              </td>
-              <td>
-                {careerTitle(application)}
-                <small>{careerMeta(application)}</small>
-              </td>
-              <td>
-                {application.preferred_area ?? "-"}
-                <small>{application.vacancy_source}</small>
-              </td>
-              <td>
-                {formatDate(application.applied_at)}
-                {application.available_interview_date ? (
-                  <small>{formatDate(application.available_interview_date)}</small>
-                ) : null}
-              </td>
-              <td>
-                <StatusBadge status={application.status} />
-              </td>
-              <td>
-                <ApplicationFiles application={application} />
-              </td>
-            </tr>
-          ))}
-          {applications.length === 0 ? (
+    <section className="admin-recruitment-list" aria-label="Recruitment list">
+      <div className="admin-recruitment-filters" aria-label="Recruitment filters">
+        <label>
+          Candidate name
+          <input
+            onChange={(event) => updateFilter("candidateName", event.target.value)}
+            type="search"
+            value={filters.candidateName}
+          />
+        </label>
+        <label>
+          Phone
+          <input
+            onChange={(event) => updateFilter("phone", event.target.value)}
+            type="search"
+            value={filters.phone}
+          />
+        </label>
+        <label>
+          Area
+          <input
+            onChange={(event) => updateFilter("area", event.target.value)}
+            type="search"
+            value={filters.area}
+          />
+        </label>
+        <fieldset className="admin-recruitment-date-filter">
+          <legend>Applied date</legend>
+          <div>
+            <input
+              aria-label="Applied from"
+              onChange={(event) => updateFilter("appliedFrom", event.target.value)}
+              type="date"
+              value={filters.appliedFrom}
+            />
+            <span aria-hidden="true">to</span>
+            <input
+              aria-label="Applied to"
+              onChange={(event) => updateFilter("appliedTo", event.target.value)}
+              type="date"
+              value={filters.appliedTo}
+            />
+          </div>
+        </fieldset>
+        <label>
+          Job position
+          <select
+            onChange={(event) => updateFilter("jobPosition", event.target.value)}
+            value={filters.jobPosition}
+          >
+            <option value="">All positions</option>
+            {jobPositionOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="admin-recruitment-filter-actions">
+          <span>
+            {filteredApplications.length} of {applications.length}
+          </span>
+          <button disabled={!hasActiveFilters} onClick={resetFilters} type="button">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-table-wrap">
+        <table className="admin-table admin-recruitment-table">
+          <thead>
             <tr>
-              <td colSpan={6}>No applications yet.</td>
+              <th>Candidate</th>
+              <th>Career</th>
+              <th>Area</th>
+              <th>Applied</th>
+              <th>Status</th>
+              <th className="admin-recruitment-action-head">Detail</th>
             </tr>
-          ) : null}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {filteredApplications.map((application) => (
+              <tr key={application.id}>
+                <td>
+                  <div className="admin-recruitment-candidate-cell">
+                    <ApplicantThumbnail
+                      application={application}
+                      onPreviewPhoto={onPreviewPhoto}
+                    />
+                    <span>
+                      <strong>{application.full_name}</strong>
+                      <small>{application.phone_number}</small>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  {careerTitle(application)}
+                  <small>{careerMeta(application)}</small>
+                </td>
+                <td>
+                  {application.preferred_area ?? "-"}
+                  <small>{application.vacancy_source}</small>
+                </td>
+                <td>
+                  {formatDate(application.applied_at)}
+                  {application.available_interview_date ? (
+                    <small>{formatDate(application.available_interview_date)}</small>
+                  ) : null}
+                </td>
+                <td>
+                  <StatusBadge status={application.status} />
+                </td>
+                <td>
+                  <div className="admin-table-actions">
+                    <button
+                      aria-label={`Open ${application.full_name} candidate detail`}
+                      onClick={() => onOpenApplication(application)}
+                      title="Open detail"
+                      type="button"
+                    >
+                      <ViewActionIcon />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {filteredApplications.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  {applications.length === 0
+                    ? "No applications yet."
+                    : "No applications match the filters."}
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
 function RecruitmentKanban({
+  canMoveApplications,
   columns,
+  movingApplicationId,
+  onMoveApplication,
   onOpenApplication,
 }: {
+  canMoveApplications: boolean;
   columns: Array<RecruitmentColumn & { applications: CareerApplicationSummaryAdmin[] }>;
+  movingApplicationId: string | null;
+  onMoveApplication: (
+    application: CareerApplicationSummaryAdmin,
+    nextStatus: CareerApplicationStatus,
+  ) => void;
   onOpenApplication: (application: CareerApplicationSummaryAdmin) => void;
 }) {
+  const [draggedApplicationId, setDraggedApplicationId] = useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
+  const applicationsById = useMemo(
+    () =>
+      new Map(
+        columns.flatMap((column) =>
+          column.applications.map((application) => [application.id, application] as const),
+        ),
+      ),
+    [columns],
+  );
+
+  function startCardDrag(
+    event: DragEvent<HTMLButtonElement>,
+    application: CareerApplicationSummaryAdmin,
+  ) {
+    if (!canMoveApplications || movingApplicationId) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", application.id);
+    setDraggedApplicationId(application.id);
+  }
+
+  function clearCardDrag() {
+    setDraggedApplicationId(null);
+    setDragOverColumnId(null);
+  }
+
+  function readDraggedApplication(event: DragEvent<HTMLElement>) {
+    const applicationId =
+      event.dataTransfer.getData("text/plain") || draggedApplicationId;
+    return applicationId ? applicationsById.get(applicationId) ?? null : null;
+  }
+
+  function canDropOnColumn(
+    application: CareerApplicationSummaryAdmin,
+    column: RecruitmentColumn,
+  ) {
+    if (column.statuses.includes(application.status as CareerApplicationStatus)) {
+      return true;
+    }
+    return canMoveApplicationToStatus(
+      application.status,
+      recruitmentColumnDropStatus(column),
+    );
+  }
+
+  function dragOverColumn(
+    event: DragEvent<HTMLElement>,
+    column: RecruitmentColumn,
+  ) {
+    if (!canMoveApplications || !draggedApplicationId) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverColumnId(column.id);
+  }
+
+  function dropOnColumn(event: DragEvent<HTMLElement>, column: RecruitmentColumn) {
+    event.preventDefault();
+    const application = readDraggedApplication(event);
+    clearCardDrag();
+    if (!application || !canMoveApplications) {
+      return;
+    }
+    if (column.statuses.includes(application.status as CareerApplicationStatus)) {
+      return;
+    }
+    onMoveApplication(application, recruitmentColumnDropStatus(column));
+  }
+
   return (
     <section className="admin-recruitment-kanban" aria-label="Recruitment kanban">
-      {columns.map((column) => (
-        <article className="admin-recruitment-column" key={column.id}>
-          <header>
-            <h3>{column.label}</h3>
-            <span>{column.applications.length}</span>
-          </header>
-          <div className="admin-recruitment-cards">
-            {column.applications.map((application) => (
-              <RecruitmentCard
-                application={application}
-                isCompact={column.id === "done"}
-                key={application.id}
-                onOpen={() => onOpenApplication(application)}
-              />
-            ))}
-            {column.applications.length === 0 ? (
-              <p className="admin-recruitment-empty">No applications</p>
-            ) : null}
-          </div>
-        </article>
-      ))}
+      {columns.map((column) => {
+        const draggedApplication = draggedApplicationId
+          ? applicationsById.get(draggedApplicationId)
+          : null;
+        const isDragOver = dragOverColumnId === column.id;
+        const isDropAllowed = draggedApplication
+          ? canDropOnColumn(draggedApplication, column)
+          : false;
+
+        return (
+          <article
+            className={[
+              "admin-recruitment-column",
+              isDragOver ? "is-drag-over" : "",
+              isDragOver && !isDropAllowed ? "is-drop-blocked" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            key={column.id}
+            onDragLeave={(event) => {
+              if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                return;
+              }
+              setDragOverColumnId(null);
+            }}
+            onDragOver={(event) => dragOverColumn(event, column)}
+            onDrop={(event) => dropOnColumn(event, column)}
+          >
+            <header>
+              <h3>{column.label}</h3>
+              <span>{column.applications.length}</span>
+            </header>
+            <div className="admin-recruitment-cards">
+              {column.applications.map((application) => (
+                <RecruitmentCard
+                  application={application}
+                  canDrag={canMoveApplications && !movingApplicationId}
+                  isCompact={column.id === "done"}
+                  isDragging={draggedApplicationId === application.id}
+                  isUpdating={movingApplicationId === application.id}
+                  key={application.id}
+                  onDragEnd={clearCardDrag}
+                  onDragStart={(event) => startCardDrag(event, application)}
+                  onOpen={() => onOpenApplication(application)}
+                />
+              ))}
+              {column.applications.length === 0 ? (
+                <p className="admin-recruitment-empty">No applications</p>
+              ) : null}
+            </div>
+          </article>
+        );
+      })}
     </section>
   );
 }
 
 function RecruitmentCard({
   application,
+  canDrag,
   isCompact,
+  isDragging,
+  isUpdating,
+  onDragEnd,
+  onDragStart,
   onOpen,
 }: {
   application: CareerApplicationSummaryAdmin;
+  canDrag: boolean;
   isCompact: boolean;
+  isDragging: boolean;
+  isUpdating: boolean;
+  onDragEnd: () => void;
+  onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
   onOpen: () => void;
 }) {
   const cardTone = isCompact ? recruitmentDoneCardTone(application.status) : "";
@@ -349,10 +702,17 @@ function RecruitmentCard({
       className={[
         "admin-recruitment-card",
         isCompact ? "is-compact" : "",
+        canDrag ? "is-draggable" : "",
+        isDragging ? "is-dragging" : "",
+        isUpdating ? "is-updating" : "",
         cardTone,
       ]
         .filter(Boolean)
         .join(" ")}
+      disabled={isUpdating}
+      draggable={canDrag}
+      onDragEnd={onDragEnd}
+      onDragStart={onDragStart}
       onClick={onOpen}
       type="button"
     >
@@ -386,8 +746,10 @@ function RecruitmentDetailPanel({
   isLoading,
   onAppendComment,
   onClose,
+  onPreviewPhoto,
   onToast,
   onUpdateApplication,
+  photoPreview,
   selectedTab,
   setSelectedTab,
 }: {
@@ -400,8 +762,12 @@ function RecruitmentDetailPanel({
     comment: CareerApplicationCommentAdmin,
   ) => void;
   onClose: () => void;
+  onPreviewPhoto: (
+    application: CareerApplicationSummaryAdmin | CareerApplicationAdmin,
+  ) => void;
   onToast: (toast: AdminToastState) => void;
   onUpdateApplication: (application: CareerApplicationAdmin) => void;
+  photoPreview: RecruitmentPhotoPreview | null;
   selectedTab: RecruitmentDetailTab;
   setSelectedTab: (tab: RecruitmentDetailTab) => void;
 }) {
@@ -411,6 +777,24 @@ function RecruitmentDetailPanel({
   const headerApplication = application ?? applicationSummary;
 
   const statusActions = application ? recruitmentStatusActions(application.status) : [];
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+      if (photoPreview) {
+        return;
+      }
+      event.preventDefault();
+      onClose();
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose, photoPreview]);
 
   async function submitComment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -481,7 +865,10 @@ function RecruitmentDetailPanel({
         <main className="admin-recruitment-panel-main">
           <header className="admin-recruitment-panel-header">
             <div className="admin-recruitment-panel-title">
-              <CandidatePhoto application={headerApplication} />
+              <CandidatePhoto
+                application={headerApplication}
+                onPreviewPhoto={onPreviewPhoto}
+              />
               <div>
                 <p className="admin-kicker">
                   {headerApplication ? statusLabel(headerApplication.status) : "Loading"}
@@ -606,18 +993,116 @@ function RecruitmentDetailPanel({
   );
 }
 
+function ApplicantThumbnail({
+  application,
+  onPreviewPhoto,
+}: {
+  application: CareerApplicationSummaryAdmin;
+  onPreviewPhoto: (application: CareerApplicationSummaryAdmin) => void;
+}) {
+  const content = application.self_photo_url ? (
+    <img alt={`${application.full_name} photo`} src={application.self_photo_url} />
+  ) : (
+    <span>{application.full_name.charAt(0).toUpperCase()}</span>
+  );
+
+  if (!application.self_photo_url) {
+    return <span className="admin-recruitment-applicant-thumb">{content}</span>;
+  }
+
+  return (
+    <button
+      aria-label={`Preview ${application.full_name} photo`}
+      className="admin-recruitment-applicant-thumb"
+      onClick={() => onPreviewPhoto(application)}
+      title="Preview photo"
+      type="button"
+    >
+      {content}
+    </button>
+  );
+}
+
 function CandidatePhoto({
   application,
+  onPreviewPhoto,
 }: {
   application: CareerApplicationSummaryAdmin | CareerApplicationAdmin | null;
+  onPreviewPhoto: (
+    application: CareerApplicationSummaryAdmin | CareerApplicationAdmin,
+  ) => void;
 }) {
+  const content = application?.self_photo_url ? (
+    <img alt={`${application.full_name} photo`} src={application.self_photo_url} />
+  ) : (
+    <span>{application?.full_name.charAt(0).toUpperCase() ?? "?"}</span>
+  );
+
+  if (!application?.self_photo_url) {
+    return <div className="admin-recruitment-candidate-photo">{content}</div>;
+  }
+
   return (
-    <div className="admin-recruitment-candidate-photo">
-      {application?.self_photo_url ? (
-        <img alt={`${application.full_name} photo`} src={application.self_photo_url} />
-      ) : (
-        <span>{application?.full_name.charAt(0).toUpperCase() ?? "?"}</span>
-      )}
+    <button
+      aria-label={`Preview ${application.full_name} photo`}
+      className="admin-recruitment-candidate-photo"
+      onClick={() => onPreviewPhoto(application)}
+      title="Preview photo"
+      type="button"
+    >
+      {content}
+    </button>
+  );
+}
+
+function PhotoPreviewDialog({
+  onClose,
+  photo,
+}: {
+  onClose: () => void;
+  photo: RecruitmentPhotoPreview;
+}) {
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+      event.preventDefault();
+      onClose();
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      aria-label={`${photo.name} photo preview`}
+      aria-modal="true"
+      className="admin-recruitment-photo-preview-backdrop"
+      onClick={onClose}
+      role="dialog"
+    >
+      <figure
+        className="admin-recruitment-photo-preview"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <img alt={`${photo.name} photo`} src={photo.url} />
+        <figcaption>{photo.name}</figcaption>
+        <button
+          aria-label="Close photo preview"
+          onClick={onClose}
+          title="Close"
+          type="button"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M6 6l12 12" />
+            <path d="M18 6L6 18" />
+          </svg>
+        </button>
+      </figure>
     </div>
   );
 }
@@ -729,25 +1214,30 @@ function RecruitmentDetailTabContent({
 }) {
   if (tab === "position") {
     return (
-      <DetailGrid
-        items={[
-          ["Posisi dilamar", application.applied_position],
-          ["Alternatif posisi", application.alternative_applied_position],
-          ["Job posting", application.job_title],
-          ["Divisi", application.division_name],
-          ["Position master", application.position_name],
-          ["Lokasi job", application.job_location],
-          ["Tipe pekerjaan", application.job_employment_type],
-          ["Sumber lowongan", application.vacancy_source],
-          ["Area diminati", application.preferred_area],
-          [
-            "Bersedia ditempatkan",
-            application.willing_to_be_placed_anywhere ? "Ya" : "Tidak",
-          ],
-          ["Tanggal interview", formatMaybeDate(application.available_interview_date)],
-          ["Alasan layak interview", application.interview_invitation_reason],
-        ]}
-      />
+      <>
+        <DetailGrid
+          items={[
+            ["Posisi dilamar", application.applied_position],
+            ["Alternatif posisi", application.alternative_applied_position],
+            ["Job posting", application.job_title],
+            ["Divisi", application.division_name],
+            ["Position master", application.position_name],
+            ["Lokasi job", application.job_location],
+            ["Tipe pekerjaan", application.job_employment_type],
+            ["Sumber lowongan", application.vacancy_source],
+            ["Area diminati", application.preferred_area],
+            [
+              "Bersedia ditempatkan",
+              application.willing_to_be_placed_anywhere ? "Ya" : "Tidak",
+            ],
+            ["Tanggal interview", formatMaybeDate(application.available_interview_date)],
+          ]}
+        />
+        <DetailTextBlock
+          label="Alasan layak untuk interview"
+          value={application.interview_invitation_reason}
+        />
+      </>
     );
   }
 
@@ -1004,28 +1494,10 @@ function DetailTable({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  return <span className="admin-status-pill">{statusLabel(status)}</span>;
-}
-
-function ApplicationFiles({
-  application,
-}: {
-  application: CareerApplicationSummaryAdmin | CareerApplicationAdmin;
-}) {
   return (
-    <div className="admin-recruitment-files">
-      {application.self_photo_url ? (
-        <a href={application.self_photo_url} rel="noreferrer" target="_blank">
-          Photo
-        </a>
-      ) : null}
-      {application.cv_file_url ? (
-        <a href={application.cv_file_url} rel="noreferrer" target="_blank">
-          CV
-        </a>
-      ) : null}
-      {!application.self_photo_url && !application.cv_file_url ? <span>-</span> : null}
-    </div>
+    <span className={`admin-status-pill ${recruitmentStatusTone(status)}`}>
+      {statusLabel(status)}
+    </span>
   );
 }
 
@@ -1044,6 +1516,77 @@ function careerMeta(
     application.job_location,
   ].filter(Boolean);
   return values.length > 0 ? values.join(" / ") : application.applied_position;
+}
+
+function jobPositionFilterLabel(application: CareerApplicationSummaryAdmin) {
+  return (
+    application.position_name ??
+    application.job_title ??
+    application.applied_position
+  ).trim();
+}
+
+function matchesRecruitmentListFilters(
+  application: CareerApplicationSummaryAdmin,
+  filters: RecruitmentListFilters,
+) {
+  if (!includesNormalized(application.full_name, filters.candidateName)) {
+    return false;
+  }
+  if (!includesNormalized(application.phone_number, filters.phone)) {
+    return false;
+  }
+  if (!includesNormalized(application.preferred_area ?? "", filters.area)) {
+    return false;
+  }
+  if (
+    filters.jobPosition &&
+    ![
+      application.position_name,
+      application.job_title,
+      application.applied_position,
+    ].some(
+      (value) =>
+        normalizeFilterText(value ?? "") === normalizeFilterText(filters.jobPosition),
+    )
+  ) {
+    return false;
+  }
+  return isWithinDateRange(application.applied_at, filters.appliedFrom, filters.appliedTo);
+}
+
+function includesNormalized(value: string, query: string) {
+  const normalizedQuery = normalizeFilterText(query);
+  if (!normalizedQuery) {
+    return true;
+  }
+  return normalizeFilterText(value).includes(normalizedQuery);
+}
+
+function normalizeFilterText(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function isWithinDateRange(value: string, fromDate: string, toDate: string) {
+  const timestamp = new Date(value).getTime();
+  if (Number.isNaN(timestamp)) {
+    return false;
+  }
+  if (fromDate && timestamp < startOfDateInput(fromDate)) {
+    return false;
+  }
+  if (toDate && timestamp > endOfDateInput(toDate)) {
+    return false;
+  }
+  return true;
+}
+
+function startOfDateInput(value: string) {
+  return new Date(`${value}T00:00:00`).getTime();
+}
+
+function endOfDateInput(value: string) {
+  return new Date(`${value}T23:59:59.999`).getTime();
 }
 
 function statusLabel(status: string) {
@@ -1082,6 +1625,17 @@ function recruitmentStatusActions(status: string) {
   return [];
 }
 
+function recruitmentColumnDropStatus(column: RecruitmentColumn): CareerApplicationStatus {
+  if (column.id === "done") {
+    return "rejected";
+  }
+  return column.statuses[0];
+}
+
+function canMoveApplicationToStatus(status: string, nextStatus: CareerApplicationStatus) {
+  return recruitmentStatusActions(status).some((action) => action.value === nextStatus);
+}
+
 function recruitmentDoneCardTone(status: string) {
   if (status === "onboard") {
     return "is-onboard";
@@ -1093,6 +1647,22 @@ function recruitmentDoneCardTone(status: string) {
     return "is-canceled";
   }
   return "";
+}
+
+function recruitmentStatusTone(status: string) {
+  if (status === "submitted") {
+    return "is-submitted";
+  }
+  if (status === "hr_interview") {
+    return "is-hr-interview";
+  }
+  if (status === "user_interview") {
+    return "is-user-interview";
+  }
+  if (status === "offer") {
+    return "is-offer";
+  }
+  return recruitmentDoneCardTone(status);
 }
 
 function formatDate(value: string) {

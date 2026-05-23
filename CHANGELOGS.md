@@ -6,6 +6,8 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added applicant photo thumbnails to the Recruitment list and a larger photo preview popup shared with the detail-panel header photo.
+- Added Escape-key close behavior to the Recruitment candidate detail panel.
 - Added the `/admin` dashboard with admin login, user creation, role assignment, account activation, and role/permission visibility.
 - Added INTL admin authentication with HMAC bearer tokens, PBKDF2 password hashing, RBAC roles, and protected user-management endpoints.
 - Added INTL admin role creation and editing endpoints for RBAC management.
@@ -66,8 +68,10 @@ All notable changes and release notes for this project should be documented in t
 - Changed the Recruitment detail panel to remove upload pills from Identitas Kandidat and show uploaded CV PDFs in a dedicated CV tab with an error fallback.
 - Changed Recruitment Done kanban cards to show only candidate name and phone number.
 - Changed Recruitment Done kanban cards to use pastel final-status colors for Onboard, Rejected, and Canceled.
+- Changed Recruitment kanban cards to support drag-and-drop status moves using the existing workflow rules, with Done drops defaulting to Rejected.
 - Changed the Recruitment list/kanban view toggle to icon-only buttons.
 - Changed Recruitment list and kanban cards to remove inline status-changing controls.
+- Changed Recruitment list view to remove file links, add candidate name, phone, area, combined applied-date range, and job-position filters, and open the full candidate panel from a right-side eye action.
 - Changed Recruitment kanban cards to hide Photo and CV file links.
 - Changed the Jobs admin form to select positions from the Position master table, use fixed location tags, use an employment type dropdown, and edit responsibilities/requirements as add-remove lists.
 - Changed admin gallery uploads to use a drop-target file picker in create and edit modals.
@@ -141,6 +145,10 @@ All notable changes and release notes for this project should be documented in t
 
 ### Fixed
 
+- Fixed Recruitment kanban drag moves to refresh applicant detail comments after the status-change comment is created.
+- Fixed Recruitment position detail tab to show the interview reason as a full-width field at the bottom.
+- Fixed Recruitment list status badges to use workflow-specific colors matching the kanban status tones.
+- Fixed Recruitment status dropdown label color so the teal button text stays white.
 - Fixed vertical alignment for career form checkbox rows beside standard fields.
 - Fixed candidate form hydration mismatch caused by rendering random captcha values before client mount.
 

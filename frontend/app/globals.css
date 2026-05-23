@@ -775,13 +775,155 @@ main {
   color: #555b50;
 }
 
+.admin-recruitment-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-recruitment-filters {
+  align-items: end;
+  background: #f7f8f4;
+  border: 1px solid #dce3d7;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(140px, 1fr)) minmax(280px, 1.55fr) minmax(160px, 1fr) auto;
+  padding: 12px;
+}
+
+.admin-recruitment-filters label,
+.admin-recruitment-date-filter {
+  color: #687164;
+  display: grid;
+  font-size: 12px;
+  font-weight: 900;
+  gap: 6px;
+}
+
+.admin-recruitment-date-filter {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.admin-recruitment-date-filter legend {
+  padding: 0;
+}
+
+.admin-recruitment-date-filter div {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.admin-recruitment-date-filter span {
+  color: #687164;
+  font-weight: 900;
+}
+
+.admin-recruitment-filter-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.admin-recruitment-filter-actions span {
+  color: #687164;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.admin-recruitment-filter-actions button {
+  background: #ffffff;
+  border: 1px solid #cfd8c8;
+  border-radius: 7px;
+  color: #30382f;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.admin-recruitment-filter-actions button:hover,
+.admin-recruitment-filter-actions button:focus-visible {
+  background: #edf2e9;
+  border-color: #b9c4b1;
+  outline: none;
+}
+
+.admin-recruitment-filter-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .admin-recruitment-table {
-  min-width: 1080px;
+  min-width: 980px;
 }
 
 .admin-recruitment-table td:nth-child(1),
 .admin-recruitment-table td:nth-child(2) {
   max-width: 290px;
+}
+
+.admin-recruitment-candidate-cell {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.admin-recruitment-candidate-cell > span {
+  min-width: 0;
+}
+
+.admin-recruitment-applicant-thumb {
+  align-items: center;
+  background: #edf2e9;
+  border: 1px solid #cfd8c8;
+  border-radius: 8px;
+  color: #2c5438;
+  display: grid;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  height: 42px;
+  justify-items: center;
+  overflow: hidden;
+  padding: 0;
+  width: 42px;
+}
+
+button.admin-recruitment-applicant-thumb {
+  cursor: pointer;
+}
+
+button.admin-recruitment-applicant-thumb:hover,
+button.admin-recruitment-applicant-thumb:focus-visible {
+  border-color: #198b8d;
+  box-shadow: 0 0 0 3px rgba(25, 139, 141, 0.14);
+  outline: none;
+}
+
+.admin-recruitment-applicant-thumb img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.admin-recruitment-action-head,
+.admin-recruitment-table td:last-child {
+  text-align: right;
+  width: 74px;
+}
+
+.admin-recruitment-table td:last-child .admin-table-actions {
+  justify-content: flex-end;
 }
 
 .admin-recruitment-body {
@@ -807,30 +949,46 @@ main {
   text-transform: capitalize;
 }
 
-.admin-recruitment-files {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+.admin-status-pill.is-submitted {
+  background: #eef2ea;
+  border-color: #d6ded0;
+  color: #2c5438;
 }
 
-.admin-recruitment-files a,
-.admin-recruitment-files span {
-  align-items: center;
-  background: #f7f8f4;
-  border: 1px solid #d8ded3;
-  border-radius: 999px;
-  color: #30382f;
-  display: inline-flex;
-  font-size: 12px;
-  font-weight: 900;
-  min-height: 30px;
-  padding: 6px 10px;
+.admin-status-pill.is-hr-interview {
+  background: #e7f3f3;
+  border-color: #b9dddd;
+  color: #186b6d;
 }
 
-.admin-recruitment-files a:hover,
-.admin-recruitment-files a:focus-visible {
-  background: #edf2e9;
-  border-color: #b9c4b1;
+.admin-status-pill.is-user-interview {
+  background: #e8eef8;
+  border-color: #c4d2ec;
+  color: #2d4f86;
+}
+
+.admin-status-pill.is-offer {
+  background: #fff7d8;
+  border-color: #eedf9a;
+  color: #76570f;
+}
+
+.admin-status-pill.is-onboard {
+  background: #e8f5e9;
+  border-color: #b7dfbd;
+  color: #236133;
+}
+
+.admin-status-pill.is-rejected {
+  background: #fdebea;
+  border-color: #f2b9b4;
+  color: #9f241d;
+}
+
+.admin-status-pill.is-canceled {
+  background: #fff7d8;
+  border-color: #eedf9a;
+  color: #76570f;
 }
 
 .admin-recruitment-kanban {
@@ -854,6 +1012,18 @@ main {
   min-height: 0;
   min-width: 210px;
   padding: 10px;
+}
+
+.admin-recruitment-column.is-drag-over {
+  background: #e7f3f3;
+  border-color: #7abfbd;
+  box-shadow: inset 0 0 0 2px rgba(25, 139, 141, 0.16);
+}
+
+.admin-recruitment-column.is-drop-blocked {
+  background: #fdebea;
+  border-color: #f2b9b4;
+  box-shadow: inset 0 0 0 2px rgba(180, 35, 24, 0.12);
 }
 
 .admin-recruitment-column > header {
@@ -899,6 +1069,23 @@ main {
   text-align: left;
   padding: 12px;
   width: 100%;
+}
+
+.admin-recruitment-card.is-draggable {
+  cursor: grab;
+}
+
+.admin-recruitment-card.is-draggable:active {
+  cursor: grabbing;
+}
+
+.admin-recruitment-card.is-dragging {
+  opacity: 0.48;
+}
+
+.admin-recruitment-card.is-updating {
+  cursor: progress;
+  opacity: 0.64;
 }
 
 .admin-recruitment-card:hover,
@@ -1033,13 +1220,103 @@ main {
   height: 56px;
   justify-items: center;
   overflow: hidden;
+  padding: 0;
   width: 56px;
+}
+
+button.admin-recruitment-candidate-photo {
+  cursor: pointer;
+}
+
+button.admin-recruitment-candidate-photo:hover,
+button.admin-recruitment-candidate-photo:focus-visible {
+  border-color: #198b8d;
+  box-shadow: 0 0 0 3px rgba(25, 139, 141, 0.14);
+  outline: none;
+}
+
+.admin-recruitment-candidate-photo span {
+  color: #2c5438;
 }
 
 .admin-recruitment-candidate-photo img {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+.admin-recruitment-photo-preview-backdrop {
+  align-items: center;
+  background: rgba(24, 31, 28, 0.72);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  padding: 22px;
+  position: fixed;
+  z-index: 130;
+}
+
+.admin-recruitment-photo-preview {
+  background: #ffffff;
+  border: 1px solid #d6ded0;
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(13, 18, 14, 0.32);
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  max-height: min(86svh, 760px);
+  max-width: min(88vw, 680px);
+  padding: 12px;
+  position: relative;
+}
+
+.admin-recruitment-photo-preview img {
+  border-radius: 7px;
+  display: block;
+  max-height: min(72svh, 640px);
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.admin-recruitment-photo-preview figcaption {
+  color: #30382f;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  padding-right: 44px;
+}
+
+.admin-recruitment-photo-preview button {
+  align-items: center;
+  background: #b42318;
+  border: 1px solid #b42318;
+  border-radius: 7px;
+  color: #ffffff;
+  cursor: pointer;
+  display: grid;
+  height: 34px;
+  justify-items: center;
+  padding: 0;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 34px;
+}
+
+.admin-recruitment-photo-preview button:hover,
+.admin-recruitment-photo-preview button:focus-visible {
+  background: #971b12;
+  border-color: #971b12;
+  outline: none;
+}
+
+.admin-recruitment-photo-preview svg {
+  fill: none;
+  height: 18px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+  width: 18px;
 }
 
 .admin-recruitment-panel-actions {
@@ -1070,6 +1347,10 @@ main {
 
 .admin-recruitment-status-menu summary::-webkit-details-marker {
   display: none;
+}
+
+.admin-recruitment-status-menu summary span {
+  color: #ffffff;
 }
 
 .admin-recruitment-status-menu summary:hover,
@@ -4528,6 +4809,19 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .admin-recruitment-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-recruitment-date-filter {
+    grid-column: 1 / -1;
+  }
+
+  .admin-recruitment-filter-actions {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+
   .admin-recruitment-kanban {
     grid-template-columns: repeat(5, minmax(240px, 1fr));
   }
@@ -4570,6 +4864,18 @@ h2 {
 
   .admin-view-toggle button {
     flex: 1;
+  }
+
+  .admin-recruitment-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-recruitment-date-filter div {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-recruitment-date-filter span {
+    display: none;
   }
 
   .admin-recruitment-panel-backdrop {
