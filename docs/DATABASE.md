@@ -13,9 +13,9 @@ python -m app.db.seed
 
 `python -m app.db.seed` delegates to `alembic upgrade head`. The current
 revision chain creates the initial schema and seeds `services`, `faqs`,
-`gallery_images`, `divisions`, `positions`, and `career_jobs`. Contact and
-career application submissions are inserted through the EXTL API once
-PostgreSQL is enabled.
+`gallery_images`, `divisions`, `positions`, `career_jobs`, and built-in
+`admin_roles`. Contact and career application submissions are inserted through
+the EXTL API once PostgreSQL is enabled.
 
 ## Recommended Tables
 
@@ -33,18 +33,55 @@ PostgreSQL is enabled.
 
 ### Internal
 
-- `users`
+- `admin_users`
 - `employees`
 - `divisions`
 - `positions`
-- `roles`
-- `permissions`
+- `admin_roles`
 - `audit_logs`
 - `cms_pages`
 - `media_assets`
 - `internal_job_transfer_applications`
 
 ## Public Content Tables
+
+## Internal Admin Tables
+
+### `admin_roles`
+
+Use `admin_roles` for RBAC role definitions used by the INTL admin API.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `code` | VARCHAR(80) | Yes | Stable role code, such as `super_admin`. |
+| `name` | VARCHAR(120) | Yes | Role display name. |
+| `description` | TEXT | No | Short role purpose. |
+| `permissions` | JSONB | Yes | Permission codes, or `*` for full access. |
+| `is_system` | BOOLEAN | Yes | Marks built-in roles. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
+
+Built-in role codes are `super_admin`, `admin`, `content_admin`, and
+`recruitment_admin`. Custom roles can be created from the admin dashboard, and
+role name, description, and permissions can be edited after creation. System
+roles cannot be deleted.
+
+### `admin_users`
+
+Use `admin_users` for dashboard login accounts.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `id` | UUID | Yes | Primary key. |
+| `role_id` | UUID | Yes | Links to `admin_roles`. |
+| `email` | VARCHAR(150) | Yes | Unique login email. |
+| `full_name` | VARCHAR(150) | Yes | Admin display name. |
+| `password_hash` | VARCHAR(255) | Yes | PBKDF2-SHA256 password hash. |
+| `is_active` | BOOLEAN | Yes | Enables or disables login. |
+| `last_login_at` | TIMESTAMP | No | Last successful login. |
+| `created_at` | TIMESTAMP | Yes | Record creation time. |
+| `updated_at` | TIMESTAMP | Yes | Last update time. |
 
 ### `gallery_images`
 

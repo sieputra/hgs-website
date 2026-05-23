@@ -17,6 +17,16 @@ GET /api/extl/v1/jobs/{slug}
 POST /api/extl/v1/contact
 POST /api/extl/v1/career-applications
 GET /api/intl/v1/health
+POST /api/intl/v1/auth/login
+GET /api/intl/v1/auth/me
+GET /api/intl/v1/admin/roles
+POST /api/intl/v1/admin/roles
+PATCH /api/intl/v1/admin/roles/{role_id}
+DELETE /api/intl/v1/admin/roles/{role_id}
+GET /api/intl/v1/admin/users
+POST /api/intl/v1/admin/users
+PATCH /api/intl/v1/admin/users/{user_id}
+DELETE /api/intl/v1/admin/users/{user_id}
 GET /api/intl/v1/admin/gallery/images
 POST /api/intl/v1/admin/gallery/images
 ```
@@ -50,10 +60,35 @@ python -m app.db.seed
 - `divisions`
 - `positions`
 - `career_jobs`
+- `admin_roles`
+- `admin_users`
 
 Gallery uploads are optimized to WebP, resized to fit 1920x1280, stored under
 `uploads/gallery/`, and served from `/uploads`. The Next.js frontend rewrites
 `/uploads/:path*` to the backend for local development.
+
+The INTL admin surface uses HMAC-signed bearer tokens and role-based
+permissions. Built-in roles are `super_admin`, `admin`, `content_admin`, and
+`recruitment_admin`. Admin gallery management requires `gallery.read` or
+`gallery.create`; role management requires `role.read`, `role.create`,
+`role.update`, or `role.delete`; user management requires `user.read`,
+`user.create`, `user.update`, or `user.delete`. Role codes are stable after
+creation, while role name, description, and permissions can be edited. System
+roles cannot be deleted, assigned roles must be unassigned before deletion, and
+admins cannot delete their own active account.
+
+Bootstrap or update an admin account with the protected CLI after setting
+`DATABASE_URL`, `ADMIN_AUTH_SECRET_KEY`, and `ADMIN_CLI_SECRET`:
+
+```bash
+python -m app.cli.create_admin \
+  --email admin@example.com \
+  --full-name "HGS Admin" \
+  --role super_admin
+```
+
+The CLI refuses to run without `ADMIN_CLI_SECRET`, prompts for that secret, and
+prompts for the admin password without echoing it.
 
 Direct Alembic commands are also available:
 

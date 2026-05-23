@@ -41,3 +41,18 @@ Direct Alembic commands are also available:
 alembic upgrade head
 alembic current
 ```
+
+## Admin Bootstrap
+
+Set `DATABASE_URL`, `ADMIN_AUTH_SECRET_KEY`, and `ADMIN_CLI_SECRET`, then create
+or update the first admin account:
+
+```bash
+python -m app.cli.create_admin \
+  --email admin@example.com \
+  --full-name "HGS Admin" \
+  --role super_admin
+```
+
+The script prompts for `ADMIN_CLI_SECRET` and the admin password, and refuses to
+run without the configured CLI secret.

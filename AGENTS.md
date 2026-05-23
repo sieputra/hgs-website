@@ -21,3 +21,6 @@
 - Project initialized with agent memory files.
 - Git remote should be configured as `origin` using the SSH URL above.
 - Backend scaffold exists in `backend/` using FastAPI with EXTL/INTL v1 routers and seed-backed public content endpoints.
+- Admin dashboard lives at `/admin`; INTL admin APIs use bearer-token auth with RBAC roles and a protected admin bootstrap CLI.
+- Default admin datatable CRUD workflow: create and edit open form modals; delete opens a confirmation modal before the API call.
+- Admin dashboard shell convention: the left sidebar is sticky and foldable, contains only primary navigation, and account/sign-out controls live in a square sticky top app bar.

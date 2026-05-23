@@ -29,6 +29,19 @@
 - The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.
 - Uploaded backend media is available to the frontend through the Next.js `/uploads/:path*` rewrite.
+- The admin dashboard is available at `/admin` with login, separated Users and
+  Roles views, user creation, role assignment, activation toggles, and role
+  create/edit/delete actions backed by the INTL API.
+- Admin datatable CRUD uses the default dashboard workflow: create and edit
+  actions open form modals, and delete actions open confirmation modals before
+  calling the API.
+- Role create/edit forms use a grouped permission tree with checkbox controls,
+  including an all-permissions root option and module-level parent checkboxes.
+  The role modal uses a two-column desktop layout with role details on the left
+  and permission selection on the right.
+- The `/admin` desktop sidebar is sticky, supports fold/unfold, keeps primary
+  navigation at the top without data-count badges, and moves the signed-in
+  account block plus sign-out action to a square, sticky top app bar.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.
 - `NEXT_PUBLIC_API_BASE_URL` can still be set when the browser should call a public API host directly instead of the same-origin rewrite.
 

@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     database_echo: bool = False
     upload_dir: str = "uploads"
     max_gallery_image_bytes: int = 8 * 1024 * 1024
+    admin_auth_secret_key: str = "dev-insecure-admin-secret-change-me"
+    admin_access_token_minutes: int = 60
+    admin_cli_secret: str | None = None
 
     @property
     def upload_path(self) -> Path:

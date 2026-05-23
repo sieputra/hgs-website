@@ -76,15 +76,11 @@ async def test_extl_gallery_returns_ordered_public_images() -> None:
     assert payload["data"][0]["image_url"].startswith("/images/gallery/")
 
 
-async def test_intl_admin_gallery_lists_seed_images_for_management() -> None:
+async def test_intl_admin_gallery_requires_admin_authentication() -> None:
     async with AsyncClient(
         transport=ASGITransport(app=create_app()),
         base_url="http://test",
     ) as client:
         response = await client.get("/api/intl/v1/admin/gallery/images")
-    payload = response.json()
 
-    assert response.status_code == 200
-    assert payload["success"] is True
-    assert payload["meta"]["total"] == 6
-    assert payload["data"][0]["is_active"] is True
+    assert response.status_code == 401

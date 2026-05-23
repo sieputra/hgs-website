@@ -41,6 +41,45 @@ class TimestampMixin:
     )
 
 
+class AdminRoleModel(TimestampMixin, Base):
+    __tablename__ = "admin_roles"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    code: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    permissions: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    users: Mapped[list["AdminUserModel"]] = orm_relationship(back_populates="role")
+
+
+class AdminUserModel(TimestampMixin, Base):
+    __tablename__ = "admin_users"
+
+    id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    role_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True),
+        ForeignKey("admin_roles.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    email: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
+    full_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    role: Mapped[AdminRoleModel] = orm_relationship(back_populates="users")
+
+
 class PublicServiceModel(TimestampMixin, Base):
     __tablename__ = "services"
 

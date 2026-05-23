@@ -6,6 +6,12 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added the `/admin` dashboard with admin login, user creation, role assignment, account activation, and role/permission visibility.
+- Added INTL admin authentication with HMAC bearer tokens, PBKDF2 password hashing, RBAC roles, and protected user-management endpoints.
+- Added INTL admin role creation and editing endpoints for RBAC management.
+- Added INTL admin delete endpoints for users and custom roles with self-delete, system-role, and assigned-role safeguards.
+- Added `admin_roles` and `admin_users` database tables with built-in roles for super admin, admin, content admin, and recruitment admin.
+- Added a protected `python -m app.cli.create_admin` CLI for creating or updating admin users by role.
 - Added public Careers job cards that link directly to the application details section with the selected job prefilled.
 - Added `/carrer` as a compatibility route for recruitment links that use the alternate spelling.
 - Added automatic homepage hero slide rotation with hover/focus pause and reduced-motion support.
@@ -35,6 +41,13 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed INTL admin gallery endpoints to require `gallery.read` or `gallery.create` permissions.
+- Changed the `/admin` dashboard to separate Users and Roles into sidebar-controlled views with smaller UI typography and a sticky desktop sidebar.
+- Changed `/admin` datatable CRUD to use modal forms for create/edit and confirmation modals for delete.
+- Changed the `/admin` shell to move profile/sign-out controls into a top app bar, remove sidebar count badges, and support folding/unfolding the left menu.
+- Changed the `/admin` top app bar to be square, flush to the content area, sticky during long data scrolls, and replaced the sidebar collapse character with an SVG icon.
+- Changed role create/edit permissions from free-text input to a grouped checkbox tree.
+- Changed the role modal to use a two-column layout with aligned permission checkboxes.
 - Changed the homepage Careers section to use an exact viewport-height layout with the job cards contained inside the section.
 - Changed the homepage Services section to load content from the EXTL services API with local fallback content.
 - Changed the homepage hero from horizontal scroll-snap movement to stacked fade slide changes.

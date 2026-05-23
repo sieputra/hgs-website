@@ -23,7 +23,7 @@ http://localhost:8000/openapi.json
 | Surface | Prefix | Audience | Auth Status |
 | --- | --- | --- | --- |
 | EXTL | `/api/extl/v1` | Public website, recruitment pages, external forms | Public for current endpoints |
-| INTL | `/api/intl/v1` | Admin dashboard and internal services | Auth pending |
+| INTL | `/api/intl/v1` | Admin dashboard and internal services | Bearer admin token with RBAC permissions |
 
 ## Response Envelope
 
@@ -468,14 +468,16 @@ Success response data:
 
 ## INTL API
 
+INTL admin endpoints require an `Authorization: Bearer <token>` header unless
+the endpoint is explicitly marked public.
+
 ### Health Check
 
 ```http
 GET /api/intl/v1/health
 ```
 
-Returns the internal API health status. Authentication is not implemented yet
-for this endpoint.
+Returns the internal API health status. This endpoint remains public.
 
 Response:
 
@@ -490,6 +492,183 @@ Response:
 }
 ```
 
+### Admin Login
+
+```http
+POST /api/intl/v1/auth/login
+```
+
+Public endpoint. Authenticates an active admin user.
+
+Request:
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "minimum-12-chars"
+}
+```
+
+Response data:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `access_token` | string | HMAC-signed bearer token. |
+| `token_type` | string | Always `bearer`. |
+| `user` | object | Current admin user with role and permissions. |
+
+### Current Admin User
+
+```http
+GET /api/intl/v1/auth/me
+```
+
+Requires any active admin token.
+
+### List Admin Roles
+
+```http
+GET /api/intl/v1/admin/roles
+```
+
+Required permission: `role.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Role identifier. |
+| `code` | string | Stable role code. |
+| `name` | string | Role display name. |
+| `description` | string or null | Role purpose. |
+| `permissions` | array | Permission codes, or `*` for full access. |
+| `is_system` | boolean | Indicates built-in seed role. |
+
+Built-in role codes:
+
+| Code | Permissions |
+| --- | --- |
+| `super_admin` | `*` |
+| `admin` | `role.read`, `role.create`, `role.update`, `role.delete`, `user.read`, `user.create`, `user.update`, `user.delete`, `gallery.read`, `gallery.create` |
+| `content_admin` | `gallery.read`, `gallery.create` |
+| `recruitment_admin` | `recruitment.read`, `recruitment.update` |
+
+### Create Admin Role
+
+```http
+POST /api/intl/v1/admin/roles
+```
+
+Required permission: `role.create`.
+
+Request:
+
+```json
+{
+  "code": "operations_admin",
+  "name": "Operations Admin",
+  "description": "Can manage operational admin tools.",
+  "permissions": ["user.read", "gallery.read"]
+}
+```
+
+### Update Admin Role
+
+```http
+PATCH /api/intl/v1/admin/roles/{role_id}
+```
+
+Required permission: `role.update`. Role code is stable and cannot be changed
+through this endpoint.
+
+Request fields are optional:
+
+```json
+{
+  "name": "Operations Lead",
+  "description": "Updated role description.",
+  "permissions": ["user.read", "gallery.read", "gallery.create"]
+}
+```
+
+### Delete Admin Role
+
+```http
+DELETE /api/intl/v1/admin/roles/{role_id}
+```
+
+Required permission: `role.delete`. System roles cannot be deleted, and roles
+assigned to admin users must be unassigned before deletion.
+
+### List Admin Users
+
+```http
+GET /api/intl/v1/admin/users
+```
+
+Required permission: `user.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Admin user identifier. |
+| `email` | string | Login email. |
+| `full_name` | string | Admin display name. |
+| `is_active` | boolean | Whether login is allowed. |
+| `role` | object | Assigned admin role. |
+| `last_login_at` | datetime or null | Last successful login timestamp. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Create Admin User
+
+```http
+POST /api/intl/v1/admin/users
+```
+
+Required permission: `user.create`.
+
+Request:
+
+```json
+{
+  "email": "ops-admin@example.com",
+  "full_name": "Ops Admin",
+  "password": "minimum-12-chars",
+  "role_code": "admin",
+  "is_active": true
+}
+```
+
+### Update Admin User
+
+```http
+PATCH /api/intl/v1/admin/users/{user_id}
+```
+
+Required permission: `user.update`.
+
+Request fields are optional:
+
+```json
+{
+  "full_name": "Updated Name",
+  "role_code": "content_admin",
+  "is_active": true,
+  "password": "new-minimum-12-chars"
+}
+```
+
+### Delete Admin User
+
+```http
+DELETE /api/intl/v1/admin/users/{user_id}
+```
+
+Required permission: `user.delete`. The signed-in admin cannot delete their own
+account from the active session.
+
 ### List Admin Gallery Images
 
 ```http
@@ -497,7 +676,7 @@ GET /api/intl/v1/admin/gallery/images
 ```
 
 Returns gallery images for admin management, including inactive images and file
-metadata.
+metadata. Required permission: `gallery.read`.
 
 ### Upload Admin Gallery Image
 
@@ -507,8 +686,7 @@ Content-Type: multipart/form-data
 ```
 
 Uploads a gallery image, optimizes it to WebP, and creates its gallery record.
-Authentication is still pending for the INTL surface, so deployments should
-protect this route before public exposure.
+Required permission: `gallery.create`.
 
 Multipart fields:
 
@@ -539,10 +717,8 @@ Planned EXTL work:
 Planned INTL endpoints:
 
 ```text
-POST /api/intl/v1/auth/login
 POST /api/intl/v1/auth/refresh
 POST /api/intl/v1/auth/logout
 GET /api/intl/v1/admin/jobs
-GET /api/intl/v1/admin/users
 GET /api/intl/v1/dashboard
 ```
