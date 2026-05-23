@@ -11,6 +11,7 @@ type AdminDashboardNavIconName =
   | "content-management"
   | "dashboard"
   | "faqs"
+  | "gallery"
   | "roles"
   | "services"
   | "user-management"
@@ -288,6 +289,16 @@ function AdminNavIcon({ name }: { name: AdminDashboardNavIconName }) {
         <path d="M5 5h14v11H8l-3 3V5z" />
         <path d="M10 9a2 2 0 1 1 2 2v1" />
         <path d="M12 15h.01" />
+      </svg>
+    );
+  }
+
+  if (name === "gallery") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <rect height="14" rx="2" width="16" x="4" y="5" />
+        <circle cx="9" cy="10" r="1.5" />
+        <path d="M7 17l4-4 3 3 2-2 2 3" />
       </svg>
     );
   }

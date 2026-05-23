@@ -55,6 +55,8 @@ DEFAULT_ADMIN_ROLES = (
             "faq.delete",
             "gallery.read",
             "gallery.create",
+            "gallery.update",
+            "gallery.delete",
         ],
     ),
     DefaultRole(
@@ -72,6 +74,8 @@ DEFAULT_ADMIN_ROLES = (
             "faq.delete",
             "gallery.read",
             "gallery.create",
+            "gallery.update",
+            "gallery.delete",
         ],
     ),
     DefaultRole(

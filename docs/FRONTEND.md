@@ -36,7 +36,7 @@
   assignment, activation toggles, and modal CRUD actions backed by the INTL API.
 - After admin login, users land on `/admin`. Users and Roles are route-backed
   admin sections at `/admin/users` and `/admin/roles`; content management uses
-  `/admin/services` and `/admin/faqs`.
+  `/admin/services`, `/admin/faqs`, and `/admin/gallery`.
 - Admin menu pages are dynamic server-rendered routes backed by the admin token
   cookie. Each route loads only the data needed for that menu: Users loads
   users plus role options for assignment, while Roles loads roles only.
@@ -49,6 +49,10 @@
 - Services and FAQ admin tables hide internal code/order columns, allow direct
   active/inactive visibility changes through switch controls, and support
   drag-and-drop row reordering that persists `sort_order` through the INTL API.
+- Gallery admin management lives at `/admin/gallery` under Content Management.
+  It lists INTL gallery image records with thumbnails, supports drag-and-drop
+  ordering, inline active/inactive switches, edit/delete action modals, and
+  drop-target image uploads or replacement through multipart INTL endpoints.
 - Role create/edit forms use a grouped permission tree with checkbox controls,
   including an all-permissions root option and module-level parent checkboxes.
   The role modal uses a two-column desktop layout with role details on the left
@@ -60,8 +64,8 @@
   action to a square, sticky top app bar.
 - The `/admin` left navigation and top navigation are reusable client
   components in `frontend/app/admin/components/AdminDashboardShell.tsx`; the
-  Content Management nav group contains Services and FAQ, while User Management
-  contains Users and Roles. Feature pages should use the server wrapper in
+  Content Management nav group contains Services, FAQ, and Gallery, while User
+  Management contains Users and Roles. Feature pages should use the server wrapper in
   `frontend/app/admin/components/AdminServerShell.tsx` unless they need to
   compose `AdminLeftNavbar` and `AdminTopNavbar` directly.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.

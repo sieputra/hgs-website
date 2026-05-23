@@ -86,6 +86,30 @@ async def test_intl_admin_gallery_requires_admin_authentication() -> None:
     assert response.status_code == 401
 
 
+async def test_intl_admin_gallery_update_requires_admin_authentication() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.patch(
+            "/api/intl/v1/gallery/images/8a93a98c-f3bb-4928-87ee-59dc5f5d7401",
+        )
+
+    assert response.status_code == 401
+
+
+async def test_intl_admin_gallery_delete_requires_admin_authentication() -> None:
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.delete(
+            "/api/intl/v1/gallery/images/8a93a98c-f3bb-4928-87ee-59dc5f5d7401",
+        )
+
+    assert response.status_code == 401
+
+
 async def test_intl_admin_services_requires_admin_authentication() -> None:
     async with AsyncClient(
         transport=ASGITransport(app=create_app()),

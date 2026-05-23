@@ -47,7 +47,22 @@ export type FAQAdmin = {
   updated_at: string;
 };
 
-export type AdminView = "dashboard" | "users" | "roles" | "services" | "faqs";
+export type GalleryImageAdmin = {
+  id: string;
+  title: string;
+  caption: string;
+  image_url: string;
+  image_alt: string;
+  sort_order: number;
+  original_filename: string | null;
+  content_type: string | null;
+  file_size: number | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type AdminView = "dashboard" | "users" | "roles" | "services" | "faqs" | "gallery";
 
 export type LoginResponse = {
   access_token: string;

@@ -37,6 +37,8 @@ PATCH /api/intl/v1/faqs/{faq_id}
 DELETE /api/intl/v1/faqs/{faq_id}
 GET /api/intl/v1/gallery/images
 POST /api/intl/v1/gallery/images
+PATCH /api/intl/v1/gallery/images/{image_id}
+DELETE /api/intl/v1/gallery/images/{image_id}
 ```
 
 Endpoint contracts and examples are documented in `docs/API.md`.
@@ -80,12 +82,13 @@ permissions. Built-in roles are `super_admin`, `admin`, `content_admin`, and
 `recruitment_admin`. Service and FAQ content management use `service.read`,
 `service.create`, `service.update`, `service.delete`, `faq.read`, `faq.create`,
 `faq.update`, and `faq.delete`; admin gallery management requires
-`gallery.read` or `gallery.create`; role management requires `role.read`,
-`role.create`, `role.update`, or `role.delete`; user management requires
-`user.read`, `user.create`, `user.update`, or `user.delete`. Role codes are
-stable after creation, while role name, description, and permissions can be
-edited. System roles cannot be deleted, assigned roles must be unassigned before
-deletion, and admins cannot delete their own active account.
+`gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete`; role
+management requires `role.read`, `role.create`, `role.update`, or `role.delete`;
+user management requires `user.read`, `user.create`, `user.update`, or
+`user.delete`. Role codes are stable after creation, while role name,
+description, and permissions can be edited. System roles cannot be deleted,
+assigned roles must be unassigned before deletion, and admins cannot delete
+their own active account.
 
 Bootstrap or update an admin account with the protected CLI after setting
 `DATABASE_URL`, `ADMIN_AUTH_SECRET_KEY`, and `ADMIN_CLI_SECRET`:

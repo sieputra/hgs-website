@@ -549,8 +549,8 @@ Built-in role codes:
 | Code | Permissions |
 | --- | --- |
 | `super_admin` | `*` |
-| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.read`, `gallery.create` |
-| `content_admin` | `service.*`, `faq.*`, `gallery.read`, `gallery.create` |
+| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.*` |
+| `content_admin` | `service.*`, `faq.*`, `gallery.*` |
 | `recruitment_admin` | `recruitment.read`, `recruitment.update` |
 
 ### Create Admin Role
@@ -843,6 +843,36 @@ Multipart fields:
 
 Admin response data includes public gallery fields plus `original_filename`,
 `content_type`, `file_size`, `is_active`, `created_at`, and `updated_at`.
+
+### Update Admin Gallery Image
+
+```http
+PATCH /api/intl/v1/gallery/images/{image_id}
+Content-Type: multipart/form-data
+```
+
+Updates gallery metadata and can replace the optimized image file. Required
+permission: `gallery.update`.
+
+Multipart fields are optional:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `image` | file | Replacement JPEG, PNG, WebP, or GIF image. |
+| `title` | string | Image title. |
+| `caption` | string | Image caption. |
+| `image_alt` | string | Accessible alt text. Blank values default to the title. |
+| `sort_order` | integer | Display order, used by drag-and-drop admin reordering. |
+| `is_active` | boolean | Public visibility. |
+
+### Delete Admin Gallery Image
+
+```http
+DELETE /api/intl/v1/gallery/images/{image_id}
+```
+
+Required permission: `gallery.delete`. Deletes the gallery image record and
+removes uploaded media files when the image is stored under `/uploads/gallery/`.
 
 ## Error Handling
 

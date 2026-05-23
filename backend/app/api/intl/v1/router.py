@@ -397,7 +397,56 @@ async def create_admin_gallery_image(
     return api_response(data=image, message="Gallery image uploaded")
 
 
+@router.patch(
+    "/gallery/images/{image_id}",
+    response_model=ApiResponse[GalleryImageAdmin],
+)
+async def update_admin_gallery_image(
+    image_id: UUID,
+    request: Request,
+    _: Annotated[AdminUser, Depends(require_permission("gallery.update"))],
+    gallery_service: Annotated[
+        GalleryService,
+        Depends(get_gallery_service),
+    ],
+) -> dict[str, object]:
+    form = await request.form()
+    upload_value = form.get("image")
+    upload = upload_value if isinstance(upload_value, UploadFile) else None
+    image = await gallery_service.update_image(
+        image_id=image_id,
+        upload=upload,
+        title=_optional_update_form_text(form.get("title"), "title"),
+        caption=_optional_update_form_text(form.get("caption"), "caption"),
+        image_alt=_optional_form_text_or_blank(form.get("image_alt")),
+        sort_order=_optional_form_int(form.get("sort_order"), "sort_order"),
+        is_active=_optional_form_bool_or_none(form.get("is_active")),
+    )
+    return api_response(data=image, message="Gallery image updated")
+
+
+@router.delete("/gallery/images/{image_id}", response_model=ApiResponse[dict[str, str]])
+async def delete_admin_gallery_image(
+    image_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("gallery.delete"))],
+    gallery_service: Annotated[
+        GalleryService,
+        Depends(get_gallery_service),
+    ],
+) -> dict[str, object]:
+    gallery_service.delete_image(image_id=image_id)
+    return api_response(data={"id": str(image_id)}, message="Gallery image deleted")
+
+
 def _required_form_text(value: object, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise HTTPException(status_code=422, detail=f"{field_name} is required.")
+    return value.strip()
+
+
+def _optional_update_form_text(value: object, field_name: str) -> str | None:
+    if value is None:
+        return None
     if not isinstance(value, str) or not value.strip():
         raise HTTPException(status_code=422, detail=f"{field_name} is required.")
     return value.strip()
@@ -405,6 +454,12 @@ def _required_form_text(value: object, field_name: str) -> str:
 
 def _optional_form_text(value: object) -> str | None:
     if not isinstance(value, str) or not value.strip():
+        return None
+    return value.strip()
+
+
+def _optional_form_text_or_blank(value: object) -> str | None:
+    if not isinstance(value, str):
         return None
     return value.strip()
 
@@ -424,4 +479,10 @@ def _optional_form_int(value: object, field_name: str) -> int | None:
 def _optional_form_bool(value: object, *, default: bool) -> bool:
     if not isinstance(value, str) or not value.strip():
         return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _optional_form_bool_or_none(value: object) -> bool | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
     return value.strip().lower() in {"1", "true", "yes", "on"}

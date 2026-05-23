@@ -27,6 +27,12 @@ const adminNavItems: AdminDashboardNavItem[] = [
         icon: "faqs",
         label: "FAQ",
       },
+      {
+        href: "/admin/gallery",
+        id: "gallery",
+        icon: "gallery",
+        label: "Gallery",
+      },
     ],
     icon: "content-management",
     id: "content-management",

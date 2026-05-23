@@ -12,6 +12,7 @@ All notable changes and release notes for this project should be documented in t
 - Added INTL admin delete endpoints for users and custom roles with self-delete, system-role, and assigned-role safeguards.
 - Added INTL admin Services and FAQ CRUD endpoints with content-management RBAC permissions.
 - Added `/admin/services` and `/admin/faqs` management screens under a new Content Management menu group.
+- Added `/admin/gallery` under Content Management for listing gallery images and uploading new gallery photos.
 - Added `admin_roles` and `admin_users` database tables with built-in roles for super admin, admin, content admin, and recruitment admin.
 - Added a protected `python -m app.cli.create_admin` CLI for creating or updating admin users by role.
 - Added public Careers job cards that link directly to the application details section with the selected job prefilled.
@@ -19,6 +20,7 @@ All notable changes and release notes for this project should be documented in t
 - Added right-side current slide indicators and wheel up/down slide navigation for the homepage hero.
 - Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
 - Added gallery image APIs with public EXTL listing and INTL admin upload/list endpoints.
+- Added INTL admin gallery update and delete endpoints with `gallery.update` and `gallery.delete` permissions.
 - Added a `gallery_images` database table, seed gallery records, and backend upload serving from `/uploads/gallery/`.
 - Added upload-time gallery image optimization to WebP with metadata stripping and resizing.
 - Added a standalone `/faq-kandidat` page for candidate FAQs.
@@ -42,8 +44,11 @@ All notable changes and release notes for this project should be documented in t
 
 ### Changed
 
+- Changed the frontend development script to run Next.js with Turbopack.
 - Changed INTL API resource routes to remove the `/admin` path segment from protected roles, users, services, FAQs, and gallery endpoints.
-- Changed INTL admin gallery endpoints to require `gallery.read` or `gallery.create` permissions.
+- Changed INTL admin gallery endpoints to require `gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete` permissions by action.
+- Changed `/admin/gallery` to support editable metadata, image replacement, drag-and-drop ordering, status toggles, and delete confirmations.
+- Changed admin gallery uploads to use a drop-target file picker in create and edit modals.
 - Changed built-in admin and content admin roles to include Services and FAQ management permissions.
 - Changed Services and FAQ admin table status cells to inline switches for direct active/inactive updates.
 - Changed Services and FAQ admin tables to hide code/order columns and support drag-and-drop order updates.

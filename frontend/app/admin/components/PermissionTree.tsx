@@ -21,7 +21,7 @@ const permissionGroups = [
   },
   {
     label: "Gallery",
-    permissions: ["gallery.read", "gallery.create"],
+    permissions: ["gallery.read", "gallery.create", "gallery.update", "gallery.delete"],
   },
   {
     label: "Recruitment",

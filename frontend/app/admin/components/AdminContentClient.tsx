@@ -1,13 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { FormEvent } from "react";
+import type { ChangeEvent, DragEvent, FormEvent } from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 
 import { adminClientRequest } from "../lib/client-api";
 import { hasPermission } from "../lib/permissions";
-import type { AdminUser, FAQAdmin, PublicServiceAdmin } from "../lib/types";
+import type {
+  AdminUser,
+  FAQAdmin,
+  GalleryImageAdmin,
+  PublicServiceAdmin,
+} from "../lib/types";
 import { DeleteActionIcon, EditActionIcon } from "./AdminActionIcons";
 import { AdminModal, ConfirmModal, ModalActions } from "./AdminModal";
 import { AdminToast, type AdminToastState } from "./AdminToast";
@@ -30,6 +35,15 @@ type FAQForm = {
   is_active: boolean;
 };
 
+type GalleryForm = {
+  id: string;
+  title: string;
+  caption: string;
+  image_alt: string;
+  sort_order: string;
+  is_active: boolean;
+};
+
 type ServiceModalState =
   | { type: "service-form"; mode: "create" | "edit" }
   | { type: "confirm-delete-service"; service: PublicServiceAdmin }
@@ -38,6 +52,11 @@ type ServiceModalState =
 type FAQModalState =
   | { type: "faq-form"; mode: "create" | "edit" }
   | { type: "confirm-delete-faq"; faq: FAQAdmin }
+  | null;
+
+type GalleryModalState =
+  | { type: "gallery-form"; mode: "create" | "edit"; image?: GalleryImageAdmin }
+  | { type: "confirm-delete-gallery"; image: GalleryImageAdmin }
   | null;
 
 const emptyServiceForm: ServiceForm = {
@@ -54,6 +73,15 @@ const emptyFAQForm: FAQForm = {
   code: "",
   question: "",
   answer: "",
+  sort_order: "0",
+  is_active: true,
+};
+
+const emptyGalleryForm: GalleryForm = {
+  id: "",
+  title: "",
+  caption: "",
+  image_alt: "",
   sort_order: "0",
   is_active: true,
 };
@@ -776,6 +804,486 @@ export function AdminFaqsClient({
   );
 }
 
+export function AdminGalleryClient({
+  currentUser,
+  images,
+}: {
+  currentUser: AdminUser;
+  images: GalleryImageAdmin[];
+}) {
+  const router = useRouter();
+  const permissions = new Set(currentUser.role.permissions);
+  const canReadGallery = hasPermission(permissions, "gallery.read");
+  const canCreateGallery = hasPermission(permissions, "gallery.create");
+  const canUpdateGallery = hasPermission(permissions, "gallery.update");
+  const canDeleteGallery = hasPermission(permissions, "gallery.delete");
+  const [galleryForm, setGalleryForm] = useState<GalleryForm>(emptyGalleryForm);
+  const [galleryImageFile, setGalleryImageFile] = useState<File | null>(null);
+  const [galleryPreviewUrl, setGalleryPreviewUrl] = useState<string | null>(null);
+  const [orderedImages, setOrderedImages] = useState(() => sortByOrder(images));
+  const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
+  const [dragOverImageId, setDragOverImageId] = useState<string | null>(null);
+  const [modal, setModal] = useState<GalleryModalState>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState<AdminToastState>(null);
+
+  useEffect(() => {
+    setOrderedImages(sortByOrder(images));
+  }, [images]);
+
+  useEffect(() => {
+    if (!galleryImageFile) {
+      setGalleryPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(galleryImageFile);
+    setGalleryPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [galleryImageFile]);
+
+  function openCreateGalleryImage() {
+    setGalleryForm({
+      ...emptyGalleryForm,
+      sort_order: String(nextSortOrder(orderedImages)),
+    });
+    setGalleryImageFile(null);
+    setModal({ type: "gallery-form", mode: "create" });
+  }
+
+  function openEditGalleryImage(image: GalleryImageAdmin) {
+    setGalleryForm({
+      id: image.id,
+      title: image.title,
+      caption: image.caption,
+      image_alt: image.image_alt,
+      sort_order: String(image.sort_order),
+      is_active: image.is_active,
+    });
+    setGalleryImageFile(null);
+    setModal({ type: "gallery-form", mode: "edit", image });
+  }
+
+  function selectGalleryImage(event: ChangeEvent<HTMLInputElement>) {
+    setGalleryImageFile(event.target.files?.[0] ?? null);
+  }
+
+  function dropGalleryImage(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    const file = event.dataTransfer.files.item(0);
+    if (file) {
+      setGalleryImageFile(file);
+    }
+  }
+
+  async function saveGalleryImage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (modal?.type !== "gallery-form") {
+      return;
+    }
+    if (modal.mode === "create" && !galleryImageFile) {
+      setToast({ message: "Choose an image file before uploading.", tone: "error" });
+      return;
+    }
+
+    setIsLoading(true);
+    setToast(null);
+    try {
+      const formData = buildGalleryFormData(galleryForm, galleryImageFile);
+      if (modal.mode === "create") {
+        await adminClientRequest<GalleryImageAdmin>("/api/intl/v1/gallery/images", {
+          method: "POST",
+          body: formData,
+        });
+        setToast({ message: "Gallery image uploaded.", tone: "success" });
+      } else {
+        await adminClientRequest<GalleryImageAdmin>(
+          `/api/intl/v1/gallery/images/${galleryForm.id}`,
+          {
+            method: "PATCH",
+            body: formData,
+          },
+        );
+        setToast({ message: "Gallery image updated.", tone: "success" });
+      }
+      setModal(null);
+      router.refresh();
+    } catch (error) {
+      setToast({
+        message:
+          error instanceof Error ? error.message : "Unable to save gallery image.",
+        tone: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function reorderGalleryImages(targetImageId: string) {
+    if (!canUpdateGallery || !draggedImageId || draggedImageId === targetImageId) {
+      clearGalleryDragState();
+      return;
+    }
+    const previousImages = orderedImages;
+    const reorderedImages = withSequentialSortOrder(
+      moveItem(previousImages, draggedImageId, targetImageId),
+    );
+    const changedImages = findOrderChanges(previousImages, reorderedImages);
+    if (changedImages.length === 0) {
+      clearGalleryDragState();
+      return;
+    }
+
+    setOrderedImages(reorderedImages);
+    setIsLoading(true);
+    setToast(null);
+    try {
+      await Promise.all(
+        changedImages.map((image) => {
+          const formData = new FormData();
+          formData.append("sort_order", String(image.sort_order));
+          return adminClientRequest<GalleryImageAdmin>(
+            `/api/intl/v1/gallery/images/${image.id}`,
+            {
+              method: "PATCH",
+              body: formData,
+            },
+          );
+        }),
+      );
+      setToast({ message: "Gallery order updated.", tone: "success" });
+      router.refresh();
+    } catch (error) {
+      setOrderedImages(previousImages);
+      setToast({
+        message:
+          error instanceof Error ? error.message : "Unable to update gallery order.",
+        tone: "error",
+      });
+    } finally {
+      setIsLoading(false);
+      clearGalleryDragState();
+    }
+  }
+
+  function clearGalleryDragState() {
+    setDraggedImageId(null);
+    setDragOverImageId(null);
+  }
+
+  async function toggleGalleryStatus(image: GalleryImageAdmin) {
+    if (!canUpdateGallery) {
+      return;
+    }
+    setIsLoading(true);
+    setToast(null);
+    try {
+      const nextStatus = !image.is_active;
+      const formData = new FormData();
+      formData.append("is_active", nextStatus ? "true" : "false");
+      await adminClientRequest<GalleryImageAdmin>(
+        `/api/intl/v1/gallery/images/${image.id}`,
+        {
+          method: "PATCH",
+          body: formData,
+        },
+      );
+      setToast({
+        message: nextStatus ? "Gallery image set active." : "Gallery image set inactive.",
+        tone: "success",
+      });
+      router.refresh();
+    } catch (error) {
+      setToast({
+        message:
+          error instanceof Error ? error.message : "Unable to update gallery status.",
+        tone: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function deleteGalleryImage(image: GalleryImageAdmin) {
+    setIsLoading(true);
+    setToast(null);
+    try {
+      await adminClientRequest<{ id: string }>(
+        `/api/intl/v1/gallery/images/${image.id}`,
+        {
+          method: "DELETE",
+        },
+      );
+      setModal(null);
+      setToast({ message: "Gallery image deleted.", tone: "success" });
+      router.refresh();
+    } catch (error) {
+      setToast({
+        message:
+          error instanceof Error ? error.message : "Unable to delete gallery image.",
+        tone: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const galleryFormPreview =
+    galleryPreviewUrl ?? (modal?.type === "gallery-form" ? modal.image?.image_url : null);
+
+  return (
+    <div className="admin-content-body">
+      <AdminToast onClose={() => setToast(null)} toast={toast} />
+      <header className="admin-topbar">
+        <div>
+          <p className="admin-kicker">Content Management</p>
+          <h2>Gallery</h2>
+        </div>
+        <div className="admin-topbar-actions">
+          <span>{orderedImages.length} images</span>
+          {canCreateGallery ? (
+            <button
+              className="admin-primary-button"
+              onClick={openCreateGalleryImage}
+              type="button"
+            >
+              Upload image
+            </button>
+          ) : null}
+        </div>
+      </header>
+
+      {canReadGallery ? (
+        <div className="admin-table-wrap">
+          <table className="admin-table admin-gallery-table">
+            <thead>
+              <tr>
+                <th aria-label="Reorder" className="admin-drag-head" />
+                <th>Image</th>
+                <th>Title</th>
+                <th>Caption</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orderedImages.length > 0 ? (
+                orderedImages.map((image) => (
+                  <tr
+                    className={dragOverImageId === image.id ? "is-drag-over" : undefined}
+                    draggable={canUpdateGallery && !isLoading}
+                    key={image.id}
+                    onDragEnd={clearGalleryDragState}
+                    onDragOver={(event) => {
+                      if (!draggedImageId || draggedImageId === image.id) {
+                        return;
+                      }
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                      setDragOverImageId(image.id);
+                    }}
+                    onDragStart={(event) => {
+                      if (!canUpdateGallery || isLoading) {
+                        event.preventDefault();
+                        return;
+                      }
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", image.id);
+                      setDraggedImageId(image.id);
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      void reorderGalleryImages(image.id);
+                    }}
+                  >
+                    <td className="admin-drag-cell">
+                      <DragHandle isDisabled={!canUpdateGallery || isLoading} />
+                    </td>
+                    <td>
+                      <img
+                        alt={image.image_alt || image.title}
+                        className="admin-gallery-thumb"
+                        src={image.image_url}
+                      />
+                    </td>
+                    <td>
+                      <strong>{image.title}</strong>
+                      <small>Order {image.sort_order}</small>
+                    </td>
+                    <td>{image.caption}</td>
+                    <td>
+                      {canUpdateGallery ? (
+                        <StatusSwitch
+                          isActive={image.is_active}
+                          isDisabled={isLoading}
+                          label={`Set ${image.title} ${
+                            image.is_active ? "inactive" : "active"
+                          }`}
+                          onToggle={() => void toggleGalleryStatus(image)}
+                        />
+                      ) : (
+                        <span
+                          className={
+                            image.is_active ? "admin-status is-active" : "admin-status"
+                          }
+                        >
+                          {image.is_active ? "Active" : "Inactive"}
+                        </span>
+                      )}
+                      {image.created_at ? (
+                        <small>Added {formatAdminDate(image.created_at)}</small>
+                      ) : null}
+                    </td>
+                    <td>
+                      <div className="admin-table-actions">
+                        {canUpdateGallery ? (
+                          <button
+                            aria-label={`Edit ${image.title}`}
+                            disabled={isLoading}
+                            onClick={() => openEditGalleryImage(image)}
+                            title="Edit"
+                            type="button"
+                          >
+                            <EditActionIcon />
+                          </button>
+                        ) : null}
+                        {canDeleteGallery ? (
+                          <button
+                            aria-label={`Delete ${image.title}`}
+                            className="is-danger"
+                            disabled={isLoading}
+                            onClick={() =>
+                              setModal({ type: "confirm-delete-gallery", image })
+                            }
+                            title="Delete"
+                            type="button"
+                          >
+                            <DeleteActionIcon />
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6}>No gallery images yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="admin-notice">You do not have permission to view gallery images.</p>
+      )}
+
+      {modal?.type === "gallery-form" ? (
+        <AdminModal
+          onClose={() => setModal(null)}
+          title={modal.mode === "create" ? "Upload gallery image" : "Edit gallery image"}
+        >
+          <form className="admin-form" onSubmit={saveGalleryImage}>
+            <label
+              className="admin-file-dropzone"
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={dropGalleryImage}
+            >
+              <input
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={selectGalleryImage}
+                required={modal.mode === "create"}
+                type="file"
+              />
+              {galleryFormPreview ? (
+                <img
+                  alt=""
+                  className="admin-file-dropzone-preview"
+                  src={galleryFormPreview}
+                />
+              ) : (
+                <span aria-hidden="true" className="admin-file-dropzone-placeholder">
+                  JPG
+                </span>
+              )}
+              <span>
+                <strong>
+                  {galleryImageFile
+                    ? galleryImageFile.name
+                    : modal.mode === "create"
+                      ? "Drop image here"
+                      : "Drop replacement image here"}
+                </strong>
+                <small>
+                  {galleryImageFile
+                    ? formatFileSize(galleryImageFile.size)
+                    : "JPEG, PNG, WebP, or GIF"}
+                </small>
+              </span>
+            </label>
+            <label>
+              Title
+              <input
+                onChange={(event) =>
+                  setGalleryForm((value) => ({ ...value, title: event.target.value }))
+                }
+                required
+                value={galleryForm.title}
+              />
+            </label>
+            <label>
+              Caption
+              <textarea
+                onChange={(event) =>
+                  setGalleryForm((value) => ({ ...value, caption: event.target.value }))
+                }
+                required
+                rows={4}
+                value={galleryForm.caption}
+              />
+            </label>
+            <label>
+              Alt text
+              <input
+                onChange={(event) =>
+                  setGalleryForm((value) => ({
+                    ...value,
+                    image_alt: event.target.value,
+                  }))
+                }
+                placeholder="Defaults to the title when left blank"
+                value={galleryForm.image_alt}
+              />
+            </label>
+            <label className="admin-toggle">
+              <input
+                checked={galleryForm.is_active}
+                onChange={(event) =>
+                  setGalleryForm((value) => ({
+                    ...value,
+                    is_active: event.target.checked,
+                  }))
+                }
+                type="checkbox"
+              />
+              <span>Visible on public site</span>
+            </label>
+            <ModalActions isLoading={isLoading} onCancel={() => setModal(null)} />
+          </form>
+        </AdminModal>
+      ) : null}
+
+      {modal?.type === "confirm-delete-gallery" ? (
+        <ConfirmModal
+          body={`Delete ${modal.image.title}? This removes it from the public gallery.`}
+          isLoading={isLoading}
+          onCancel={() => setModal(null)}
+          onConfirm={() => void deleteGalleryImage(modal.image)}
+          title="Delete gallery image"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function StatusSwitch({
   isActive,
   isDisabled,
@@ -863,4 +1371,37 @@ function nextSortOrder(items: Array<{ sort_order: number }>) {
     return 1;
   }
   return Math.max(...items.map((item) => item.sort_order)) + 1;
+}
+
+function buildGalleryFormData(form: GalleryForm, imageFile: File | null) {
+  const formData = new FormData();
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+  formData.append("title", form.title);
+  formData.append("caption", form.caption);
+  formData.append("image_alt", form.image_alt);
+  formData.append("is_active", form.is_active ? "true" : "false");
+  if (form.sort_order.trim()) {
+    formData.append("sort_order", form.sort_order);
+  }
+  return formData;
+}
+
+function formatFileSize(fileSize: number | null) {
+  if (!fileSize) {
+    return null;
+  }
+  if (fileSize < 1024 * 1024) {
+    return `${Math.round(fileSize / 1024)} KB`;
+  }
+  return `${(fileSize / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatAdminDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
 }

@@ -11,7 +11,9 @@ export async function adminClientRequest<T>(
   }
   const headers = new Headers(options.headers);
   headers.set("Authorization", `Bearer ${token}`);
-  headers.set("Content-Type", "application/json");
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
   const response = await fetch(path, {
     ...options,
     headers,

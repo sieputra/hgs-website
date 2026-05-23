@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses import replace
 from datetime import UTC
 from datetime import datetime
 from uuid import UUID
@@ -28,6 +29,8 @@ class GalleryImageRecord:
 
 class GalleryRepository:
     _uploaded_images: list[GalleryImageRecord] = []
+    _updated_seed_images: dict[UUID, GalleryImageRecord] = {}
+    _deleted_image_ids: set[UUID] = set()
     _seed_images = (
         GalleryImageRecord(
             id=UUID("8a93a98c-f3bb-4928-87ee-59dc5f5d7401"),
@@ -79,19 +82,28 @@ class GalleryRepository:
         ),
     )
 
+    def _all_images(self) -> list[GalleryImageRecord]:
+        seed_images = [
+            self._updated_seed_images.get(image.id, image)
+            for image in self._seed_images
+            if image.id not in self._deleted_image_ids
+        ]
+        uploaded_images = [
+            image
+            for image in self._uploaded_images
+            if image.id not in self._deleted_image_ids
+        ]
+        return [*seed_images, *uploaded_images]
+
     def list_public_images(self) -> list[GalleryImageRecord]:
         return sorted(
-            (
-                image
-                for image in (*self._seed_images, *self._uploaded_images)
-                if image.is_active
-            ),
+            (image for image in self._all_images() if image.is_active),
             key=lambda image: image.sort_order,
         )
 
     def list_admin_images(self) -> list[GalleryImageRecord]:
         return sorted(
-            [*self._seed_images, *self._uploaded_images],
+            self._all_images(),
             key=lambda image: image.sort_order,
         )
 
@@ -127,6 +139,59 @@ class GalleryRepository:
         self._uploaded_images.append(image)
         return image
 
+    def get_image(self, image_id: UUID) -> GalleryImageRecord | None:
+        for image in self._all_images():
+            if image.id == image_id:
+                return image
+        return None
+
+    def update_image(
+        self,
+        image: GalleryImageRecord,
+        *,
+        title: str | None = None,
+        caption: str | None = None,
+        image_alt: str | None = None,
+        image_url: str | None = None,
+        original_filename: str | None = None,
+        content_type: str | None = None,
+        file_size: int | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> GalleryImageRecord:
+        updated_image = replace(
+            image,
+            title=title if title is not None else image.title,
+            caption=caption if caption is not None else image.caption,
+            image_alt=image_alt if image_alt is not None else image.image_alt,
+            image_url=image_url if image_url is not None else image.image_url,
+            original_filename=(
+                original_filename
+                if original_filename is not None
+                else image.original_filename
+            ),
+            content_type=content_type if content_type is not None else image.content_type,
+            file_size=file_size if file_size is not None else image.file_size,
+            sort_order=sort_order if sort_order is not None else image.sort_order,
+            is_active=is_active if is_active is not None else image.is_active,
+            updated_at=datetime.now(UTC),
+        )
+        for index, uploaded_image in enumerate(self._uploaded_images):
+            if uploaded_image.id == image.id:
+                self._uploaded_images[index] = updated_image
+                return updated_image
+        self._updated_seed_images[image.id] = updated_image
+        return updated_image
+
+    def delete_image(self, image: GalleryImageRecord) -> None:
+        self._deleted_image_ids.add(image.id)
+        self._updated_seed_images.pop(image.id, None)
+        self._uploaded_images = [
+            uploaded_image
+            for uploaded_image in self._uploaded_images
+            if uploaded_image.id != image.id
+        ]
+
 
 class DatabaseGalleryRepository:
     def __init__(self, session: Session) -> None:
@@ -154,6 +219,9 @@ class DatabaseGalleryRepository:
     def next_sort_order(self) -> int:
         current = self._session.scalar(select(func.max(GalleryImageModel.sort_order)))
         return int(current or 0) + 1
+
+    def get_image(self, image_id: UUID) -> GalleryImageModel | None:
+        return self._session.get(GalleryImageModel, image_id)
 
     def create_image(
         self,
@@ -185,3 +253,43 @@ class DatabaseGalleryRepository:
         self._session.commit()
         self._session.refresh(image)
         return image
+
+    def update_image(
+        self,
+        image: GalleryImageModel,
+        *,
+        title: str | None = None,
+        caption: str | None = None,
+        image_alt: str | None = None,
+        image_url: str | None = None,
+        original_filename: str | None = None,
+        content_type: str | None = None,
+        file_size: int | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> GalleryImageModel:
+        if title is not None:
+            image.title = title
+        if caption is not None:
+            image.caption = caption
+        if image_alt is not None:
+            image.image_alt = image_alt
+        if image_url is not None:
+            image.image_url = image_url
+        if original_filename is not None:
+            image.original_filename = original_filename
+        if content_type is not None:
+            image.content_type = content_type
+        if file_size is not None:
+            image.file_size = file_size
+        if sort_order is not None:
+            image.sort_order = sort_order
+        if is_active is not None:
+            image.is_active = is_active
+        self._session.commit()
+        self._session.refresh(image)
+        return image
+
+    def delete_image(self, image: GalleryImageModel) -> None:
+        self._session.delete(image)
+        self._session.commit()
