@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
+
+import { TopProgressBar } from "./components/TopProgressBar";
 
 export const metadata: Metadata = {
   title: "PT Handal Guna Sarana | HGS",
@@ -21,7 +24,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Suspense fallback={null}>
+          <TopProgressBar />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

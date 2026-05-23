@@ -51,6 +51,32 @@ main {
   width: 100%;
 }
 
+.top-progress {
+  height: 3px;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: opacity 160ms ease;
+  z-index: 1000;
+}
+
+.top-progress.is-visible {
+  opacity: 1;
+}
+
+.top-progress span {
+  background: linear-gradient(90deg, #b84930, #f6a500);
+  box-shadow: 0 0 16px rgba(184, 73, 48, 0.45);
+  display: block;
+  height: 100%;
+  transform-origin: left center;
+  transition: transform 180ms ease;
+  width: 100%;
+}
+
 .admin-shell {
   background: #f6f7f4;
   color: #1b1d1a;
@@ -165,19 +191,21 @@ main {
   gap: 6px;
 }
 
+.admin-nav a,
 .admin-nav button,
+.admin-nav-group-heading,
 .admin-role-item,
 .admin-text-button {
   font: inherit;
 }
 
-.admin-nav button {
+.admin-nav-link,
+.admin-nav-group-heading {
   align-items: center;
   background: transparent;
   border: 0;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.72);
-  cursor: pointer;
   display: flex;
   gap: 10px;
   font-weight: 800;
@@ -187,16 +215,65 @@ main {
   text-align: left;
 }
 
+.admin-nav-link {
+  cursor: pointer;
+}
+
+.admin-nav-group {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-nav-group-heading {
+  color: rgba(255, 255, 255, 0.56);
+  cursor: pointer;
+  width: 100%;
+}
+
+.admin-nav-subitems {
+  display: grid;
+  gap: 4px;
+  padding-left: 12px;
+}
+
+.admin-nav-subitems[hidden] {
+  display: none;
+}
+
 .admin-nav-icon {
   align-items: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   display: inline-flex;
-  font-size: 12px;
   height: 24px;
   justify-content: center;
   min-width: 24px;
   width: 24px;
+}
+
+.admin-nav-svg {
+  height: 15px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+  width: 15px;
+}
+
+.admin-nav-chevron {
+  height: 16px;
+  margin-left: auto;
+  min-width: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+  transition: transform 140ms ease;
+  width: 16px;
+}
+
+.admin-nav-chevron.is-expanded {
+  transform: rotate(90deg);
 }
 
 .admin-nav-label {
@@ -204,11 +281,31 @@ main {
   white-space: nowrap;
 }
 
-.admin-nav button.is-active,
-.admin-nav button:hover,
-.admin-nav button:focus-visible {
+.admin-nav-link.is-active,
+.admin-nav-link:hover,
+.admin-nav-link:focus-visible,
+.admin-nav-group-heading:hover,
+.admin-nav-group-heading:focus-visible {
   background: #2b2c27;
   color: #ffffff;
+}
+
+.admin-nav-group.is-active .admin-nav-group-heading {
+  color: #ffffff;
+}
+
+.admin-shell.is-sidebar-collapsed .admin-nav-link,
+.admin-shell.is-sidebar-collapsed .admin-nav-group-heading {
+  justify-content: center;
+  padding: 10px;
+}
+
+.admin-shell.is-sidebar-collapsed .admin-nav-subitems {
+  padding-left: 0;
+}
+
+.admin-shell.is-sidebar-collapsed .admin-nav-chevron {
+  display: none;
 }
 
 .admin-profile {
@@ -421,6 +518,76 @@ main {
   padding: 10px 12px;
 }
 
+.admin-toast-region {
+  display: grid;
+  gap: 10px;
+  pointer-events: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: min(420px, calc(100vw - 40px));
+  z-index: 120;
+}
+
+.admin-toast {
+  align-items: center;
+  animation: admin-toast-enter 180ms ease-out;
+  background: #ffffff;
+  border: 1px solid #ccd8c4;
+  border-left: 5px solid #2c5438;
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(28, 34, 28, 0.18);
+  color: #243026;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 54px;
+  padding: 13px 12px 13px 14px;
+  pointer-events: auto;
+}
+
+.admin-toast.is-error {
+  border-left-color: #b7322c;
+}
+
+.admin-toast p {
+  font-weight: 800;
+  margin: 0;
+}
+
+.admin-toast button {
+  align-items: center;
+  background: #f1f3ee;
+  border: 1px solid #d8ded3;
+  border-radius: 999px;
+  color: #30382f;
+  cursor: pointer;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.admin-toast-close-icon {
+  height: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2.4;
+  width: 16px;
+}
+
+@keyframes admin-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .admin-table-wrap {
   overflow-x: auto;
 }
@@ -464,16 +631,25 @@ main {
   min-width: 150px;
 }
 
-.admin-toggle {
+.admin-shell label.admin-toggle {
   align-items: center;
-  display: flex;
-  gap: 8px;
+  display: inline-flex;
+  gap: 9px;
+  justify-self: start;
+  width: auto;
 }
 
-.admin-toggle input {
+.admin-shell label.admin-toggle input {
+  flex: 0 0 16px;
   height: 16px;
   min-height: 16px;
+  margin: 0;
   width: 16px;
+}
+
+.admin-shell label.admin-toggle span {
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .admin-status {
@@ -500,15 +676,20 @@ main {
 }
 
 .admin-table-actions button {
+  align-items: center;
   background: #f7f8f4;
   border: 1px solid #d8ded3;
   border-radius: 7px;
   color: #30382f;
   cursor: pointer;
+  display: inline-flex;
   font: inherit;
   font-weight: 800;
+  height: 34px;
+  justify-content: center;
   min-height: 34px;
-  padding: 7px 10px;
+  padding: 0;
+  width: 34px;
 }
 
 .admin-table-actions button:hover,
@@ -523,6 +704,15 @@ main {
 
 .admin-table-actions button.is-danger {
   color: #a22d28;
+}
+
+.admin-action-icon {
+  height: 17px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+  width: 17px;
 }
 
 .admin-role-layout {

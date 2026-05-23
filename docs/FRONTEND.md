@@ -13,6 +13,8 @@
 
 - The frontend lives in `frontend/`.
 - The initial public page is implemented with Next.js App Router at `frontend/app/page.tsx`.
+- A root `TopProgressBar` client component displays a thin fixed progress
+  indicator during same-site route navigation and page unloads.
 - The Services homepage section loads card content from `GET /api/extl/v1/services` and falls back to local service content when the API is unavailable.
 - Candidate applications are implemented at `frontend/app/career/page.tsx`.
 - The public gallery is implemented as a homepage section in `frontend/app/page.tsx`, loads `GET /api/extl/v1/gallery/images`, and falls back to optimized local WebP gallery images when the API is unavailable.
@@ -29,19 +31,34 @@
 - The hero currently supports WebP image slides and MP4 video slides through the slide data in `frontend/app/page.tsx`.
 - Browser-side EXTL API calls are same-origin by default through the Next.js `/api/:path*` rewrite.
 - Uploaded backend media is available to the frontend through the Next.js `/uploads/:path*` rewrite.
-- The admin dashboard is available at `/admin` with login, separated Users and
-  Roles views, user creation, role assignment, activation toggles, and role
-  create/edit/delete actions backed by the INTL API.
+- The admin dashboard is available at `/admin` with login, a default Dashboard
+  page, separated Users and Roles pages, user creation, role assignment,
+  activation toggles, and role create/edit/delete actions backed by the INTL API.
+- After admin login, users land on `/admin`. Users and Roles are route-backed
+  admin sections at `/admin/users` and `/admin/roles`.
+- Admin menu pages are dynamic server-rendered routes backed by the admin token
+  cookie. Each route loads only the data needed for that menu: Users loads
+  users plus role options for assignment, while Roles loads roles only.
+- The admin login flow mirrors the bearer token into both localStorage and the
+  `hgs_admin_token` cookie so server-rendered admin routes can authenticate.
 - Admin datatable CRUD uses the default dashboard workflow: create and edit
   actions open form modals, and delete actions open confirmation modals before
-  calling the API.
+  calling the API. Success and error feedback appears as popup toast
+  notifications instead of inline content notices.
 - Role create/edit forms use a grouped permission tree with checkbox controls,
   including an all-permissions root option and module-level parent checkboxes.
   The role modal uses a two-column desktop layout with role details on the left
   and permission selection on the right.
 - The `/admin` desktop sidebar is sticky, supports fold/unfold, keeps primary
-  navigation at the top without data-count badges, and moves the signed-in
-  account block plus sign-out action to a square, sticky top app bar.
+  navigation at the top without data-count badges, uses inline SVG icons, groups
+  Users and Roles under a default-collapsed User Management section with an
+  expand/collapse row, and moves the signed-in account block plus sign-out
+  action to a square, sticky top app bar.
+- The `/admin` left navigation and top navigation are reusable client
+  components in `frontend/app/admin/components/AdminDashboardShell.tsx`; feature
+  pages should use the server wrapper in
+  `frontend/app/admin/components/AdminServerShell.tsx` unless they need to
+  compose `AdminLeftNavbar` and `AdminTopNavbar` directly.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.
 - `NEXT_PUBLIC_API_BASE_URL` can still be set when the browser should call a public API host directly instead of the same-origin rewrite.
 
@@ -70,7 +87,6 @@ Recruitment should live on separate routes because it tends to grow independentl
 
 ```text
 /career
-/carrer
 /career/jobs
 /career/jobs/[slug]
 ```
@@ -78,7 +94,6 @@ Recruitment should live on separate routes because it tends to grow independentl
 Current `/career` behavior:
 
 - Opens from the public Apply CTAs.
-- Can also be reached through `/carrer` for compatibility with existing recruitment links.
 - Displays a full-height `hero1.webp` image hero with a bouncing chevron link that scrolls to the first application section.
 - Shows a recruitment process stepper in the hero: Candidate Submission, HR Interview, User Interview, and Announcement.
 - Centers repeatable-section add/remove action buttons on mobile.

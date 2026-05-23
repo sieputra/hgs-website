@@ -648,7 +648,7 @@ export default function Home() {
         </div>
         <div className="career-job-list" aria-busy={isCareerJobsLoading} aria-label="Available jobs">
           {careerJobs.map((job) => (
-            <a className="career-job-card" href={`/carrer?job=${encodeURIComponent(job.slug)}#application-details`} key={job.slug}>
+            <a className="career-job-card" href={`/career?job=${encodeURIComponent(job.slug)}#application-details`} key={job.slug}>
               <span>{job.employment_type}</span>
               <h3>{job.title}</h3>
               <p>{job.summary}</p>

@@ -13,7 +13,6 @@ All notable changes and release notes for this project should be documented in t
 - Added `admin_roles` and `admin_users` database tables with built-in roles for super admin, admin, content admin, and recruitment admin.
 - Added a protected `python -m app.cli.create_admin` CLI for creating or updating admin users by role.
 - Added public Careers job cards that link directly to the application details section with the selected job prefilled.
-- Added `/carrer` as a compatibility route for recruitment links that use the alternate spelling.
 - Added automatic homepage hero slide rotation with hover/focus pause and reduced-motion support.
 - Added right-side current slide indicators and wheel up/down slide navigation for the homepage hero.
 - Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
@@ -42,10 +41,20 @@ All notable changes and release notes for this project should be documented in t
 ### Changed
 
 - Changed INTL admin gallery endpoints to require `gallery.read` or `gallery.create` permissions.
+- Changed the `/admin` left menu to use inline SVG icons and group Users and Roles under User Management.
+- Changed grouped `/admin` left menu sections to collapse by default and expand/collapse from the group row.
 - Changed the `/admin` dashboard to separate Users and Roles into sidebar-controlled views with smaller UI typography and a sticky desktop sidebar.
 - Changed `/admin` datatable CRUD to use modal forms for create/edit and confirmation modals for delete.
 - Changed the `/admin` shell to move profile/sign-out controls into a top app bar, remove sidebar count badges, and support folding/unfolding the left menu.
 - Changed the `/admin` top app bar to be square, flush to the content area, sticky during long data scrolls, and replaced the sidebar collapse character with an SVG icon.
+- Changed the `/admin` dashboard chrome to use reusable left navbar, top navbar, and shell components.
+- Changed `/admin` into the default post-login Dashboard page with a placeholder Dashboard heading.
+- Changed the `/admin` Users and Roles menus to route-backed, server-rendered pages at `/admin/users` and `/admin/roles`.
+- Changed admin menu loading so each server-rendered route fetches only the data needed for the active menu instead of loading all menus at once.
+- Changed admin login/session storage to mirror the bearer token into a cookie for server-rendered admin routes.
+- Changed admin Users and Roles CRUD feedback from inline notices to popup toast notifications.
+- Changed admin toast notifications to appear at the bottom-right and converted Users/Roles edit/delete table actions to icon buttons.
+- Added a root top progress bar for same-site page navigation and unload loading feedback.
 - Changed role create/edit permissions from free-text input to a grouped checkbox tree.
 - Changed the role modal to use a two-column layout with aligned permission checkboxes.
 - Changed the homepage Careers section to use an exact viewport-height layout with the job cards contained inside the section.
@@ -100,6 +109,10 @@ All notable changes and release notes for this project should be documented in t
 
 - Fixed vertical alignment for career form checkbox rows beside standard fields.
 - Fixed candidate form hydration mismatch caused by rendering random captcha values before client mount.
+
+### Removed
+
+- Removed the unused `/carrer` compatibility route and standardized recruitment links on `/career`.
 
 ## Release Template
 
