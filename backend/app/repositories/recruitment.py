@@ -343,11 +343,145 @@ class DatabaseRecruitmentRepository:
         return list(
             self._session.scalars(
                 select(DivisionModel)
-                .options(selectinload(DivisionModel.positions))
+                .options(
+                    selectinload(
+                        DivisionModel.positions.and_(PositionModel.is_active.is_(True))
+                    )
+                )
                 .where(DivisionModel.is_active.is_(True))
                 .order_by(DivisionModel.sort_order)
             )
         )
+
+    def list_admin_divisions(self) -> list[DivisionModel]:
+        return list(
+            self._session.scalars(
+                select(DivisionModel)
+                .options(selectinload(DivisionModel.positions))
+                .order_by(DivisionModel.sort_order, DivisionModel.name)
+            )
+        )
+
+    def get_division(self, division_id: UUID) -> DivisionModel | None:
+        return self._session.get(DivisionModel, division_id)
+
+    def get_division_by_code(self, code: str) -> DivisionModel | None:
+        return self._session.scalar(
+            select(DivisionModel).where(DivisionModel.code == code)
+        )
+
+    def create_division(
+        self,
+        *,
+        code: str,
+        name: str,
+        sort_order: int,
+        is_active: bool,
+    ) -> DivisionModel:
+        division = DivisionModel(
+            code=code,
+            name=name,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+        self._session.add(division)
+        self._session.commit()
+        self._session.refresh(division)
+        return division
+
+    def update_division(
+        self,
+        division: DivisionModel,
+        *,
+        name: str | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> DivisionModel:
+        if name is not None:
+            division.name = name
+        if sort_order is not None:
+            division.sort_order = sort_order
+        if is_active is not None:
+            division.is_active = is_active
+        self._session.commit()
+        self._session.refresh(division)
+        return division
+
+    def delete_division(self, division: DivisionModel) -> None:
+        self._session.delete(division)
+        self._session.commit()
+
+    def list_admin_positions(self) -> list[PositionModel]:
+        return list(
+            self._session.scalars(
+                select(PositionModel).order_by(
+                    PositionModel.sort_order,
+                    PositionModel.name,
+                )
+            )
+        )
+
+    def get_position(self, position_id: UUID) -> PositionModel | None:
+        return self._session.get(PositionModel, position_id)
+
+    def get_position_by_division_and_code(
+        self,
+        *,
+        division_id: UUID,
+        code: str,
+    ) -> PositionModel | None:
+        return self._session.scalar(
+            select(PositionModel).where(
+                PositionModel.division_id == division_id,
+                PositionModel.code == code,
+            )
+        )
+
+    def create_position(
+        self,
+        *,
+        division: DivisionModel,
+        code: str,
+        name: str,
+        sort_order: int,
+        is_active: bool,
+    ) -> PositionModel:
+        position = PositionModel(
+            division_id=division.id,
+            code=code,
+            name=name,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+        self._session.add(position)
+        self._session.commit()
+        self._session.refresh(position)
+        return position
+
+    def update_position(
+        self,
+        position: PositionModel,
+        *,
+        division: DivisionModel | None = None,
+        name: str | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> PositionModel:
+        if division is not None:
+            position.division_id = division.id
+        if name is not None:
+            position.name = name
+        if sort_order is not None:
+            position.sort_order = sort_order
+        if is_active is not None:
+            position.is_active = is_active
+        self._session.commit()
+        self._session.refresh(position)
+        return position
+
+    def delete_position(self, position: PositionModel) -> None:
+        self._session.delete(position)
+        self._session.commit()
 
     def list_jobs(self) -> list[CareerJobModel]:
         return list(
@@ -358,6 +492,24 @@ class DatabaseRecruitmentRepository:
             )
         )
 
+    def list_admin_jobs(self) -> list[CareerJobModel]:
+        return list(
+            self._session.scalars(
+                select(CareerJobModel).order_by(
+                    CareerJobModel.sort_order,
+                    CareerJobModel.title,
+                )
+            )
+        )
+
+    def get_job(self, job_id: UUID) -> CareerJobModel | None:
+        return self._session.get(CareerJobModel, job_id)
+
+    def get_job_by_code(self, code: str) -> CareerJobModel | None:
+        return self._session.scalar(
+            select(CareerJobModel).where(CareerJobModel.code == code)
+        )
+
     def get_job_by_slug(self, slug: str) -> CareerJobModel | None:
         return self._session.scalar(
             select(CareerJobModel).where(
@@ -365,6 +517,100 @@ class DatabaseRecruitmentRepository:
                 CareerJobModel.is_active.is_(True),
             )
         )
+
+    def get_admin_job_by_slug(self, slug: str) -> CareerJobModel | None:
+        return self._session.scalar(
+            select(CareerJobModel).where(CareerJobModel.slug == slug)
+        )
+
+    def create_job(
+        self,
+        *,
+        division: DivisionModel,
+        position: PositionModel,
+        code: str,
+        slug: str,
+        title: str,
+        location: str,
+        employment_type: str,
+        summary: str,
+        responsibilities: list[str],
+        requirements: list[str],
+        sort_order: int,
+        is_active: bool,
+    ) -> CareerJobModel:
+        job = CareerJobModel(
+            division_id=division.id,
+            position_id=position.id,
+            code=code,
+            slug=slug,
+            title=title,
+            division_code=division.code,
+            division_name=division.name,
+            position_code=position.code,
+            position_name=position.name,
+            location=location,
+            employment_type=employment_type,
+            summary=summary,
+            responsibilities=responsibilities,
+            requirements=requirements,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+        self._session.add(job)
+        self._session.commit()
+        self._session.refresh(job)
+        return job
+
+    def update_job(
+        self,
+        job: CareerJobModel,
+        *,
+        division: DivisionModel | None = None,
+        position: PositionModel | None = None,
+        slug: str | None = None,
+        title: str | None = None,
+        location: str | None = None,
+        employment_type: str | None = None,
+        summary: str | None = None,
+        responsibilities: list[str] | None = None,
+        requirements: list[str] | None = None,
+        sort_order: int | None = None,
+        is_active: bool | None = None,
+    ) -> CareerJobModel:
+        if division is not None:
+            job.division_id = division.id
+            job.division_code = division.code
+            job.division_name = division.name
+        if position is not None:
+            job.position_id = position.id
+            job.position_code = position.code
+            job.position_name = position.name
+        if slug is not None:
+            job.slug = slug
+        if title is not None:
+            job.title = title
+        if location is not None:
+            job.location = location
+        if employment_type is not None:
+            job.employment_type = employment_type
+        if summary is not None:
+            job.summary = summary
+        if responsibilities is not None:
+            job.responsibilities = responsibilities
+        if requirements is not None:
+            job.requirements = requirements
+        if sort_order is not None:
+            job.sort_order = sort_order
+        if is_active is not None:
+            job.is_active = is_active
+        self._session.commit()
+        self._session.refresh(job)
+        return job
+
+    def delete_job(self, job: CareerJobModel) -> None:
+        self._session.delete(job)
+        self._session.commit()
 
     def create_contact_submission(
         self,

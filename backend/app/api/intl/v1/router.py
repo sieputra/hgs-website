@@ -26,12 +26,23 @@ from app.schemas.public_content import FAQUpdate
 from app.schemas.public_content import PublicServiceAdmin
 from app.schemas.public_content import PublicServiceCreate
 from app.schemas.public_content import PublicServiceUpdate
+from app.schemas.recruitment import CareerJobAdmin
+from app.schemas.recruitment import CareerJobCreate
+from app.schemas.recruitment import CareerJobUpdate
+from app.schemas.recruitment import DivisionAdmin
+from app.schemas.recruitment import DivisionCreate
+from app.schemas.recruitment import DivisionUpdate
+from app.schemas.recruitment import PositionAdmin
+from app.schemas.recruitment import PositionCreate
+from app.schemas.recruitment import PositionUpdate
 from app.services.admin import AdminService
 from app.services.admin import get_admin_service
 from app.services.gallery import GalleryService
 from app.services.gallery import get_gallery_service
 from app.services.public_content import PublicContentService
 from app.services.public_content import get_admin_public_content_service
+from app.services.recruitment import RecruitmentService
+from app.services.recruitment import get_admin_recruitment_service
 
 router = APIRouter(tags=["INTL v1"])
 
@@ -346,6 +357,249 @@ async def delete_admin_faq(
 ) -> dict[str, object]:
     public_content_service.delete_faq(faq_id=faq_id)
     return api_response(data={"id": str(faq_id)}, message="FAQ deleted")
+
+
+@router.get(
+    "/divisions",
+    response_model=ApiResponse[list[DivisionAdmin]],
+)
+async def list_admin_divisions(
+    _: Annotated[AdminUser, Depends(require_permission("division.read"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    divisions = recruitment_service.list_admin_divisions()
+    return api_response(data=divisions, meta={"total": len(divisions)})
+
+
+@router.post(
+    "/divisions",
+    response_model=ApiResponse[DivisionAdmin],
+    status_code=201,
+)
+async def create_admin_division(
+    payload: DivisionCreate,
+    _: Annotated[AdminUser, Depends(require_permission("division.create"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    division = recruitment_service.create_division(
+        code=payload.code,
+        name=payload.name,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=division, message="Division created")
+
+
+@router.patch(
+    "/divisions/{division_id}",
+    response_model=ApiResponse[DivisionAdmin],
+)
+async def update_admin_division(
+    division_id: UUID,
+    payload: DivisionUpdate,
+    _: Annotated[AdminUser, Depends(require_permission("division.update"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    division = recruitment_service.update_division(
+        division_id=division_id,
+        name=payload.name,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=division, message="Division updated")
+
+
+@router.delete(
+    "/divisions/{division_id}",
+    response_model=ApiResponse[dict[str, str]],
+)
+async def delete_admin_division(
+    division_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("division.delete"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    recruitment_service.delete_division(division_id=division_id)
+    return api_response(data={"id": str(division_id)}, message="Division deleted")
+
+
+@router.get(
+    "/positions",
+    response_model=ApiResponse[list[PositionAdmin]],
+)
+async def list_admin_positions(
+    _: Annotated[AdminUser, Depends(require_permission("position.read"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    positions = recruitment_service.list_admin_positions()
+    return api_response(data=positions, meta={"total": len(positions)})
+
+
+@router.post(
+    "/positions",
+    response_model=ApiResponse[PositionAdmin],
+    status_code=201,
+)
+async def create_admin_position(
+    payload: PositionCreate,
+    _: Annotated[AdminUser, Depends(require_permission("position.create"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    position = recruitment_service.create_position(
+        division_id=payload.division_id,
+        code=payload.code,
+        name=payload.name,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=position, message="Position created")
+
+
+@router.patch(
+    "/positions/{position_id}",
+    response_model=ApiResponse[PositionAdmin],
+)
+async def update_admin_position(
+    position_id: UUID,
+    payload: PositionUpdate,
+    _: Annotated[AdminUser, Depends(require_permission("position.update"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    position = recruitment_service.update_position(
+        position_id=position_id,
+        division_id=payload.division_id,
+        name=payload.name,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=position, message="Position updated")
+
+
+@router.delete(
+    "/positions/{position_id}",
+    response_model=ApiResponse[dict[str, str]],
+)
+async def delete_admin_position(
+    position_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("position.delete"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    recruitment_service.delete_position(position_id=position_id)
+    return api_response(data={"id": str(position_id)}, message="Position deleted")
+
+
+@router.get(
+    "/jobs",
+    response_model=ApiResponse[list[CareerJobAdmin]],
+)
+async def list_admin_jobs(
+    _: Annotated[AdminUser, Depends(require_permission("job.read"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    jobs = recruitment_service.list_admin_jobs()
+    return api_response(data=jobs, meta={"total": len(jobs)})
+
+
+@router.post(
+    "/jobs",
+    response_model=ApiResponse[CareerJobAdmin],
+    status_code=201,
+)
+async def create_admin_job(
+    payload: CareerJobCreate,
+    _: Annotated[AdminUser, Depends(require_permission("job.create"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    job = recruitment_service.create_job(
+        code=payload.code,
+        slug=payload.slug,
+        title=payload.title,
+        division_id=payload.division_id,
+        position_id=payload.position_id,
+        location=payload.location,
+        employment_type=payload.employment_type,
+        summary=payload.summary,
+        responsibilities=payload.responsibilities,
+        requirements=payload.requirements,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=job, message="Job created")
+
+
+@router.patch(
+    "/jobs/{job_id}",
+    response_model=ApiResponse[CareerJobAdmin],
+)
+async def update_admin_job(
+    job_id: UUID,
+    payload: CareerJobUpdate,
+    _: Annotated[AdminUser, Depends(require_permission("job.update"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    job = recruitment_service.update_job(
+        job_id=job_id,
+        slug=payload.slug,
+        title=payload.title,
+        division_id=payload.division_id,
+        position_id=payload.position_id,
+        location=payload.location,
+        employment_type=payload.employment_type,
+        summary=payload.summary,
+        responsibilities=payload.responsibilities,
+        requirements=payload.requirements,
+        sort_order=payload.sort_order,
+        is_active=payload.is_active,
+    )
+    return api_response(data=job, message="Job updated")
+
+
+@router.delete(
+    "/jobs/{job_id}",
+    response_model=ApiResponse[dict[str, str]],
+)
+async def delete_admin_job(
+    job_id: UUID,
+    _: Annotated[AdminUser, Depends(require_permission("job.delete"))],
+    recruitment_service: Annotated[
+        RecruitmentService,
+        Depends(get_admin_recruitment_service),
+    ],
+) -> dict[str, object]:
+    recruitment_service.delete_job(job_id=job_id)
+    return api_response(data={"id": str(job_id)}, message="Job deleted")
 
 
 @router.get(

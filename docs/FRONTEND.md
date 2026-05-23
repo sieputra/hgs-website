@@ -35,7 +35,8 @@
   page, route-backed Services, FAQ, Users, and Roles pages, user creation, role
   assignment, activation toggles, and modal CRUD actions backed by the INTL API.
 - After admin login, users land on `/admin`. Users and Roles are route-backed
-  admin sections at `/admin/users` and `/admin/roles`; content management uses
+  admin sections at `/admin/users` and `/admin/roles`; Human Resources uses
+  `/admin/divisions`, `/admin/positions`, and `/admin/jobs`; content management uses
   `/admin/services`, `/admin/faqs`, and `/admin/gallery`.
 - Admin menu pages are dynamic server-rendered routes backed by the admin token
   cookie. Each route loads only the data needed for that menu: Users loads
@@ -53,19 +54,29 @@
   It lists INTL gallery image records with thumbnails, supports drag-and-drop
   ordering, inline active/inactive switches, edit/delete action modals, and
   drop-target image uploads or replacement through multipart INTL endpoints.
+- Human Resources admin management lives at `/admin/divisions`,
+  `/admin/positions`, and `/admin/jobs`. These tables use modal create/edit forms, confirmation modals
+  before delete calls, inline active/inactive switches, and drag-and-drop row
+  reordering that persists `sort_order` through the INTL API.
+- The Jobs admin form selects Position from the Position master table, limits
+  Location to Jakarta, Bandung, Bogor, Subang, and Sukabumi as selectable tags,
+  uses an Employment Type dropdown for Full Time or Part Time, and edits
+  Responsibilities and Requirements as add/remove list rows.
 - Role create/edit forms use a grouped permission tree with checkbox controls,
   including an all-permissions root option and module-level parent checkboxes.
   The role modal uses a two-column desktop layout with role details on the left
   and permission selection on the right.
 - The `/admin` desktop sidebar is sticky, supports fold/unfold, keeps primary
   navigation at the top without data-count badges, uses inline SVG icons, groups
-  Users and Roles under a default-collapsed User Management section with an
-  expand/collapse row, and moves the signed-in account block plus sign-out
-  action to a square, sticky top app bar.
+  Division, Position, and Jobs under Human Resources, Users and Roles under a
+  default-collapsed User Management section with an expand/collapse row, and
+  moves the signed-in account block plus sign-out action to a square, sticky top
+  app bar.
 - The `/admin` left navigation and top navigation are reusable client
-  components in `frontend/app/admin/components/AdminDashboardShell.tsx`; the
-  Content Management nav group contains Services, FAQ, and Gallery, while User
-  Management contains Users and Roles. Feature pages should use the server wrapper in
+  components in `frontend/app/admin/components/AdminDashboardShell.tsx`; Human
+  Resources contains Division, Position, and Jobs, Content Management contains Services,
+  FAQ, and Gallery, while User Management contains Users and Roles. Feature
+  pages should use the server wrapper in
   `frontend/app/admin/components/AdminServerShell.tsx` unless they need to
   compose `AdminLeftNavbar` and `AdminTopNavbar` directly.
 - The API rewrite targets `API_BASE_URL`, then `NEXT_PUBLIC_API_BASE_URL`, and falls back to `http://localhost:8000` for local development.

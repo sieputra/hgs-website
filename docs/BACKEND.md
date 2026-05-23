@@ -82,9 +82,14 @@ permissions. Built-in roles are `super_admin`, `admin`, `content_admin`, and
 `recruitment_admin`. Service and FAQ content management use `service.read`,
 `service.create`, `service.update`, `service.delete`, `faq.read`, `faq.create`,
 `faq.update`, and `faq.delete`; admin gallery management requires
-`gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete`; role
-management requires `role.read`, `role.create`, `role.update`, or `role.delete`;
-user management requires `user.read`, `user.create`, `user.update`, or
+`gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete`;
+division management requires `division.read`, `division.create`,
+`division.update`, or `division.delete`; position management requires
+`position.read`, `position.create`, `position.update`, or `position.delete`;
+job-posting management requires `job.read`, `job.create`, `job.update`, or
+`job.delete`; role management requires `role.read`, `role.create`,
+`role.update`, or `role.delete`; user management requires `user.read`,
+`user.create`, `user.update`, or
 `user.delete`. Role codes are stable after creation, while role name,
 description, and permissions can be edited. System roles cannot be deleted,
 assigned roles must be unassigned before deletion, and admins cannot delete

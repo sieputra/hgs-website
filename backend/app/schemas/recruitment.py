@@ -25,6 +25,55 @@ class Division(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PositionAdmin(Position):
+    id: UUID
+    division_id: UUID
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class PositionCreate(BaseModel):
+    division_id: UUID
+    code: str = Field(min_length=1, max_length=80)
+    name: str = Field(min_length=1, max_length=150)
+    sort_order: int = Field(ge=0, le=32767)
+    is_active: bool = True
+
+
+class PositionUpdate(BaseModel):
+    division_id: UUID | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=150)
+    sort_order: int | None = Field(default=None, ge=0, le=32767)
+    is_active: bool | None = None
+
+
+class DivisionAdmin(BaseModel):
+    id: UUID
+    code: str
+    name: str
+    sort_order: int
+    is_active: bool
+    positions: list[PositionAdmin]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DivisionCreate(BaseModel):
+    code: str = Field(min_length=1, max_length=50)
+    name: str = Field(min_length=1, max_length=150)
+    sort_order: int = Field(ge=0, le=32767)
+    is_active: bool = True
+
+
+class DivisionUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=150)
+    sort_order: int | None = Field(default=None, ge=0, le=32767)
+    is_active: bool | None = None
+
+
 class CareerJob(BaseModel):
     code: str
     slug: str
@@ -41,6 +90,44 @@ class CareerJob(BaseModel):
     sort_order: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CareerJobAdmin(CareerJob):
+    id: UUID
+    division_id: UUID | None
+    position_id: UUID | None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class CareerJobCreate(BaseModel):
+    code: str = Field(min_length=1, max_length=100)
+    slug: str = Field(min_length=1, max_length=150)
+    title: str = Field(min_length=1, max_length=150)
+    division_id: UUID
+    position_id: UUID
+    location: str = Field(min_length=1, max_length=150)
+    employment_type: str = Field(min_length=1, max_length=80)
+    summary: str = Field(min_length=1)
+    responsibilities: list[str] = Field(min_length=1, max_length=20)
+    requirements: list[str] = Field(min_length=1, max_length=20)
+    sort_order: int = Field(ge=0, le=32767)
+    is_active: bool = True
+
+
+class CareerJobUpdate(BaseModel):
+    slug: str | None = Field(default=None, min_length=1, max_length=150)
+    title: str | None = Field(default=None, min_length=1, max_length=150)
+    division_id: UUID | None = None
+    position_id: UUID | None = None
+    location: str | None = Field(default=None, min_length=1, max_length=150)
+    employment_type: str | None = Field(default=None, min_length=1, max_length=80)
+    summary: str | None = Field(default=None, min_length=1)
+    responsibilities: list[str] | None = Field(default=None, min_length=1, max_length=20)
+    requirements: list[str] | None = Field(default=None, min_length=1, max_length=20)
+    sort_order: int | None = Field(default=None, ge=0, le=32767)
+    is_active: bool | None = None
 
 
 class ContactSubmissionCreate(BaseModel):

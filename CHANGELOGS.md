@@ -21,6 +21,7 @@ All notable changes and release notes for this project should be documented in t
 - Added a homepage gallery section with a horizontal image mosaic and bottom-to-top animated hover captions.
 - Added gallery image APIs with public EXTL listing and INTL admin upload/list endpoints.
 - Added INTL admin gallery update and delete endpoints with `gallery.update` and `gallery.delete` permissions.
+- Added Human Resources admin management for Division, Position, and Jobs with INTL CRUD endpoints and `division.*`/`position.*`/`job.*` permissions.
 - Added a `gallery_images` database table, seed gallery records, and backend upload serving from `/uploads/gallery/`.
 - Added upload-time gallery image optimization to WebP with metadata stripping and resizing.
 - Added a standalone `/faq-kandidat` page for candidate FAQs.
@@ -48,6 +49,8 @@ All notable changes and release notes for this project should be documented in t
 - Changed INTL API resource routes to remove the `/admin` path segment from protected roles, users, services, FAQs, and gallery endpoints.
 - Changed INTL admin gallery endpoints to require `gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete` permissions by action.
 - Changed `/admin/gallery` to support editable metadata, image replacement, drag-and-drop ordering, status toggles, and delete confirmations.
+- Changed `/admin` sidebar navigation to include a Human Resources group for Division, Position, and Jobs with draggable ordering tables.
+- Changed the Jobs admin form to select positions from the Position master table, use fixed location tags, use an employment type dropdown, and edit responsibilities/requirements as add-remove lists.
 - Changed admin gallery uploads to use a drop-target file picker in create and edit modals.
 - Changed built-in admin and content admin roles to include Services and FAQ management permissions.
 - Changed Services and FAQ admin table status cells to inline switches for direct active/inactive updates.

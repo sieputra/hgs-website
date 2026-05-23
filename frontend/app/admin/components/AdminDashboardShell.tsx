@@ -10,8 +10,12 @@ import { clearAdminSession } from "../lib/client-auth";
 type AdminDashboardNavIconName =
   | "content-management"
   | "dashboard"
+  | "divisions"
   | "faqs"
   | "gallery"
+  | "human-resources"
+  | "jobs"
+  | "positions"
   | "roles"
   | "services"
   | "user-management"
@@ -268,6 +272,51 @@ function AdminNavIcon({ name }: { name: AdminDashboardNavIconName }) {
         <path d="M5 5h14v14H5z" />
         <path d="M8 9h8" />
         <path d="M8 13h5" />
+      </svg>
+    );
+  }
+
+  if (name === "human-resources") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <path d="M4 20v-9l8-6 8 6v9" />
+        <path d="M8 20v-6h8v6" />
+        <path d="M10 10h4" />
+      </svg>
+    );
+  }
+
+  if (name === "divisions") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <rect height="5" rx="1.5" width="14" x="5" y="4" />
+        <rect height="5" rx="1.5" width="14" x="5" y="15" />
+        <path d="M12 9v6" />
+        <path d="M8 12h8" />
+      </svg>
+    );
+  }
+
+  if (name === "jobs") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <rect height="14" rx="2" width="16" x="4" y="6" />
+        <path d="M9 6V4h6v2" />
+        <path d="M8 11h8" />
+        <path d="M8 15h5" />
+      </svg>
+    );
+  }
+
+  if (name === "positions") {
+    return (
+      <svg aria-hidden="true" className="admin-nav-svg" fill="none" viewBox="0 0 24 24">
+        <path d="M5 6h14" />
+        <path d="M5 12h14" />
+        <path d="M5 18h14" />
+        <circle cx="8" cy="6" r="1.5" />
+        <circle cx="12" cy="12" r="1.5" />
+        <circle cx="16" cy="18" r="1.5" />
       </svg>
     );
   }

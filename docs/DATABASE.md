@@ -65,7 +65,10 @@ Use `admin_roles` for RBAC role definitions used by the INTL admin API.
 Built-in role codes are `super_admin`, `admin`, `content_admin`, and
 `recruitment_admin`. Custom roles can be created from the admin dashboard, and
 role name, description, and permissions can be edited after creation. System
-roles cannot be deleted.
+roles cannot be deleted. Human Resources permissions use `division.read`,
+`division.create`, `division.update`, `division.delete`, `position.read`,
+`position.create`, `position.update`, `position.delete`, `job.read`,
+`job.create`, `job.update`, and `job.delete`.
 
 ### `admin_users`
 

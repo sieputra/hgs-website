@@ -249,6 +249,7 @@ export default function Home() {
   const [careerJobs, setCareerJobs] = useState<CareerJob[]>(fallbackCareerJobs);
   const [isCareerJobsLoading, setIsCareerJobsLoading] = useState(true);
   const galleryTrackRef = useRef<HTMLDivElement | null>(null);
+  const careerJobListRef = useRef<HTMLDivElement | null>(null);
   const heroSliderRef = useRef<HTMLElement | null>(null);
   const heroWheelLockRef = useRef(false);
 
@@ -388,6 +389,18 @@ export default function Home() {
     galleryTrackRef.current?.scrollBy({
       behavior: "smooth",
       left: direction === "next" ? 520 : -520,
+    });
+  }
+
+  function scrollCareerJobs(direction: "up" | "down") {
+    const list = careerJobListRef.current;
+    if (!list) {
+      return;
+    }
+
+    list.scrollBy({
+      behavior: "smooth",
+      top: direction === "down" ? list.clientHeight * 0.72 : -list.clientHeight * 0.72,
     });
   }
 
@@ -644,17 +657,44 @@ export default function Home() {
           <p className="eyebrow">Careers</p>
           <h2>Drive your career with HGS.</h2>
           <p>Driver, helper, warehouse, fleet, HR, finance, IT, and sales opportunities are prepared to grow into dedicated recruitment routes.</p>
-          <a className="cta red" href="/career">Apply</a>
+          <a className="cta red" href="/career">Apply Now</a>
         </div>
-        <div className="career-job-list" aria-busy={isCareerJobsLoading} aria-label="Available jobs">
-          {careerJobs.map((job) => (
-            <a className="career-job-card" href={`/career?job=${encodeURIComponent(job.slug)}#application-details`} key={job.slug}>
-              <span>{job.employment_type}</span>
-              <h3>{job.title}</h3>
-              <p>{job.summary}</p>
-              <small>{job.location}</small>
-            </a>
-          ))}
+        <div className="career-job-panel">
+          <button
+            aria-label="Scroll jobs up"
+            className="career-scroll-button career-scroll-button-up"
+            onClick={() => scrollCareerJobs("up")}
+            type="button"
+          >
+            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+              <path d="M6 15l6-6 6 6" />
+            </svg>
+          </button>
+          <div
+            className="career-job-list"
+            aria-busy={isCareerJobsLoading}
+            aria-label="Available jobs"
+            ref={careerJobListRef}
+          >
+            {careerJobs.map((job) => (
+              <a className="career-job-card" href={`/career?job=${encodeURIComponent(job.slug)}#application-details`} key={job.slug}>
+                <span>{job.employment_type}</span>
+                <h3>{job.title}</h3>
+                <p>{job.summary}</p>
+                <small>{job.location}</small>
+              </a>
+            ))}
+          </div>
+          <button
+            aria-label="Scroll jobs down"
+            className="career-scroll-button career-scroll-button-down"
+            onClick={() => scrollCareerJobs("down")}
+            type="button"
+          >
+            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
         </div>
       </section>
 

@@ -24,6 +24,28 @@ const permissionGroups = [
     permissions: ["gallery.read", "gallery.create", "gallery.update", "gallery.delete"],
   },
   {
+    label: "Divisions",
+    permissions: [
+      "division.read",
+      "division.create",
+      "division.update",
+      "division.delete",
+    ],
+  },
+  {
+    label: "Positions",
+    permissions: [
+      "position.read",
+      "position.create",
+      "position.update",
+      "position.delete",
+    ],
+  },
+  {
+    label: "Jobs",
+    permissions: ["job.read", "job.create", "job.update", "job.delete"],
+  },
+  {
     label: "Recruitment",
     permissions: ["recruitment.read", "recruitment.update"],
   },

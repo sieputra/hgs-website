@@ -549,9 +549,9 @@ Built-in role codes:
 | Code | Permissions |
 | --- | --- |
 | `super_admin` | `*` |
-| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.*` |
+| `admin` | `role.*`, `user.*`, `service.*`, `faq.*`, `gallery.*`, `division.*`, `position.*`, `job.*` |
 | `content_admin` | `service.*`, `faq.*`, `gallery.*` |
-| `recruitment_admin` | `recruitment.read`, `recruitment.update` |
+| `recruitment_admin` | `recruitment.read`, `recruitment.update`, `division.*`, `position.*`, `job.*` |
 
 ### Create Admin Role
 
@@ -810,6 +810,248 @@ DELETE /api/intl/v1/faqs/{faq_id}
 ```
 
 Required permission: `faq.delete`. Deletes the FAQ record.
+
+### List Admin Divisions
+
+```http
+GET /api/intl/v1/divisions
+```
+
+Returns all division master records, including inactive divisions, with their
+positions for admin context. Required permission: `division.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Division identifier. |
+| `code` | string | Stable division code. |
+| `name` | string | Division display name. |
+| `sort_order` | integer | Display order. |
+| `is_active` | boolean | Whether the division appears on public recruitment forms. |
+| `positions` | array | Position records under the division. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Create Admin Division
+
+```http
+POST /api/intl/v1/divisions
+```
+
+Required permission: `division.create`. The division code must be unique and is
+stored uppercase.
+
+Request:
+
+```json
+{
+  "code": "DIVISI_MARKETING",
+  "name": "DIVISI MARKETING",
+  "sort_order": 10,
+  "is_active": true
+}
+```
+
+### Update Admin Division
+
+```http
+PATCH /api/intl/v1/divisions/{division_id}
+```
+
+Required permission: `division.update`. Division code is stable and cannot be
+changed through this endpoint. `sort_order` is used by drag-and-drop admin
+reordering.
+
+Request fields are optional:
+
+```json
+{
+  "name": "DIVISI MARKETING",
+  "sort_order": 10,
+  "is_active": true
+}
+```
+
+### Delete Admin Division
+
+```http
+DELETE /api/intl/v1/divisions/{division_id}
+```
+
+Required permission: `division.delete`. Deletes the division master record.
+Career jobs keep their saved division text snapshots.
+
+### List Admin Positions
+
+```http
+GET /api/intl/v1/positions
+```
+
+Returns all position master records, including inactive positions. Required
+permission: `position.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Position identifier. |
+| `division_id` | UUID | Linked division master record. |
+| `code` | string | Stable position code within the division. |
+| `name` | string | Position display name. |
+| `sort_order` | integer | Display order. |
+| `is_active` | boolean | Whether the position appears on public recruitment forms. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Create Admin Position
+
+```http
+POST /api/intl/v1/positions
+```
+
+Required permission: `position.create`. The position code must be unique within
+the selected division and is stored uppercase.
+
+Request:
+
+```json
+{
+  "division_id": "00000000-0000-0000-0000-000000000000",
+  "code": "STAFF_MARKETING",
+  "name": "Staff Marketing",
+  "sort_order": 1,
+  "is_active": true
+}
+```
+
+### Update Admin Position
+
+```http
+PATCH /api/intl/v1/positions/{position_id}
+```
+
+Required permission: `position.update`. Position code is stable and cannot be
+changed through this endpoint. `sort_order` is used by drag-and-drop admin
+reordering.
+
+Request fields are optional:
+
+```json
+{
+  "division_id": "00000000-0000-0000-0000-000000000000",
+  "name": "Staff Marketing",
+  "sort_order": 1,
+  "is_active": true
+}
+```
+
+### Delete Admin Position
+
+```http
+DELETE /api/intl/v1/positions/{position_id}
+```
+
+Required permission: `position.delete`. Deletes the position master record.
+
+### List Admin Jobs
+
+```http
+GET /api/intl/v1/jobs
+```
+
+Returns all public career job records, including inactive jobs. Required
+permission: `job.read`.
+
+Response data item:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | UUID | Job identifier. |
+| `division_id` | UUID or null | Linked division master record. |
+| `position_id` | UUID or null | Linked position master record when known. |
+| `code` | string | Stable job code. |
+| `slug` | string | Public URL slug. |
+| `title` | string | Public job title. |
+| `division_code` | string | Division code snapshot. |
+| `division_name` | string | Division display name snapshot. |
+| `position_code` | string | Position code snapshot. |
+| `position_name` | string | Position display name snapshot. |
+| `location` | string | Public placement location. |
+| `employment_type` | string | Public employment type. |
+| `summary` | string | Short public job summary. |
+| `responsibilities` | array | Public responsibilities. |
+| `requirements` | array | Public requirements. |
+| `sort_order` | integer | Display order. |
+| `is_active` | boolean | Whether the job appears on public career listings. |
+| `created_at` | datetime | Record creation timestamp. |
+| `updated_at` | datetime | Last update timestamp. |
+
+### Create Admin Job
+
+```http
+POST /api/intl/v1/jobs
+```
+
+Required permission: `job.create`. Job code and slug must be unique; the code is
+stored uppercase and the slug is stored lowercase. `division_id` and
+`position_id` must reference existing master records, the position must belong
+to the selected division, and the backend stores division and position
+name/code snapshots on the job.
+
+Request:
+
+```json
+{
+  "code": "STAFF_MARKETING",
+  "slug": "staff-marketing",
+  "title": "Staff Marketing",
+  "division_id": "00000000-0000-0000-0000-000000000000",
+  "position_id": "11111111-1111-1111-1111-111111111111",
+  "location": "Jakarta, Bandung",
+  "employment_type": "Full Time",
+  "summary": "Mendukung aktivitas marketing HGS.",
+  "responsibilities": ["Menjalankan administrasi marketing."],
+  "requirements": ["Komunikatif dan teliti."],
+  "sort_order": 4,
+  "is_active": true
+}
+```
+
+### Update Admin Job
+
+```http
+PATCH /api/intl/v1/jobs/{job_id}
+```
+
+Required permission: `job.update`. Job code is stable and cannot be changed
+through this endpoint. `position_id` can be changed to another position in the
+selected/current division. `sort_order` is used by drag-and-drop admin
+reordering.
+
+Request fields are optional:
+
+```json
+{
+  "title": "Staff Marketing",
+  "position_id": "11111111-1111-1111-1111-111111111111",
+  "location": "Jakarta, Bandung",
+  "employment_type": "Full Time",
+  "summary": "Updated public summary.",
+  "responsibilities": ["Menjalankan administrasi marketing."],
+  "requirements": ["Komunikatif dan teliti."],
+  "sort_order": 4,
+  "is_active": true
+}
+```
+
+### Delete Admin Job
+
+```http
+DELETE /api/intl/v1/jobs/{job_id}
+```
+
+Required permission: `job.delete`. Deletes the job posting record.
 
 ### List Admin Gallery Images
 
