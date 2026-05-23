@@ -6,6 +6,7 @@ All notable changes and release notes for this project should be documented in t
 
 ### Added
 
+- Added a right-aligned dummy AI insight tab to the Recruitment applicant detail panel with simple visual HR analytics.
 - Added applicant photo thumbnails to the Recruitment list and a larger photo preview popup shared with the detail-panel header photo.
 - Added Escape-key close behavior to the Recruitment candidate detail panel.
 - Added the `/admin` dashboard with admin login, user creation, role assignment, account activation, and role/permission visibility.
@@ -53,6 +54,11 @@ All notable changes and release notes for this project should be documented in t
 ### Changed
 
 - Changed the frontend development script to run Next.js with Turbopack.
+- Changed the `/career` application page to hide the form after a successful submission and show only the confirmation message.
+- Changed Recruitment applicant detail values to use regular text weight while keeping labels bold.
+- Changed Recruitment kanban cards to ellipsize long applicant names and show Area/Applied values in regular text weight.
+- Changed Recruitment list view to include a Status filter.
+- Changed the Recruitment AI insight tab to add bottom spacing so the final content remains readable.
 - Changed INTL API resource routes to remove the `/admin` path segment from protected roles, users, services, FAQs, and gallery endpoints.
 - Changed INTL admin gallery endpoints to require `gallery.read`, `gallery.create`, `gallery.update`, or `gallery.delete` permissions by action.
 - Changed `/admin/gallery` to support editable metadata, image replacement, drag-and-drop ordering, status toggles, and delete confirmations.

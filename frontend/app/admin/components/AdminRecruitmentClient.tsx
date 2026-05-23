@@ -22,12 +22,14 @@ type RecruitmentListFilters = {
   candidateName: string;
   jobPosition: string;
   phone: string;
+  status: string;
 };
 type RecruitmentPhotoPreview = {
   name: string;
   url: string;
 };
 type RecruitmentDetailTab =
+  | "ai"
   | "identity"
   | "cv"
   | "position"
@@ -70,6 +72,7 @@ const detailTabs: Array<{ id: RecruitmentDetailTab; icon: string; label: string 
   { id: "organization", icon: "award", label: "Organisasi & Pelatihan" },
   { id: "work", icon: "building", label: "Riwayat Pekerjaan" },
   { id: "cv", icon: "file", label: "CV" },
+  { id: "ai", icon: "ai", label: "AI" },
 ];
 
 const knownStatuses = new Set<string>(statusOptions.map((option) => option.value));
@@ -345,6 +348,7 @@ function RecruitmentList({
     candidateName: "",
     jobPosition: "",
     phone: "",
+    status: "",
   });
   const jobPositionOptions = useMemo(
     () =>
@@ -381,6 +385,7 @@ function RecruitmentList({
       candidateName: "",
       jobPosition: "",
       phone: "",
+      status: "",
     });
   }
 
@@ -439,6 +444,20 @@ function RecruitmentList({
             {jobPositionOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Status
+          <select
+            onChange={(event) => updateFilter("status", event.target.value)}
+            value={filters.status}
+          >
+            <option value="">All statuses</option>
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -920,13 +939,18 @@ function RecruitmentDetailPanel({
               <button
                 aria-pressed={selectedTab === tab.id}
                 aria-label={tab.label}
-                className={selectedTab === tab.id ? "is-active" : undefined}
+                className={[
+                  selectedTab === tab.id ? "is-active" : "",
+                  tab.id === "ai" ? "is-ai-tab" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id)}
                 title={tab.label}
                 type="button"
               >
-                <TabIcon name={tab.icon} />
+                {tab.id === "ai" ? <span>AI</span> : <TabIcon name={tab.icon} />}
               </button>
             ))}
           </nav>
@@ -1212,6 +1236,10 @@ function RecruitmentDetailTabContent({
   application: CareerApplicationAdmin;
   tab: RecruitmentDetailTab;
 }) {
+  if (tab === "ai") {
+    return <AiApplicantInsight application={application} />;
+  }
+
   if (tab === "position") {
     return (
       <>
@@ -1364,6 +1392,135 @@ function RecruitmentDetailTabContent({
       ])}
     />
   );
+}
+
+function AiApplicantInsight({ application }: { application: CareerApplicationAdmin }) {
+  const workCount = application.work_experiences.length;
+  const organizationCount = application.organization_experiences.length;
+  const socialCount = application.social_media_accounts.length;
+  const familyCount = application.family_members.length;
+  const documentScore = scoreCompletedItems([
+    application.self_photo_url,
+    application.cv_file_url,
+    application.identity_number,
+    application.driving_license_number,
+    application.phone_number,
+  ]);
+  const profileDepthScore = Math.min(
+    100,
+    25 +
+      workCount * 18 +
+      organizationCount * 12 +
+      socialCount * 8 +
+      familyCount * 6,
+  );
+  const schedulingScore = scoreCompletedItems([
+    application.available_interview_date,
+    application.preferred_area,
+    application.vacancy_source,
+    application.interview_invitation_reason,
+  ]);
+  const overallScore = Math.round(
+    documentScore * 0.4 + profileDepthScore * 0.35 + schedulingScore * 0.25,
+  );
+  const priority = aiPriorityLabel(application.status, overallScore);
+  const metrics = [
+    { label: "Document readiness", value: documentScore },
+    { label: "Profile depth", value: profileDepthScore },
+    { label: "Scheduling clarity", value: schedulingScore },
+    { label: "HR review priority", value: overallScore },
+  ];
+
+  return (
+    <div className="admin-recruitment-ai-insight">
+      <section className="admin-recruitment-ai-hero" aria-label="Dummy AI applicant analytics">
+        <div>
+          <span>Dummy AI Insight</span>
+          <h3>New Applicant Analytics</h3>
+          <p>
+            Senior HR view for quick triage. Use this as reading support only;
+            final screening remains a recruiter decision.
+          </p>
+        </div>
+        <strong className={`admin-recruitment-ai-priority ${priority.tone}`}>
+          {priority.label}
+        </strong>
+      </section>
+
+      <section className="admin-recruitment-ai-metrics" aria-label="Applicant analytics">
+        {metrics.map((metric) => (
+          <article key={metric.label}>
+            <div>
+              <span>{metric.label}</span>
+              <strong>{metric.value}%</strong>
+            </div>
+            <span className="admin-recruitment-ai-bar" aria-hidden="true">
+              <span style={{ width: `${metric.value}%` }} />
+            </span>
+          </article>
+        ))}
+      </section>
+
+      <DetailGrid
+        items={[
+          ["Candidate", application.full_name],
+          ["Applied role", careerTitle(application)],
+          ["Current stage", statusLabel(application.status)],
+          ["Preferred area", application.preferred_area],
+          ["Work entries", application.work_experiences.length],
+          ["Organization entries", organizationCount],
+        ]}
+      />
+      <DetailTextBlock
+        label="Executive HR read"
+        value={`${application.full_name} applied for ${careerTitle(application)} with preferred placement in ${formatMaybeValue(
+          application.preferred_area,
+        )}. The profile includes ${application.work_experiences.length} work experience entr${
+          application.work_experiences.length === 1 ? "y" : "ies"
+        } and ${application.organization_experiences.length} organization or training entr${
+          application.organization_experiences.length === 1 ? "y" : "ies"
+        }.`}
+      />
+      <DetailTextBlock
+        label="Department head recommendation"
+        value={`${priority.recommendation} Verify KTP/SIM validity, confirm the candidate's area flexibility, and compare the uploaded CV against the selected job requirements before moving stages.`}
+      />
+      <DetailTextBlock
+        label="Governance note"
+        value="Placeholder only. No automated hiring decision has been made; recruiters should use this as a quick reading aid, not as a scoring result."
+      />
+    </div>
+  );
+}
+
+function scoreCompletedItems(values: Array<string | number | null | undefined>) {
+  if (values.length === 0) {
+    return 0;
+  }
+  const completedCount = values.filter((value) => formatMaybeValue(value) !== "-").length;
+  return Math.round((completedCount / values.length) * 100);
+}
+
+function aiPriorityLabel(status: string, score: number) {
+  if (status === "submitted" && score >= 76) {
+    return {
+      label: "High priority review",
+      recommendation: "Prioritize for HR screening while the application is fresh.",
+      tone: "high",
+    };
+  }
+  if (score >= 60) {
+    return {
+      label: "Standard review",
+      recommendation: "Proceed through the normal HR review queue.",
+      tone: "standard",
+    };
+  }
+  return {
+    label: "Needs data check",
+    recommendation: "Ask the candidate to clarify missing or thin profile data first.",
+    tone: "check",
+  };
 }
 
 function DetailGrid({
@@ -1550,6 +1707,9 @@ function matchesRecruitmentListFilters(
         normalizeFilterText(value ?? "") === normalizeFilterText(filters.jobPosition),
     )
   ) {
+    return false;
+  }
+  if (filters.status && application.status !== filters.status) {
     return false;
   }
   return isWithinDateRange(application.applied_at, filters.appliedFrom, filters.appliedTo);

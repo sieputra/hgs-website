@@ -445,7 +445,10 @@ export default function CareerApplicationPage() {
 
   function showStatus(nextStatus: FormStatus) {
     setStatus(nextStatus);
-    setToast(nextStatus);
+
+    if (nextStatus.type === "error") {
+      setToast(nextStatus);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -645,7 +648,7 @@ export default function CareerApplicationPage() {
         throw new Error(message || "Application could not be submitted.");
       }
 
-      showStatus({
+      setStatus({
         type: "success",
         message: "Lamaran berhasil dikirim. Tim HR HGS akan menghubungi Anda sesuai proses rekrutmen.",
       });
@@ -674,6 +677,8 @@ export default function CareerApplicationPage() {
       setIsSubmitting(false);
     }
   }
+
+  const successStatus = status?.type === "success" ? status : null;
 
   return (
     <main className="application-page">
@@ -742,12 +747,17 @@ export default function CareerApplicationPage() {
         </a>
       </section>
 
-      <form aria-busy={isSubmitting} className="application-form" ref={formRef} onSubmit={handleSubmit}>
-        {status && (
-          <div className={`form-status ${status.type}`} role="status">
-            {status.message}
-          </div>
-        )}
+      {successStatus ? (
+        <section className="application-success" id="application-details" role="status">
+          <div className="form-status success">{successStatus.message}</div>
+        </section>
+      ) : (
+        <form aria-busy={isSubmitting} className="application-form" ref={formRef} onSubmit={handleSubmit}>
+          {status && status.type === "error" && (
+            <div className={`form-status ${status.type}`} role="status">
+              {status.message}
+            </div>
+          )}
 
         <section className="form-section" id="application-details">
           <div className="form-section-heading">
@@ -1229,6 +1239,7 @@ export default function CareerApplicationPage() {
           </div>
         </section>
       </form>
+      )}
     </main>
   );
 }

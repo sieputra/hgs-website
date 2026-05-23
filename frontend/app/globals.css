@@ -788,8 +788,12 @@ main {
   border-radius: 8px;
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(3, minmax(140px, 1fr)) minmax(280px, 1.55fr) minmax(160px, 1fr) auto;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   padding: 12px;
+}
+
+.admin-recruitment-date-filter {
+  grid-column: span 2;
 }
 
 .admin-recruitment-filters label,
@@ -828,6 +832,7 @@ main {
   align-items: center;
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
   min-height: 40px;
 }
 
@@ -1071,6 +1076,10 @@ button.admin-recruitment-applicant-thumb:focus-visible {
   width: 100%;
 }
 
+.admin-recruitment-card > div {
+  min-width: 0;
+}
+
 .admin-recruitment-card.is-draggable {
   cursor: grab;
 }
@@ -1117,6 +1126,13 @@ button.admin-recruitment-applicant-thumb:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.admin-recruitment-card strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .admin-recruitment-card small {
   color: #687164;
   display: block;
@@ -1145,7 +1161,7 @@ button.admin-recruitment-applicant-thumb:focus-visible {
 
 .admin-recruitment-card dd {
   color: #33382f;
-  font-weight: 800;
+  font-weight: 400;
   margin: 2px 0 0;
 }
 
@@ -1455,6 +1471,12 @@ button.admin-recruitment-candidate-photo:focus-visible {
   width: 38px;
 }
 
+.admin-recruitment-detail-tabs button.is-ai-tab {
+  font-size: 12px;
+  font-weight: 900;
+  margin-left: auto;
+}
+
 .admin-recruitment-detail-tabs svg {
   fill: none;
   height: 19px;
@@ -1483,6 +1505,108 @@ button.admin-recruitment-candidate-photo:focus-visible {
   padding: 18px 22px 24px;
 }
 
+.admin-recruitment-ai-insight {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 96px;
+}
+
+.admin-recruitment-ai-hero {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d6ded0;
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 18px;
+}
+
+.admin-recruitment-ai-hero span,
+.admin-recruitment-ai-metrics article > div span {
+  color: #687164;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-recruitment-ai-hero h3 {
+  color: #253028;
+  font-size: 1.25rem;
+  margin: 4px 0 6px;
+}
+
+.admin-recruitment-ai-hero p {
+  color: #555f53;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.admin-recruitment-ai-priority {
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+
+.admin-recruitment-ai-priority.high {
+  background: #e7f7ee;
+  color: #1d6f35;
+}
+
+.admin-recruitment-ai-priority.standard {
+  background: #edf2e9;
+  color: #2c5438;
+}
+
+.admin-recruitment-ai-priority.check {
+  background: #fff4dc;
+  color: #8a5a00;
+}
+
+.admin-recruitment-ai-metrics {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-recruitment-ai-metrics article {
+  background: #ffffff;
+  border: 1px solid #d6ded0;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.admin-recruitment-ai-metrics article > div {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.admin-recruitment-ai-metrics article > div strong {
+  color: #253028;
+  font-size: 1.1rem;
+}
+
+.admin-recruitment-ai-bar {
+  background: #e5ebe0;
+  border-radius: 999px;
+  display: block;
+  height: 9px;
+  overflow: hidden;
+}
+
+.admin-recruitment-ai-bar span {
+  background: linear-gradient(90deg, #198b8d, #2c5438);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+}
+
 .admin-recruitment-detail-grid {
   display: grid;
   gap: 14px 24px;
@@ -1507,7 +1631,7 @@ button.admin-recruitment-candidate-photo:focus-visible {
 .admin-recruitment-detail-grid dd,
 .admin-recruitment-detail-text p {
   color: #2f352e;
-  font-weight: 800;
+  font-weight: 400;
   margin: 0;
   overflow-wrap: anywhere;
 }
@@ -1568,7 +1692,7 @@ button.admin-recruitment-candidate-photo:focus-visible {
 
 .admin-recruitment-detail-table td {
   color: #2f352e;
-  font-weight: 800;
+  font-weight: 400;
   overflow-wrap: anywhere;
 }
 
@@ -3638,6 +3762,12 @@ h2 {
   padding: clamp(28px, 5vw, 70px) clamp(20px, 5vw, 48px) clamp(60px, 8vw, 110px);
 }
 
+.application-success {
+  margin: 0 auto;
+  max-width: 780px;
+  padding: clamp(28px, 5vw, 70px) clamp(20px, 5vw, 48px) clamp(60px, 8vw, 110px);
+}
+
 .application-toast-region {
   bottom: 24px;
   display: grid;
@@ -4839,6 +4969,11 @@ h2 {
 
   .admin-recruitment-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-recruitment-ai-hero,
+  .admin-recruitment-ai-metrics {
+    grid-template-columns: 1fr;
   }
 }
 

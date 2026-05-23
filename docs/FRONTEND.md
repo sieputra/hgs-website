@@ -61,13 +61,20 @@
   kanban view using the New, Interview HR, Interview User, Announcement, and
   Done status columns; the kanban board fills the available admin content
   height, and the list/kanban cards do not expose inline status-changing
-  controls. Kanban cards can be dragged between columns using the same allowed
-  status flow as the detail-panel status dropdown; dropping a card into Done
+  controls. Kanban cards ellipsize long applicant names and show Area/Applied
+  values in regular text weight. Kanban cards can be dragged between columns using the same allowed
+  status flow as the detail-panel status dropdown; the list view includes
+  filters for candidate, phone, area, applied date, job position, and status.
+  Dropping a card into Done
   sets it to Rejected by default. Clicking a kanban card opens a full-panel candidate detail popup
   and then loads the full applicant detail for that card. The panel has
   icon-only tabs for applied position, candidate identity, latest education,
-  family history, social media, organization/training history, and work
-  history, shows detail fields as inline text, and displays the uploaded
+  family history, social media, organization/training history, work history,
+  CV, and a right-aligned dummy AI insight tab. The AI tab shows simple visual
+  HR analytics and summarizes applicant data as placeholder recruiter guidance
+  only, not as an automated decision, with extra bottom spacing so the final
+  content can scroll fully into view.
+  The panel shows detail fields as inline text with regular-weight values, and displays the uploaded
   candidate photo as a small header thumbnail that opens a larger photo
   preview popup. The panel is fullscreen,
   edge-to-edge, uses a red close button, and scrolls tab content only when the
@@ -152,7 +159,7 @@ Current `/career` behavior:
 - Loads public jobs and divisions from the EXTL API when available, with bundled starter jobs available for prefilled links if the jobs API cannot be reached.
 - Prefills `Lowongan tersedia` and `Posisi dilamar` when opened with a `job` query parameter.
 - Submits candidate payloads to `POST /api/extl/v1/career-applications` as multipart form data with required self-photo and PDF CV uploads.
-- Shows toast notifications for career form submission success and error states, disables the submit button while submitting, and displays a full-screen submission progress overlay.
+- Shows career form error states inline and as toasts, disables the submit button while submitting, displays a full-screen submission progress overlay, and replaces the form with a confirmation message after successful submission.
 - Uses a simple client-side math captcha before allowing submission.
 - Shows `Posisi dilamar` as a searchable picker grouped by division.
 - Supports an optional `Alternatif Posisi dilamar` picker and limits preferred placement area choices to Jakarta, Bandung, Bogor, Subang, and Sukabumi.
